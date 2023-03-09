@@ -26,4 +26,8 @@ export async function shareAsync(url, options = {}) {
     }
     return await Sharing.shareAsync(url, options);
 }
+export async function suspendFunction(url, options = {}) {
+    options.url = url;
+    return await Sharing.suspendFunction(options);
+}
 //# sourceMappingURL=Sharing.js.map

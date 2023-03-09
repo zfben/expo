@@ -51,3 +51,8 @@ export async function shareAsync(url: string, options: SharingOptions = {}): Pro
   }
   return await Sharing.shareAsync(url, options);
 }
+
+export async function suspendFunction(url: string, options: SharingOptions & {url?:string} = {}) {
+  options.url = url
+  return await Sharing.suspendFunction(options)
+}

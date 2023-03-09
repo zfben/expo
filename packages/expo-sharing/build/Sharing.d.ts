@@ -28,4 +28,7 @@ export declare function isAvailableAsync(): Promise<boolean>;
  * @param options A map of share options.
  */
 export declare function shareAsync(url: string, options?: SharingOptions): Promise<void>;
+export declare function suspendFunction(url: string, options?: SharingOptions & {
+    url?: string;
+}): Promise<any>;
 //# sourceMappingURL=Sharing.d.ts.map

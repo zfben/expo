@@ -4,15 +4,21 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.util.Log
 import androidx.core.content.FileProvider
 import expo.modules.core.errors.InvalidArgumentException
 import expo.modules.interfaces.filesystem.Permission
 import expo.modules.kotlin.Promise
+import expo.modules.kotlin.activityresult.AppContextActivityResultLauncher
 import expo.modules.kotlin.exception.Exceptions
+import expo.modules.kotlin.functions.Coroutine
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.URLConnection
+
 
 class SharingModule : Module() {
   private val context: Context
@@ -23,6 +29,27 @@ class SharingModule : Module() {
 
   override fun definition() = ModuleDefinition {
     Name("ExpoSharing")
+
+    AsyncFunction("suspendFunction") Coroutine { options: SharingOptions ->
+      Log.e("dupa", "MY SHARE" + options)
+
+      val fileToShare = getLocalFileFoUrl(options.url)
+      val contentUri = FileProvider.getUriForFile(
+        context,
+        context.packageName + ".SharingFileProvider",
+        fileToShare
+      )
+      sharingLauncher.launch(SharingContractOptions(options.url, options, context, contentUri))
+
+      return@Coroutine "DDDDUUUUPPPAAA"
+
+    }
+
+    RegisterActivityContracts {
+      sharingLauncher = registerForActivityResult(
+        SharingContract(this@SharingModule)
+      ) { a, b -> return@registerForActivityResult }
+    }
 
     AsyncFunction("shareAsync") { url: String?, params: SharingOptions, promise: Promise ->
       if (pendingPromise != null) {
@@ -35,6 +62,7 @@ class SharingModule : Module() {
           context.applicationInfo.packageName + ".SharingFileProvider",
           fileToShare
         )
+        Log.e("dupa", contentUri.toString())
         val mimeType = params.mimeType
           ?: URLConnection.guessContentTypeFromName(fileToShare.name)
           ?: "*/*"
@@ -47,6 +75,7 @@ class SharingModule : Module() {
           PackageManager.MATCH_DEFAULT_ONLY
         )
         resInfoList.forEach {
+          Log.e("dupa", "Original restInfoList  ${it.activityInfo.packageName} + $contentUri")
           val packageName = it.activityInfo.packageName
           context.grantUriPermission(packageName, contentUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
@@ -66,6 +95,7 @@ class SharingModule : Module() {
       }
     }
   }
+
 
   @Throws(InvalidArgumentException::class)
   private fun getLocalFileFoUrl(url: String?): File {
@@ -97,7 +127,11 @@ class SharingModule : Module() {
       addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
 
+  private lateinit var sharingLauncher: AppContextActivityResultLauncher<SharingContractOptions, SharingContractResult>
+
   companion object {
     private const val REQUEST_CODE = 8524
   }
 }
+
+
