@@ -226,6 +226,13 @@ try {
           })
         );
       },
+      requireNativeViewManager: (name) => {
+        const nativeModuleMock = attemptLookup(name);
+        if (!nativeModuleMock || !nativeModuleMock.View) {
+          return ExpoModulesCore.requireNativeViewManager(name);
+        }
+        return nativeModuleMock.View;
+      },
     };
   });
 } catch (error) {
