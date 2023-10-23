@@ -1,0 +1,1 @@
+{"version":3,"file":"NativeVideoModule.web.js","sourceRoot":"","sources":["../src/NativeVideoModule.web.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,OAAO,UAAU,iBAAiB;IACvC,OAAO,IAAI,CAAC;AACd,CAAC","sourcesContent":["export default function NativeVideoModule() {\n  return null;\n}\n"]}
