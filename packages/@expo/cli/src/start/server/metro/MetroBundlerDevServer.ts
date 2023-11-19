@@ -48,6 +48,7 @@ import {
 } from '../middleware/metroOptions';
 import { prependMiddleware } from '../middleware/mutations';
 import { startTypescriptTypeGenerationAsync } from '../type-generation/startTypescriptTypeGeneration';
+import { ServerNext, ServerRequest, ServerResponse } from '../middleware/server.types';
 
 export class ForwardHtmlError extends CommandError {
   constructor(
@@ -163,16 +164,21 @@ export class MetroBundlerDevServer extends BundlerDevServer {
   }) {
     const url = this.getDevServerUrl()!;
 
-    const { getStaticContent, getManifest, getBuildTimeServerManifestAsync } =
-      await getStaticRenderFunctions(this.projectRoot, url, {
-        minify,
-        dev: mode !== 'production',
-        // Ensure the API Routes are included
-        environment: 'node',
-        baseUrl,
-      });
+    const {
+      getStaticContent,
+      renderToPipeableStream,
+      getManifest,
+      getBuildTimeServerManifestAsync,
+    } = await getStaticRenderFunctions(this.projectRoot, url, {
+      minify,
+      dev: mode !== 'production',
+      // Ensure the API Routes are included
+      environment: 'node',
+      baseUrl,
+    });
 
     return {
+      renderToPipeableStream,
       serverManifest: await getBuildTimeServerManifestAsync(),
       // Get routes from Expo Router.
       manifest: await getManifest({ fetchData: true, preserveApiRoutes: false }),
@@ -438,9 +444,79 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       // This should come after the static middleware so it doesn't serve the favicon from `public/favicon.ico`.
       middleware.use(new FaviconMiddleware(this.projectRoot).getHandler());
 
+      const baseUrl = getBaseUrlFromExpoConfig(exp);
+      const appDir = getRouterDirectoryWithManifest(this.projectRoot, exp);
+
+      const sendResponse = async (
+        req: ServerRequest,
+        res: ServerResponse,
+        redirectToId: string | null
+      ) => {
+        const query = new URL(req.url!, 'http://e').searchParams;
+
+        const loc = query.get('props');
+        const platform = query.get('platform') ?? 'web';
+
+        if (!loc) {
+          res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(
+            JSON.stringify({
+              error: 'No props provided to server component request.',
+            })
+          );
+          return;
+        }
+
+        const location = JSON.parse(loc);
+        if (redirectToId) {
+          location.selectedId = redirectToId;
+        }
+
+        res.setHeader('X-Location', JSON.stringify(location));
+
+        try {
+          const { renderToPipeableStream } = await this.getStaticRenderFunctionAsync({
+            mode: options.mode ?? 'development',
+            minify: options.minify,
+            baseUrl,
+            // TODO: Pass platform somehow haha
+          });
+
+          const pipe = await renderToPipeableStream(location, {});
+
+          pipe(res);
+        } catch (error: any) {
+          console.error(error);
+
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          if (error.message.includes('__fbBatchedBridgeConfig is not set')) {
+            res.end(
+              JSON.stringify({
+                error: 'The server component contains react-native code.',
+              })
+            );
+            return;
+          }
+
+          res.end(
+            JSON.stringify({
+              error: error.message,
+            })
+          );
+        }
+      };
+
+      // Server components
+      middleware.use(async (req: ServerRequest, res: ServerResponse, next: ServerNext) => {
+        if (!req?.url || !req.url.startsWith('/_expo/rsc')) {
+          return next();
+        }
+        return sendResponse(req, res, null);
+      });
+
       if (useServerRendering) {
-        const baseUrl = getBaseUrlFromExpoConfig(exp);
-        const appDir = getRouterDirectoryWithManifest(this.projectRoot, exp);
         middleware.use(
           createRouteHandlerMiddleware(this.projectRoot, {
             ...options,

@@ -141,5 +141,75 @@ function mixHeadComponentsWithStaticResults(helmet: any, html: string) {
   return html;
 }
 
+const register = require('react-server-dom-webpack/node-register');
+register();
+
+const {
+  renderToPipeableStream: renderToPipeableStreamUpstream,
+} = require('react-server-dom-webpack/writer');
+
+type WebpackManifestSubType = {
+  // "id": "./src/index.client.js",
+  id: string;
+  // ['main']
+  chunks: string[];
+  // "name": ""
+  name: string;
+};
+type WebpackManifest = {
+  // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/index.client.js"
+  [filepath: string]: {
+    // "*"
+    [name: string]: WebpackManifestSubType;
+  };
+};
+
+import findFocusedRoute from '@react-navigation/core/src/findFocusedRoute';
+
+import { getReactNavigationConfig } from '../getReactNavigationConfig';
+import getStateFromPath from '../fork/getStateFromPath';
+
+function getNodeFinder(): (path: string) => null | ReturnType<typeof findFocusedRoute> {
+  const routeTree = getRoutes(ctx);
+
+  if (!routeTree) {
+    return () => null;
+  }
+  const config = {
+    initialRouteName: routeTree.initialRouteName,
+    screens: getReactNavigationConfig(routeTree, true),
+  };
+
+  return (path: string) => {
+    const state = getStateFromPath(path, config);
+    if (state) {
+      return findFocusedRoute(state);
+    }
+    return null;
+  };
+}
+
+export async function renderToPipeableStream(
+  { $$route: route, ...props },
+  moduleMap: WebpackManifest
+) {
+  const node = getNodeFinder()(route);
+
+  // @ts-expect-error
+  if (node?._route) {
+    // @ts-expect-error
+    const { default: Component } = node._route.loadRoute();
+
+    const { pipe } = renderToPipeableStreamUpstream(
+      await Component(props),
+      // TODO: Me!
+      moduleMap
+    );
+    return pipe;
+  }
+
+  throw new Error('Failed to render server component at: ' + route);
+}
+
 // Re-export for use in server
 export { getManifest, getBuildTimeServerManifestAsync };
