@@ -5410,7 +5410,7 @@ acorn-walk@^8.0.2, acorn-walk@^8.1.1:
   resolved "https://registry.yarnpkg.com/acorn-walk/-/acorn-walk-8.2.0.tgz#741210f2e2426454508853a2f44d0ab83b7f69c1"
   integrity sha512-k+iyHEuPgSw6SbuDpGQM+06HQUa04DZ3o+F6CSzXMvvI5KMvnaEqXe+YVe555R9nn6GPt404fos4wcgpw12SDA==
 
-acorn@^6.4.1:
+acorn@^6.2.1, acorn@^6.4.1:
   version "6.4.2"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-6.4.2.tgz#35866fd710528e92de10cf06016498e47e39e1e6"
   integrity sha512-XtGIhXwF8YM8bJhGxG5kXgjkEuNGLTkoYqVE+KMR+aspr4KGYmKYg7yUe3KghyQ9yheNwLnjmzh/7+gfDBmHCQ==
@@ -16554,13 +16554,14 @@ react-devtools-core@^4.27.7:
     shell-quote "^1.6.1"
     ws "^7"
 
-react-dom@18.2.0:
-  version "18.2.0"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.2.0.tgz#22aaf38708db2674ed9ada224ca4aa708d821e3d"
-  integrity sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==
+react-dom@0.0.0-experimental-0cc724c77-20211125, react-dom@18.2.0:
+  version "0.0.0-experimental-0cc724c77-20211125"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-0.0.0-experimental-0cc724c77-20211125.tgz#f48ee44d803b7ba6a888f1cd5ef4402e84f46dba"
+  integrity sha512-VAaAcGgIVGHX8nOjwQNLEFNI1ONyxsPvKgZ3ywJjEEo5leMDCuYzu+AC2kn1wyyd/4SsI0FOogbpaTcnLMgoUg==
   dependencies:
     loose-envify "^1.1.0"
-    scheduler "^0.23.0"
+    object-assign "^4.1.1"
+    scheduler "0.0.0-experimental-0cc724c77-20211125"
 
 react-error-boundary@^3.1.0:
   version "3.1.4"
@@ -16584,10 +16585,20 @@ react-fast-compare@^3.2.0:
   resolved "https://registry.yarnpkg.com/react-fast-compare/-/react-fast-compare-3.2.1.tgz#53933d9e14f364281d6cba24bfed7a4afb808b5f"
   integrity sha512-xTYf9zFim2pEif/Fw16dBiXpe0hoy5PxcD8+OwBnTtNLfIm3g6WxhKNurY+6OmdH1u6Ta/W/Vl6vjbYP1MFnDg==
 
+react-fetch@0.0.0-experimental-0cc724c77-20211125:
+  version "0.0.0-experimental-0cc724c77-20211125"
+  resolved "https://registry.yarnpkg.com/react-fetch/-/react-fetch-0.0.0-experimental-0cc724c77-20211125.tgz#5e41c5fdca6cce861d702127c95518b5bdce065b"
+  integrity sha512-N5GUVfYw2bXlmOqgG8dLH0xGPqAor9Z9ad0IrVu0S32QmBPl9yXauYHzM4oytxH5G1ZmU+MFSJo+33kZRZ9Glg==
+
 react-freeze@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/react-freeze/-/react-freeze-1.0.0.tgz#b21c65fe1783743007c8c9a2952b1c8879a77354"
   integrity sha512-yQaiOqDmoKqks56LN9MTgY06O0qQHgV4FUrikH357DydArSZHQhl0BJFqGKIZoTqi8JizF9Dxhuk1FIZD6qCaw==
+
+react-fs@0.0.0-experimental-0cc724c77-20211125:
+  version "0.0.0-experimental-0cc724c77-20211125"
+  resolved "https://registry.yarnpkg.com/react-fs/-/react-fs-0.0.0-experimental-0cc724c77-20211125.tgz#facb03e0eaa6b92314d8faacfc5e515b51ce45f3"
+  integrity sha512-roicZi1CKU6vvmod8yAULUu+BXbmqTrQaC2WpPahD6ju0ohPIkSaU0M43kSvNmkoq4Wc2EtwPplkHPfnur9Aww==
 
 react-helmet-async@^1.3.0:
   version "1.3.0"
@@ -16819,6 +16830,11 @@ react-navigation@^4.4.0:
     "@react-navigation/core" "^3.7.9"
     "@react-navigation/native" "^3.8.4"
 
+react-pg@0.0.0-experimental-0cc724c77-20211125:
+  version "0.0.0-experimental-0cc724c77-20211125"
+  resolved "https://registry.yarnpkg.com/react-pg/-/react-pg-0.0.0-experimental-0cc724c77-20211125.tgz#0b67cb20c28d7d22e6860eb34844c39c1d64dd02"
+  integrity sha512-RpS8P5NTipUAuBnmtrTHnptaPWxGVP1gBrrMQWb2cTRfSvcx02Kp9GRuAiUDuWWtHuUiHOI0oYBxmRcdkvPwuA==
+
 react-query@^3.34.16:
   version "3.34.19"
   resolved "https://registry.yarnpkg.com/react-query/-/react-query-3.34.19.tgz#0ff049b6e0d2ed148e9abfdd346625d0e88dc229"
@@ -16853,6 +16869,16 @@ react-refresh@^0.14.0:
   resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.14.0.tgz#4e02825378a5f227079554d4284889354e5f553e"
   integrity sha512-wViHqhAd8OHeLS/IRMJjTSDHF3U9eWi62F/MledQGPdJGDhodXJ9PBLNGr6WWL7qlH12Mt3TyTpbS+hGXMjCzQ==
 
+react-server-dom-webpack@0.0.0-experimental-0cc724c77-20211125, react-server-dom-webpack@0.0.1:
+  version "0.0.0-experimental-0cc724c77-20211125"
+  resolved "https://registry.yarnpkg.com/react-server-dom-webpack/-/react-server-dom-webpack-0.0.0-experimental-0cc724c77-20211125.tgz#58053106178612a46fbdee4196900d0b5394cda4"
+  integrity sha512-HAb7dM16mkMqBQRctT5+AkhXML8STWNLJVS3VgQUuTcl28f+Mch6OKw4yaSPayptGJ0EsTkoi6XiUf5cz2vUeQ==
+  dependencies:
+    acorn "^6.2.1"
+    loose-envify "^1.1.0"
+    neo-async "^2.6.1"
+    object-assign "^4.1.1"
+
 react-shallow-renderer@^16.15.0:
   version "16.15.0"
   resolved "https://registry.yarnpkg.com/react-shallow-renderer/-/react-shallow-renderer-16.15.0.tgz#48fb2cf9b23d23cde96708fe5273a7d3446f4457"
@@ -16882,12 +16908,13 @@ react-timer-mixin@^0.13.3:
   resolved "https://registry.yarnpkg.com/react-timer-mixin/-/react-timer-mixin-0.13.4.tgz#75a00c3c94c13abe29b43d63b4c65a88fc8264d3"
   integrity sha512-4+ow23tp/Tv7hBM5Az5/Be/eKKF7DIvJ09voz5LyHGQaqqz9WV8YMs31eFvcYQs7d451LSg7kDJV70XYN/Ug/Q==
 
-react@18.2.0:
-  version "18.2.0"
-  resolved "https://registry.yarnpkg.com/react/-/react-18.2.0.tgz#555bd98592883255fa00de14f1151a917b5d77d5"
-  integrity sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==
+react@0.0.0-experimental-0cc724c77-20211125, react@18.2.0:
+  version "0.0.0-experimental-0cc724c77-20211125"
+  resolved "https://registry.yarnpkg.com/react/-/react-0.0.0-experimental-0cc724c77-20211125.tgz#ed650068fbccae10a4cb7b78981517cf7a249f22"
+  integrity sha512-8jVo1Rew40qblTTRkVm6ksk4YZ0rG30nwyXwDnnPEszQaUp+dXfEFsoxnSGElroECC2dx4Gg3a6kFsmrBYaF5Q==
   dependencies:
     loose-envify "^1.1.0"
+    object-assign "^4.1.1"
 
 read-cache@^1.0.0:
   version "1.0.0"
@@ -17517,6 +17544,14 @@ saxes@^6.0.0:
   integrity sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA==
   dependencies:
     xmlchars "^2.2.0"
+
+scheduler@0.0.0-experimental-0cc724c77-20211125:
+  version "0.0.0-experimental-0cc724c77-20211125"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.0.0-experimental-0cc724c77-20211125.tgz#79c9bedbcc1942aab5ddadf12711ddd5db8ef915"
+  integrity sha512-JcvQnsZuiqkRI+uekA9cgAVOHccuBxzOdTqPs3FAInrnZO9OhufomeTKIXuFQwjwZ5DYstOSZax/QnKVXCJFbw==
+  dependencies:
+    loose-envify "^1.1.0"
+    object-assign "^4.1.1"
 
 scheduler@0.24.0-canary-efb381bbf-20230505:
   version "0.24.0-canary-efb381bbf-20230505"

@@ -21,6 +21,13 @@
     ]
   },
   "resolutions": {
+    "react": "0.0.0-experimental-0cc724c77-20211125",
+    "react-dom": "0.0.0-experimental-0cc724c77-20211125",
+    "react-fetch": "0.0.0-experimental-0cc724c77-20211125",
+    "react-fs": "0.0.0-experimental-0cc724c77-20211125",
+    "react-pg": "0.0.0-experimental-0cc724c77-20211125",
+    "react-server-dom-webpack": "0.0.0-experimental-0cc724c77-20211125",
+
     "react-native": "0.73.0-rc.4",
     "react-refresh": "^0.14.0",
     "@react-navigation/native": "^6.1.6",
