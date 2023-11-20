@@ -215,6 +215,11 @@ function expoRouterServerComponentClientReferencesPlugin(api) {
                     },
                 });
                 // TODO: Handle module.exports somehow...
+                // Bundling for the RSC requests, collect the manifest as metadata.
+                state.file.metadata['clientReferences'] = {
+                    entryPoint: outputKey,
+                    exports,
+                };
                 if (isServer) {
                     // Now we'll replace all the code in the file with client references, e.g.
                     // export default { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#default", name: "default" }
@@ -243,13 +248,6 @@ function expoRouterServerComponentClientReferencesPlugin(api) {
                             ])));
                         }
                     }
-                }
-                else {
-                    // Bundling for the client, collect the manifest as metadata
-                    state.file.metadata['clientReferences'] = {
-                        entryPoint: outputKey,
-                        exports,
-                    };
                 }
             },
         },

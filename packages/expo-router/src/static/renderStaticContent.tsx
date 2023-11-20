@@ -174,7 +174,7 @@ function getNodeFinder(): (path: string) => null | ReturnType<typeof findFocused
   }
   const config = {
     initialRouteName: routeTree.initialRouteName,
-    screens: getReactNavigationConfig(routeTree, true),
+    screens: getReactNavigationConfig(routeTree, false),
   };
 
   return (path: string) => {
@@ -197,8 +197,7 @@ export async function renderToPipeableStream(
     // @ts-expect-error
     const { default: Component } = node._route.loadRoute();
 
-    // @ts-expect-error: untyped
-    const rsc = ReactDOMServer.renderToPipeableStreamUpstream(
+    const rsc = ReactDOMServer.renderToPipeableStream(
       // TODO: Does this support async?
       <Component {...props} />,
       // await Component(props),

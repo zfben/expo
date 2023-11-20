@@ -147,7 +147,7 @@ function getNodeFinder() {
     }
     const config = {
         initialRouteName: routeTree.initialRouteName,
-        screens: (0, getReactNavigationConfig_1.getReactNavigationConfig)(routeTree, true),
+        screens: (0, getReactNavigationConfig_1.getReactNavigationConfig)(routeTree, false),
     };
     return (path) => {
         const state = (0, getStateFromPath_1.default)(path, config);
@@ -163,8 +163,7 @@ async function renderToPipeableStream({ $$route: route, ...props }, moduleMap) {
     if (node?._route) {
         // @ts-expect-error
         const { default: Component } = node._route.loadRoute();
-        // @ts-expect-error: untyped
-        const rsc = server_1.default.renderToPipeableStreamUpstream(
+        const rsc = server_1.default.renderToPipeableStream(
         // TODO: Does this support async?
         <Component {...props}/>, 
         // await Component(props),

@@ -88,6 +88,7 @@ export function renderRouter(
   });
 
   return Object.assign(result, {
+    ctx,
     getPathname(this: RenderResult): string {
       return store.routeInfoSnapshot().pathname;
     },

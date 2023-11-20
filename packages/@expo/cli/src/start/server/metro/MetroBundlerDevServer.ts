@@ -458,9 +458,10 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         const query = new URL(req.url!, 'http://e').searchParams;
 
         const loc = query.get('props');
-        const platform = query.get('platform') ?? 'web';
+        const manifest = query.get('manifest');
+        // const platform = query.get('platform') ?? 'web';
 
-        if (!loc) {
+        if (!loc || !manifest) {
           res.statusCode = 400;
           res.setHeader('Content-Type', 'application/json');
           res.end(
@@ -471,6 +472,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
           return;
         }
 
+        const clientReferenceManifest = JSON.parse(manifest);
         const location = JSON.parse(loc);
         if (redirectToId) {
           location.selectedId = redirectToId;
@@ -487,7 +489,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
             // TODO: Pass platform somehow haha
           });
 
-          const pipe = await renderToPipeableStream(location, {});
+          const pipe = await renderToPipeableStream(location, clientReferenceManifest);
 
           pipe(res);
         } catch (error: any) {

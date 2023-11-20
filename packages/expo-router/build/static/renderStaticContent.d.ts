@@ -61,6 +61,6 @@ type WebpackManifest = {
 export declare function renderToPipeableStream({ $$route: route, ...props }: {
     [x: string]: any;
     $$route: any;
-}, moduleMap: WebpackManifest): Promise<any>;
+}, moduleMap: WebpackManifest): Promise<(<Writable extends NodeJS.WritableStream>(destination: Writable) => Writable)>;
 export { getManifest, getBuildTimeServerManifestAsync };
 //# sourceMappingURL=renderStaticContent.d.ts.map
