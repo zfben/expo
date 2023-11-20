@@ -7,6 +7,7 @@ import { env } from '../../../utils/env';
 const debug = require('debug')('expo:metro:options') as typeof console.log;
 
 export function shouldEnableAsyncImports(projectRoot: string): boolean {
+  return false;
   if (env.EXPO_NO_METRO_LAZY) {
     return false;
   }
@@ -30,6 +31,7 @@ export type ExpoMetroOptions = {
   lazy?: boolean;
   engine?: 'hermes';
   preserveEnvVars?: boolean;
+  rsc?: boolean;
   baseUrl?: string;
   isExporting: boolean;
 };
@@ -79,6 +81,7 @@ export function getMetroDirectBundleOptions(
     lazy,
     engine,
     preserveEnvVars,
+    rsc,
     baseUrl,
     isExporting,
   } = withDefaults(options);
@@ -121,6 +124,7 @@ export function getMetroDirectBundleOptions(
       __proto__: null,
       engine,
       preserveEnvVars,
+      rsc,
       environment,
       baseUrl,
     },
@@ -153,6 +157,7 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
     lazy,
     engine,
     preserveEnvVars,
+    rsc,
     baseUrl,
     isExporting,
   } = withDefaults(options);
@@ -178,6 +183,9 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
     queryParams.append('transform.engine', engine);
   }
 
+  if (rsc) {
+    queryParams.append('transform.rsc', String(rsc));
+  }
   if (preserveEnvVars) {
     queryParams.append('transform.preserveEnvVars', String(preserveEnvVars));
   }

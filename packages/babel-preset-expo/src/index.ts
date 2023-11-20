@@ -6,10 +6,14 @@ import {
   getInlineEnvVarsEnabled,
   getIsDev,
   getIsProd,
+  getIsServer,
   hasModule,
 } from './common';
 import { expoInlineManifestPlugin } from './expo-inline-manifest-plugin';
-import { expoRouterBabelPlugin } from './expo-router-plugin';
+import {
+  expoRouterBabelPlugin,
+  expoRouterServerComponentClientReferencesPlugin,
+} from './expo-router-plugin';
 import { expoInlineEnvVars, expoInlineTransformEnvVars } from './inline-env-vars';
 import { lazyImports } from './lazyImports';
 
@@ -61,6 +65,7 @@ function babelPresetExpo(api: ConfigAPI, options: BabelPresetExpoOptions = {}): 
   const engine = api.caller((caller) => (caller as any)?.engine) ?? 'default';
   const isDev = api.caller(getIsDev);
   const baseUrl = api.caller(getBaseUrl);
+  const isServer = api.caller(getIsServer);
   // Unlike `isDev`, this will be `true` when the bundler is explicitly set to `production`,
   // i.e. `false` when testing, development, or used with a bundler that doesn't specify the correct inputs.
   const isProduction = api.caller(getIsProd);
@@ -168,6 +173,8 @@ function babelPresetExpo(api: ConfigAPI, options: BabelPresetExpoOptions = {}): 
   if (hasModule('expo-router')) {
     extraPlugins.push(expoRouterBabelPlugin);
   }
+
+  extraPlugins.push(expoRouterServerComponentClientReferencesPlugin);
 
   return {
     presets: [

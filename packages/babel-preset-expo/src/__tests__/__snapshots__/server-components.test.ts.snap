@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`does nothing without use client directive 1`] = `"export var foo = 'bar';"`;
+
+exports[`replaces client exports with React client references 1`] = `
+"export var foo = {
+  $$typeof: "react.client.reference",
+  $$async: false,
+  $$id: "/unknown#foo",
+  name: "foo"
+};
+export default {
+  $$typeof: "react.client.reference",
+  $$async: false,
+  $$id: "/unknown#default",
+  name: "default"
+};"
+`;

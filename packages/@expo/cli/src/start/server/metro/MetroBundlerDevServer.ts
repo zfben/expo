@@ -157,10 +157,12 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     mode,
     minify = mode !== 'development',
     baseUrl,
+    isRSC,
   }: {
     mode: 'development' | 'production';
     minify?: boolean;
     baseUrl: string;
+    isRSC?: boolean;
   }) {
     const url = this.getDevServerUrl()!;
 
@@ -175,6 +177,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       // Ensure the API Routes are included
       environment: 'node',
       baseUrl,
+      isRSC,
     });
 
     return {
@@ -480,6 +483,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
             mode: options.mode ?? 'development',
             minify: options.minify,
             baseUrl,
+            isRSC: true,
             // TODO: Pass platform somehow haha
           });
 

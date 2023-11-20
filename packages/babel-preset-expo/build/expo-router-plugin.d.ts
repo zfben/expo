@@ -18,3 +18,11 @@ export declare function expoRouterBabelPlugin(api: ConfigAPI & {
         MemberExpression(path: any, state: any): void;
     };
 };
+export declare function expoRouterServerComponentClientReferencesPlugin(api: ConfigAPI & {
+    types: typeof types;
+}): {
+    name: string;
+    visitor: {
+        Program(path: any, state: any): void;
+    };
+};

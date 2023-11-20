@@ -22,6 +22,7 @@ declare module 'metro-babel-transformer' {
     unstable_disableES6Transforms?: boolean;
     platform: ?string;
     projectRoot: string;
+    serverRoot?: string;
     publicPath: string;
     extendsBabelConfigPath?: string;
     hermesParser?: boolean;

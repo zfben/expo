@@ -141,12 +141,9 @@ function mixHeadComponentsWithStaticResults(helmet: any, html: string) {
   return html;
 }
 
-const register = require('react-server-dom-webpack/node-register');
-register();
-
-const {
-  renderToPipeableStream: renderToPipeableStreamUpstream,
-} = require('react-server-dom-webpack/writer');
+// const {
+//   renderToPipeableStream: renderToPipeableStreamUpstream,
+// } = require('react-server-dom-webpack/writer');
 
 type WebpackManifestSubType = {
   // "id": "./src/index.client.js",
@@ -200,12 +197,16 @@ export async function renderToPipeableStream(
     // @ts-expect-error
     const { default: Component } = node._route.loadRoute();
 
-    const { pipe } = renderToPipeableStreamUpstream(
-      await Component(props),
+    // @ts-expect-error: untyped
+    const rsc = ReactDOMServer.renderToPipeableStreamUpstream(
+      // TODO: Does this support async?
+      <Component {...props} />,
+      // await Component(props),
       // TODO: Me!
       moduleMap
     );
-    return pipe;
+
+    return rsc.pipe;
   }
 
   throw new Error('Failed to render server component at: ' + route);

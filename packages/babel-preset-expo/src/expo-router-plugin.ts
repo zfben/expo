@@ -4,7 +4,7 @@ import fs from 'fs';
 import nodePath from 'path';
 import resolveFrom from 'resolve-from';
 
-import { getPlatform, getPossibleProjectRoot } from './common';
+import { getIsServer, getPlatform, getPossibleProjectRoot, getServerRoot } from './common';
 
 const debug = require('debug')('expo:babel:router');
 
@@ -200,6 +200,114 @@ export function expoRouterBabelPlugin(api: ConfigAPI & { types: typeof types }) 
           !parent.parentPath.isAssignmentExpression()
         ) {
           parent.replaceWith(t.stringLiteral(getExpoRouterImportMode(projectRoot, platform)));
+        }
+      },
+    },
+  };
+}
+
+export function expoRouterServerComponentClientReferencesPlugin(
+  api: ConfigAPI & { types: typeof types }
+) {
+  const { types: t } = api;
+
+  const isServer = api.caller((caller) => caller?.isRSC ?? false);
+  const serverRoot = api.caller(getServerRoot) as string;
+  return {
+    name: 'expo-rsc-client-references',
+    visitor: {
+      Program(path: any, state: any) {
+        // File starts with "use client" directive.
+        if (
+          !path.node.directives.some((directive: any) => directive.value.value === 'use client')
+        ) {
+          // Do nothing for code that isn't marked as a client component.
+          return;
+        }
+
+        const outputKey = '/' + nodePath.relative(serverRoot, state.file.opts.filename);
+
+        // Collect a list of all the exports in the file.
+        const exports: string[] = [];
+        path.traverse({
+          ExportNamedDeclaration(path: any) {
+            const { node } = path;
+            if (node.declaration) {
+              if (t.isVariableDeclaration(node.declaration)) {
+                exports.push(...node.declaration.declarations.map((decl: any) => decl.id.name));
+              } else {
+                exports.push(node.declaration.id.name);
+              }
+            } else if (node.specifiers) {
+              exports.push(...node.specifiers.map((spec: any) => spec.exported.name));
+            }
+          },
+          ExportDefaultDeclaration(path: any) {
+            const { node } = path;
+            if (node.declaration) {
+              exports.push('default');
+            }
+          },
+        });
+        // TODO: Handle module.exports somehow...
+
+        if (isServer) {
+          // Now we'll replace all the code in the file with client references, e.g.
+          // export default { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#default", name: "default" }
+
+          // Clear the body
+          path.node.body = [];
+          path.node.directives = [];
+
+          for (const exp of exports) {
+            if (exp === 'default') {
+              // export default { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#default", name: "default" }
+              path.pushContainer(
+                'body',
+                t.exportDefaultDeclaration(
+                  t.objectExpression([
+                    t.objectProperty(
+                      t.identifier('$$typeof'),
+                      t.stringLiteral('react.client.reference')
+                    ),
+                    t.objectProperty(t.identifier('$$async'), t.booleanLiteral(false)),
+                    t.objectProperty(t.identifier('$$id'), t.stringLiteral(`${outputKey}#default`)),
+                    t.objectProperty(t.identifier('name'), t.stringLiteral('default')),
+                  ])
+                )
+              );
+            } else {
+              // export const ${exp} = { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#${exp}", name: "${exp}" }
+              path.pushContainer(
+                'body',
+                t.exportNamedDeclaration(
+                  t.variableDeclaration('const', [
+                    t.variableDeclarator(
+                      t.identifier(exp),
+                      t.objectExpression([
+                        t.objectProperty(
+                          t.identifier('$$typeof'),
+                          t.stringLiteral('react.client.reference')
+                        ),
+                        t.objectProperty(t.identifier('$$async'), t.booleanLiteral(false)),
+                        t.objectProperty(
+                          t.identifier('$$id'),
+                          t.stringLiteral(`${outputKey}#${exp}`)
+                        ),
+                        t.objectProperty(t.identifier('name'), t.stringLiteral(exp)),
+                      ])
+                    ),
+                  ])
+                )
+              );
+            }
+          }
+        } else {
+          // Bundling for the client, collect the manifest as metadata
+          state.file.metadata['clientReferences'] = {
+            entryPoint: outputKey,
+            exports,
+          };
         }
       },
     },

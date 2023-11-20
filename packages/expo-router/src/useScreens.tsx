@@ -163,51 +163,10 @@ export function getQualifiedRouteComponent(value: RouteNode) {
 
   let getLoadable: (props: any, ref: any) => JSX.Element;
 
-  getLoadable = (props: any, ref: any) => (
-    <React.Suspense fallback={<SuspenseFallback route={value} />}>
-      <ServerComponentHost $$route={value.route} segment={value.route} />
-      {/* <AsyncComponent
-        {...{
-          ...props,
-          ref,
-          // Expose the template segment path, e.g. `(home)`, `[foo]`, `index`
-          // the intention is to make it possible to deduce shared routes.
-          segment: value.route,
-        }}
-      /> */}
-    </React.Suspense>
-  );
-
-  // // TODO: This ensures sync doesn't use React.lazy, but it's not ideal.
-  // if (EXPO_ROUTER_IMPORT_MODE === 'lazy') {
-  //   const AsyncComponent = React.lazy(async () => {
-  //     const res = value.loadRoute();
-  //     return fromLoadedRoute(res) as Promise<{
-  //       default: React.ComponentType<any>;
-  //     }>;
-  //   });
-  //   getLoadable = (props: any, ref: any) => (
-  //     <React.Suspense fallback={<SuspenseFallback route={value} />}>
-  //       <AsyncComponent
-  //         {...{
-  //           ...props,
-  //           ref,
-  //           // Expose the template segment path, e.g. `(home)`, `[foo]`, `index`
-  //           // the intention is to make it possible to deduce shared routes.
-  //           segment: value.route,
-  //         }}
-  //       />
-  //     </React.Suspense>
-  //   );
-  // } else {
-  //   const res = value.loadRoute();
-  //   const Component = fromImport(res).default;
-  //   const SyncComponent = React.forwardRef((props, ref) => {
-  //     return <Component {...props} ref={ref} />;
-  //   });
-
-  //   getLoadable = (props: any, ref: any) => (
-  //     <SyncComponent
+  // getLoadable = (props: any, ref: any) => (
+  //   <React.Suspense fallback={<SuspenseFallback route={value} />}>
+  //     <ServerComponentHost $$route={value.route} segment={value.route} />
+  //     {/* <AsyncComponent
   //       {...{
   //         ...props,
   //         ref,
@@ -215,9 +174,50 @@ export function getQualifiedRouteComponent(value: RouteNode) {
   //         // the intention is to make it possible to deduce shared routes.
   //         segment: value.route,
   //       }}
-  //     />
-  //   );
-  // }
+  //     /> */}
+  //   </React.Suspense>
+  // );
+
+  // TODO: This ensures sync doesn't use React.lazy, but it's not ideal.
+  if (EXPO_ROUTER_IMPORT_MODE === 'lazy') {
+    const AsyncComponent = React.lazy(async () => {
+      const res = value.loadRoute();
+      return fromLoadedRoute(res) as Promise<{
+        default: React.ComponentType<any>;
+      }>;
+    });
+    getLoadable = (props: any, ref: any) => (
+      <React.Suspense fallback={<SuspenseFallback route={value} />}>
+        <AsyncComponent
+          {...{
+            ...props,
+            ref,
+            // Expose the template segment path, e.g. `(home)`, `[foo]`, `index`
+            // the intention is to make it possible to deduce shared routes.
+            segment: value.route,
+          }}
+        />
+      </React.Suspense>
+    );
+  } else {
+    const res = value.loadRoute();
+    const Component = fromImport(res).default;
+    const SyncComponent = React.forwardRef((props, ref) => {
+      return <Component {...props} ref={ref} />;
+    });
+
+    getLoadable = (props: any, ref: any) => (
+      <SyncComponent
+        {...{
+          ...props,
+          ref,
+          // Expose the template segment path, e.g. `(home)`, `[foo]`, `index`
+          // the intention is to make it possible to deduce shared routes.
+          segment: value.route,
+        }}
+      />
+    );
+  }
 
   const QualifiedRoute = React.forwardRef(
     (

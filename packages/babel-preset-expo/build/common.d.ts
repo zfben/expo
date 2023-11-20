@@ -2,6 +2,7 @@ export declare function hasModule(name: string): boolean;
 /** Determine which bundler is being used. */
 export declare function getBundler(caller: any): any;
 export declare function getPlatform(caller: any): any;
+export declare function getServerRoot(caller: any): any;
 export declare function getPossibleProjectRoot(caller: any): any;
 export declare function getIsDev(caller: any): any;
 export declare function getIsProd(caller: any): boolean;

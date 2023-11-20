@@ -22,6 +22,7 @@ export const NODE_STDLIB_MODULES: string[] = [
   ).filter((x) => !/^_|^(internal|v8|node-inspect)\/|\//.test(x) && !['sys'].includes(x)),
 ].sort();
 
+export const EXTERNAL_RSC_MANIFEST = '.expo/metro/rsc-manifest.js';
 export const EXTERNAL_REQUIRE_POLYFILL = '.expo/metro/polyfill.js';
 export const EXTERNAL_REQUIRE_NATIVE_POLYFILL = '.expo/metro/polyfill.native.js';
 export const METRO_EXTERNALS_FOLDER = '.expo/metro/externals';
@@ -54,6 +55,10 @@ async function tapExternalRequirePolyfill(projectRoot: string) {
   await fs.promises.mkdir(path.join(projectRoot, path.dirname(EXTERNAL_REQUIRE_POLYFILL)), {
     recursive: true,
   });
+  await writeIfDifferentAsync(
+    path.join(projectRoot, EXTERNAL_RSC_MANIFEST),
+    'global.$$expo_rsc_manifest = {}'
+  );
   await writeIfDifferentAsync(
     path.join(projectRoot, EXTERNAL_REQUIRE_POLYFILL),
     'global.$$require_external = typeof window === "undefined" ? require : () => null;'

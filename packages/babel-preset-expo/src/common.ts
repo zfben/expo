@@ -38,6 +38,11 @@ export function getPlatform(caller: any) {
   return caller.platform;
 }
 
+export function getServerRoot(caller: any) {
+  if (!caller) return null;
+  if (caller.serverRoot) return caller.serverRoot;
+  return getPossibleProjectRoot(caller);
+}
 export function getPossibleProjectRoot(caller: any) {
   if (!caller) return null;
   if (caller.projectRoot) return caller.projectRoot;

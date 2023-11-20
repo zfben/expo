@@ -19,6 +19,7 @@ function babelPresetExpo(api, options = {}) {
     const engine = api.caller((caller) => caller?.engine) ?? 'default';
     const isDev = api.caller(common_1.getIsDev);
     const baseUrl = api.caller(common_1.getBaseUrl);
+    const isServer = api.caller(common_1.getIsServer);
     // Unlike `isDev`, this will be `true` when the bundler is explicitly set to `production`,
     // i.e. `false` when testing, development, or used with a bundler that doesn't specify the correct inputs.
     const isProduction = api.caller(common_1.getIsProd);
@@ -111,6 +112,7 @@ function babelPresetExpo(api, options = {}) {
     if ((0, common_1.hasModule)('expo-router')) {
         extraPlugins.push(expo_router_plugin_1.expoRouterBabelPlugin);
     }
+    extraPlugins.push(expo_router_plugin_1.expoRouterServerComponentClientReferencesPlugin);
     return {
         presets: [
             [

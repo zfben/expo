@@ -222,6 +222,8 @@ const transform: BabelTransformer['transform'] = ({
         // Metro automatically updates the cache to account for the custom transform options.
         isServer: options.customTransformOptions?.environment === 'node',
 
+        isRSC: isCustomTruthy(options.customTransformOptions?.rsc),
+
         // The base url to make requests from, used for hosting from non-standard locations.
         baseUrl:
           typeof options.customTransformOptions?.baseUrl === 'string'
@@ -242,6 +244,8 @@ const transform: BabelTransformer['transform'] = ({
 
         // Provide the project root for accurately reading the Expo config.
         projectRoot: options.projectRoot,
+        // Provide the project root for accurately reading the Expo config.
+        serverRoot: options.serverRoot,
       },
       ast: true,
 

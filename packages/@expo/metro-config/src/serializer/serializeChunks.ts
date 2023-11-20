@@ -16,9 +16,11 @@ import {
 import getMetroAssets from 'metro/src/DeltaBundler/Serializers/getAssets';
 import sourceMapString from 'metro/src/DeltaBundler/Serializers/sourceMapString';
 import bundleToString from 'metro/src/lib/bundleToString';
+import countLines from 'metro/src/lib/countLines';
 import { ConfigT, SerializerConfigT } from 'metro-config';
 import path from 'path';
 import pathToRegExp from 'path-to-regexp';
+import jscSafeUrl from 'jsc-safe-url';
 
 import { buildHermesBundleAsync } from './exportHermes';
 import { getExportPathForDependencyWithOptions } from './exportPath';
@@ -31,6 +33,33 @@ import {
 } from './fork/baseJSBundle';
 import { getCssSerialAssets } from './getCssDeps';
 import { SerialAsset } from './serializerAssets';
+
+type RscClientReference = {
+  /**
+   * ??
+   * `"/dist/_expo/chunk/client/index.js"`
+   */
+  id: string;
+  /**
+   * Name of chunk location on server, e.g. `"/dist/_expo/chunk/client/index.js"`
+   * In development, we'll use a metro lazy chunk id, e.g. `/client/client/index.bundle?platform=web`
+   */
+  chunks: string[];
+  /** Name of export, e.g. `"default"` */
+  name: string;
+};
+
+/**
+ * Key is `<id>#<name>`
+ * {
+ *   "/components/timer.tsx#default": {
+ *     id: "/components/timer.js",
+ *     chunks: [ "/components/timer.js" ],
+ *     name: "default"
+ *   }
+ * }
+ */
+type RscManifest = Record<string, RscClientReference>;
 
 type Serializer = NonNullable<ConfigT['serializer']['customSerializer']>;
 
@@ -50,13 +79,66 @@ export async function graphToSerialAssetsAsync(
   config: MetroConfig,
   serializeChunkOptions: SerializeChunkOptions,
   ...props: SerializerParameters
-): Promise<{ artifacts: SerialAsset[] | null; assets: AssetData[] }> {
+): Promise<{ artifacts: SerialAsset[] | null; rscManifest: RscManifest; assets: AssetData[] }> {
   const [entryFile, preModules, graph, options] = props;
 
   const cssDeps = getCssSerialAssets<MixedOutput>(graph.dependencies, {
     projectRoot: options.projectRoot,
     processModuleFilter: options.processModuleFilter,
   });
+
+  const rscClientReferenceManifest: RscManifest = {};
+
+  // Create client reference manifest for server components
+  props[2].dependencies.forEach((module) => {
+    module.output.forEach((output) => {
+      // @ts-expect-error
+      const clientReferences = output.data.clientReferences as unknown as {
+        entryPoint: string;
+        exports: string[];
+      } | null;
+
+      if (clientReferences) {
+        const entry = '/' + path.relative(options.serverRoot ?? options.projectRoot, module.path);
+        clientReferences.exports.forEach((exp) => {
+          const key = `${entry}#${exp}`;
+
+          const currentUrl = new URL(jscSafeUrl.toNormalUrl(options.sourceUrl!));
+
+          console.log('options.sourceUrl', options.sourceUrl);
+
+          currentUrl.pathname = entry.replace(/\.([tj]sx?|[mc]js)$/, '.bundle');
+
+          currentUrl.searchParams.delete('serializer.output');
+
+          currentUrl.searchParams.set('modulesOnly', 'true');
+          // TODO: Add params to indicate that `module.exports = __r()` should be used as the run module statement.
+          currentUrl.searchParams.set('runModule', 'false');
+
+          rscClientReferenceManifest[key] = {
+            id: entry,
+            chunks: [options.dev ? currentUrl.toString() : 'TODO-PRODUCTION-CHUNK-NAMES'],
+            name: exp,
+          };
+        });
+      }
+    });
+  });
+
+  const rscManifestChunkTemplate = preModules.find((module) =>
+    module.path.endsWith('.expo/metro/rsc-manifest.js')
+  );
+
+  if (rscManifestChunkTemplate) {
+    rscManifestChunkTemplate.output.forEach((output) => {
+      output.data.code = output.data.code.replace(
+        /\$\$expo_rsc_manifest\s?=\s?{}/,
+        `$$$expo_rsc_manifest = ${JSON.stringify(rscClientReferenceManifest)}`
+      );
+      // @ts-expect-error
+      output.data.lineCount = countLines(output.data.code);
+    });
+  }
 
   // Create chunks for splitting.
   const chunks = new Set<Chunk>();
@@ -135,7 +217,11 @@ export async function graphToSerialAssetsAsync(
     publicPath: config.transformer?.publicPath ?? '/',
   })) as AssetData[];
 
-  return { artifacts: [...jsAssets, ...cssDeps], assets: metroAssets };
+  return {
+    artifacts: [...jsAssets, ...cssDeps],
+    rscManifest: rscClientReferenceManifest,
+    assets: metroAssets,
+  };
 }
 
 class Chunk {

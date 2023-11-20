@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getInlineEnvVarsEnabled = exports.getIsServer = exports.getBaseUrl = exports.getIsProd = exports.getIsDev = exports.getPossibleProjectRoot = exports.getPlatform = exports.getBundler = exports.hasModule = void 0;
+exports.getInlineEnvVarsEnabled = exports.getIsServer = exports.getBaseUrl = exports.getIsProd = exports.getIsDev = exports.getPossibleProjectRoot = exports.getServerRoot = exports.getPlatform = exports.getBundler = exports.hasModule = void 0;
 function hasModule(name) {
     try {
         return !!require.resolve(name);
@@ -43,6 +43,14 @@ function getPlatform(caller) {
     return caller.platform;
 }
 exports.getPlatform = getPlatform;
+function getServerRoot(caller) {
+    if (!caller)
+        return null;
+    if (caller.serverRoot)
+        return caller.serverRoot;
+    return getPossibleProjectRoot(caller);
+}
+exports.getServerRoot = getServerRoot;
 function getPossibleProjectRoot(caller) {
     if (!caller)
         return null;

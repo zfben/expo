@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBuildTimeServerManifestAsync = exports.getManifest = exports.getStaticContent = void 0;
+exports.getBuildTimeServerManifestAsync = exports.getManifest = exports.renderToPipeableStream = exports.getStaticContent = void 0;
 /**
  * Copyright © 2023 650 Industries.
  *
@@ -137,4 +137,42 @@ function mixHeadComponentsWithStaticResults(helmet, html) {
     html = html.replace('<body ', `<body ${helmet?.bodyAttributes.toString()} `);
     return html;
 }
+const findFocusedRoute_1 = __importDefault(require("@react-navigation/core/src/findFocusedRoute"));
+const getReactNavigationConfig_1 = require("../getReactNavigationConfig");
+const getStateFromPath_1 = __importDefault(require("../fork/getStateFromPath"));
+function getNodeFinder() {
+    const routeTree = (0, getRoutes_1.getRoutes)(_ctx_1.ctx);
+    if (!routeTree) {
+        return () => null;
+    }
+    const config = {
+        initialRouteName: routeTree.initialRouteName,
+        screens: (0, getReactNavigationConfig_1.getReactNavigationConfig)(routeTree, true),
+    };
+    return (path) => {
+        const state = (0, getStateFromPath_1.default)(path, config);
+        if (state) {
+            return (0, findFocusedRoute_1.default)(state);
+        }
+        return null;
+    };
+}
+async function renderToPipeableStream({ $$route: route, ...props }, moduleMap) {
+    const node = getNodeFinder()(route);
+    // @ts-expect-error
+    if (node?._route) {
+        // @ts-expect-error
+        const { default: Component } = node._route.loadRoute();
+        // @ts-expect-error: untyped
+        const rsc = server_1.default.renderToPipeableStreamUpstream(
+        // TODO: Does this support async?
+        <Component {...props}/>, 
+        // await Component(props),
+        // TODO: Me!
+        moduleMap);
+        return rsc.pipe;
+    }
+    throw new Error('Failed to render server component at: ' + route);
+}
+exports.renderToPipeableStream = renderToPipeableStream;
 //# sourceMappingURL=renderStaticContent.js.map
