@@ -30,28 +30,27 @@ jest.mock('../../../_ctx.web.js', () => {
 
 import ReactDOMServer from 'react-dom/server.node';
 
+const { renderToPipeableStream } = require('react-server-dom-webpack/server');
 const register = require('react-server-dom-webpack/node-register');
 register();
 
-it(`renders RSC`, async () => {
-  //   const { ctx } = renderRouter({
-  //     index: function MyIndexRoute() {
-  //       //   const router = useRouter();
+it(`renders browser-native RSC`, async () => {
+  const moduleMap = {};
 
-  //       return (
-  //         <Text testID="index" onPress={() => router.push('/profile/test-name')}>
-  //           Press me
-  //         </Text>
-  //       );
-  //     },
-  //     '/profile/[name]': function MyRoute() {
-  //       const { name } = useGlobalSearchParams();
-  //       return <Text>{name}</Text>;
-  //     },
-  //   });
-  //   jest.mock();
+  expect(await renderFlight(<div foo="bar" />, moduleMap)).toEqual(
+    `0:["$","div",null,{"foo":"bar"}]`
+  );
+});
 
-  const moduleMap = { foo: {} };
+it(`renders with client references`, async () => {
+  const moduleMap = {
+    Component: {
+      id: './src/index.client.js',
+      chunks: ['main'],
+      name: '',
+    },
+  };
+
   const props = {};
 
   function Other() {
@@ -65,13 +64,11 @@ it(`renders RSC`, async () => {
     );
   };
 
-  const rsc = ReactDOMServer.renderToPipeableStream(
-    // TODO: Does this support async?
-    <Component {...props} />,
-    // await Component(props),
-    // TODO: Me!
-    moduleMap
-  );
+  expect(await renderFlight(<Component {...props} />, moduleMap)).toEqual(`0:"$L1"`);
+});
+
+async function renderFlight(component: React.ReactNode, moduleMap: any) {
+  const rsc = renderToPipeableStream(component, moduleMap);
 
   const rscStream = new ReadableStream({
     start(controller) {
@@ -94,8 +91,6 @@ it(`renders RSC`, async () => {
     },
   });
 
-  console.log('rsc', rsc.pipe);
   const res = await rscStream.getReader().read();
-
-  console.log('res', res.value.toString());
-});
+  return res.value.toString().trim();
+}
