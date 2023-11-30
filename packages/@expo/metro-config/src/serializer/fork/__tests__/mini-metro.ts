@@ -21,24 +21,29 @@ export function microBundle({
   fs,
   entry,
   resolve = (from, id) => {
+    const fullFs = {
+      ...preModulesFs,
+      ...fs,
+    };
     for (const ext of ['', '.js', '.ts', '.tsx']) {
       const next = path.join(path.dirname(from), id) + ext;
-      if (fs[next]) {
+      if (fullFs[next]) {
         return next;
       }
     }
-    if (id === 'expo-mock/async-require' && !fs['expo-mock/async-require']) {
-      fs['expo-mock/async-require'] = `
+    if (id === 'expo-mock/async-require' && !fullFs['expo-mock/async-require']) {
+      fullFs['expo-mock/async-require'] = `
                 module.exports = () => 'MOCK'
             `;
       return 'expo-mock/async-require';
     }
 
     throw new Error(
-      `Cannot resolve ${id} from ${from}. Available files: ${Object.keys(fs).join(', ')}`
+      `Cannot resolve ${id} from ${from}. Available files: ${Object.keys(fullFs).join(', ')}`
     );
   },
   options = {},
+  preModulesFs = {},
 }: {
   fs: Record<string, string>;
   entry?: string;
@@ -50,18 +55,25 @@ export function microBundle({
     output?: 'static';
     hermes?: boolean;
     sourceMaps?: boolean;
+    sourceUrl?: string;
   };
+  preModulesFs?: Record<string, string>;
 }): [
   string,
   readonly Module<MixedOutput>[],
   ReadOnlyGraph<MixedOutput>,
   SerializerOptions<MixedOutput>,
 ] {
+  const fullFs = {
+    ...preModulesFs,
+    ...fs,
+  };
   if (!entry) {
-    entry = Object.keys(fs).find((key) => key.match(/(\.\/)?index\.[tj]sx?/));
+    entry = Object.keys(fullFs).find((key) => key.match(/(\.\/)?index\.[tj]sx?/));
     if (!entry) {
       throw new Error(
-        'No entrypoint found and cannot infer one from the mock fs: ' + Object.keys(fs).join(', ')
+        'No entrypoint found and cannot infer one from the mock fs: ' +
+          Object.keys(fullFs).join(', ')
       );
     }
   }
@@ -78,7 +90,7 @@ export function microBundle({
         continue;
       }
       visited.add(absPath);
-      const code = fs[id];
+      const code = fullFs[id];
       if (!code) {
         throw new Error(`File not found: ${id}`);
       }
@@ -104,7 +116,7 @@ export function microBundle({
     // entryPoint: string,
     absEntry,
     // preModules: readonly Module<MixedOutput>[],
-    [],
+    Object.entries(preModulesFs).map(([id, code]) => parseModule(id, code)),
     // graph: ReadOnlyGraph<MixedOutput>,
     {
       dependencies: modules,
@@ -140,6 +152,7 @@ export function microBundle({
         : undefined,
       asyncRequireModulePath: 'expo-mock/async-require',
 
+      sourceUrl: options.sourceUrl,
       createModuleId(filePath) {
         return filePath as unknown as number;
       },
@@ -191,14 +204,25 @@ export function parseModule(
   };
 
   // @ts-ignore
-  ast = babel.transformFromAstSync(ast, '', {
+  const file = babel.transformFromAstSync(ast, '', {
     ast: true,
     babelrc: false,
     code: false,
     configFile: false,
     comments: true,
     filename,
-    plugins: [[metroTransformPlugins.importExportPlugin, babelPluginOpts]],
+    plugins: [
+      require('babel-preset-expo/build/expo-router-plugin')
+        .expoRouterServerComponentClientReferencesPlugin,
+      [metroTransformPlugins.importExportPlugin, babelPluginOpts],
+    ],
+    caller: {
+      name: 'metro',
+      serverRoot: projectRoot,
+
+      // TODO: Maybe not this all the time.
+      isRSC: true,
+    },
     sourceMaps: false,
     // Not-Cloning the input AST here should be safe because other code paths above this call
     // are mutating the AST as well and no code is depending on the original AST.
@@ -206,7 +230,10 @@ export function parseModule(
     // either because one of the plugins is doing something funky or Babel messes up some caches.
     // Make sure to test the above mentioned case before flipping the flag back to false.
     cloneInputAst: true,
-  }).ast!;
+  });
+
+  console.log('f>', file?.metadata);
+  ast = file?.ast!;
 
   const JsFileWrapping = require('metro/src/ModuleGraph/worker/JsFileWrapping');
 
@@ -249,6 +276,7 @@ export function parseModule(
         data: {
           code: output,
           lineCount: countLines(output),
+          clientReferences: file?.metadata?.clientReferences,
         },
         type: 'js/module',
       },

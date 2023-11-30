@@ -129,15 +129,24 @@ export async function graphToSerialAssetsAsync(
     module.path.endsWith('.expo/metro/rsc-manifest.js')
   );
 
+  let rscAsset: SerialAsset | null = null;
   if (rscManifestChunkTemplate) {
     rscManifestChunkTemplate.output.forEach((output) => {
       output.data.code = output.data.code.replace(
         /\$\$expo_rsc_manifest\s?=\s?{}/,
-        `$$$expo_rsc_manifest = ${JSON.stringify(rscClientReferenceManifest)}`
+        `$$$expo_rsc_manifest = ${JSON.stringify(rscClientReferenceManifest)} /* registered */`
       );
       // @ts-expect-error
       output.data.lineCount = countLines(output.data.code);
     });
+
+    rscAsset = {
+      filename: '/dist/_expo/rsc-manifest.js',
+      metadata: {},
+      originFilename: '/rsc-manifest.js',
+      source: JSON.stringify(rscClientReferenceManifest),
+      type: 'json',
+    };
   }
 
   // Create chunks for splitting.
@@ -218,7 +227,7 @@ export async function graphToSerialAssetsAsync(
   })) as AssetData[];
 
   return {
-    artifacts: [...jsAssets, ...cssDeps],
+    artifacts: [...jsAssets, ...cssDeps, rscAsset].filter(Boolean) as SerialAsset[],
     rscManifest: rscClientReferenceManifest,
     assets: metroAssets,
   };

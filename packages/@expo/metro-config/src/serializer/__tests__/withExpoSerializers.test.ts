@@ -66,7 +66,7 @@ describe('serializes', () => {
         ...options,
       })
     )) as any;
-    if (options.options.output === 'static') {
+    if (options.options?.output === 'static') {
       assert('artifacts' in output && Array.isArray(output.artifacts));
       return output.artifacts;
     } else {
@@ -75,10 +75,14 @@ describe('serializes', () => {
   }
 
   // Serialize to a split bundle
-  async function serializeSplitAsync(fs: Record<string, string>) {
+  async function serializeSplitAsync(
+    fs: Record<string, string>,
+    { sourceUrl, preModulesFs }: { sourceUrl?: string; preModulesFs?: Record<string, string> } = {}
+  ) {
     return await serializeTo({
       fs,
-      options: { platform: 'web', dev: false, output: 'static' },
+      options: { platform: 'web', dev: false, output: 'static', sourceUrl },
+      preModulesFs,
     });
   }
 
@@ -355,6 +359,87 @@ describe('serializes', () => {
     expect(str).toMatch(/expo-mock\/async-require/);
   });
 
+  it(`collects client references`, async () => {
+    const artifacts = await serializeSplitAsync(
+      {
+        'index.js': `
+          import "./.expo/metro/rsc-manifest"
+
+          import './foo'
+        `,
+        'foo.js': `
+        "use client"
+          export function Foo() {}
+        `,
+      },
+      {
+        sourceUrl: 'https://localhost:8081/index.bundle?platform=ios&dev=true&minify=false',
+        preModulesFs: {
+          '.expo/metro/rsc-manifest.js': `global.$$expo_rsc_manifest = {}`,
+        },
+      }
+    );
+
+    // expect(artifacts.map((art) => art.filename)).toMatchInlineSnapshot(`
+    //   [
+    //     "_expo/static/js/web/index-f0606e9a7a39437c8958b4d8e3e9ff34.js",
+    //   ]
+    // `);
+
+    expect(artifacts[0].source).toMatch(/\/\* registered \*\//);
+
+    const rscArtifact = artifacts.find((art) => art.filename.includes('rsc-manifest'));
+
+    const manifest = JSON.parse(rscArtifact.source);
+    expect(manifest).toEqual({
+      '/foo.js#foo': {
+        chunks: ['TODO-PRODUCTION-CHUNK-NAMES'],
+        id: '/foo.js',
+        name: 'foo',
+      },
+    });
+
+    // renderFlight();
+
+    expect(artifacts).toMatchInlineSnapshot(`
+      [
+        {
+          "filename": "_expo/static/js/web/index-f0606e9a7a39437c8958b4d8e3e9ff34.js",
+          "metadata": {
+            "isAsync": false,
+            "requires": [],
+          },
+          "originFilename": "index.js",
+          "source": "__d(function (global, _$$_REQUIRE, _$$_IMPORT_DEFAULT, _$$_IMPORT_ALL, module, exports, dependencyMap) {
+        _$$_REQUIRE(dependencyMap[1], "expo-mock/async-require")(dependencyMap[0], dependencyMap.paths, "./foo");
+      },"/app/index.js",{"0":"/app/foo.js","1":"/app/node_modules/expo-mock/async-require/index.js","paths":{"/app/foo.js":"/_expo/static/js/web/foo-c054379d08b2cfa157d6fc1caa8f4802.js"}});
+      TEST_RUN_MODULE("/app/index.js");",
+          "type": "js",
+        },
+        {
+          "filename": "_expo/static/js/web/foo-c054379d08b2cfa157d6fc1caa8f4802.js",
+          "metadata": {
+            "isAsync": true,
+            "requires": [],
+          },
+          "originFilename": "foo.js",
+          "source": "__d(function (global, _$$_REQUIRE, _$$_IMPORT_DEFAULT, _$$_IMPORT_ALL, module, exports, dependencyMap) {
+        Object.defineProperty(exports, '__esModule', {
+          value: true
+        });
+        const foo = 'foo';
+        exports.foo = foo;
+      },"/app/foo.js",[]);",
+          "type": "js",
+        },
+      ]
+    `);
+
+    // Split bundle
+    expect(artifacts.length).toBe(1);
+    // expect(artifacts[0].metadata).toEqual({ isAsync: true, requires: [] });
+  });
+
   it(`bundle splits an async import`, async () => {
     const artifacts = await serializeSplitAsync({
       'index.js': `
@@ -587,3 +672,37 @@ describe('serializes', () => {
     expect(artifacts[3].source).not.toMatch(/TEST_RUN_MODULE/);
   });
 });
+
+const { renderToPipeableStream } = require('react-server-dom-webpack/server.node');
+const register = require('react-server-dom-webpack/node-register');
+register();
+
+import { Writable } from 'stream';
+
+async function renderFlight(component: React.ReactNode, moduleMap: any) {
+  const rsc = renderToPipeableStream(component, moduleMap);
+
+  const rscStream = new ReadableStream({
+    start(controller) {
+      rsc.pipe(
+        new Writable({
+          write(chunk, encoding, callback) {
+            controller.enqueue(chunk);
+            callback();
+          },
+          destroy(error, callback) {
+            if (error) {
+              controller.error(error);
+            } else {
+              controller.close();
+            }
+            callback(error);
+          },
+        })
+      );
+    },
+  });
+
+  const res = await rscStream.getReader().read();
+  return res.value.toString().trim();
+}
