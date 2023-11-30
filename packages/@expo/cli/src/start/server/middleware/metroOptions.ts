@@ -3,6 +3,7 @@ import type { BundleOptions as MetroBundleOptions } from 'metro/src/shared/types
 import resolveFrom from 'resolve-from';
 
 import { env } from '../../../utils/env';
+import { getRouterDirectoryModuleIdWithManifest } from '../metro/router';
 
 const debug = require('debug')('expo:metro:options') as typeof console.log;
 
@@ -34,6 +35,18 @@ export type ExpoMetroOptions = {
   rsc?: boolean;
   baseUrl?: string;
   isExporting: boolean;
+  /** Module ID relative to the projectRoot for the Expo Router app directory. */
+  routerRoot: string;
+};
+
+export type SerializerOptions = {
+  includeSourceMaps?: boolean;
+  includeBytecode?: boolean;
+  output?: 'static';
+};
+
+export type ExpoMetroBundleOptions = MetroBundleOptions & {
+  serializerOptions?: SerializerOptions;
 };
 
 function withDefaults({
@@ -52,18 +65,20 @@ function withDefaults({
   };
 }
 
-export type SerializerOptions = {
-  includeSourceMaps?: boolean;
-  includeBytecode?: boolean;
-  output?: 'static';
-};
-
-export type ExpoMetroBundleOptions = MetroBundleOptions & {
-  serializerOptions?: SerializerOptions;
-};
-
 export function getBaseUrlFromExpoConfig(exp: ExpoConfig) {
   return exp.experiments?.baseUrl?.trim().replace(/\/+$/, '') ?? '';
+}
+
+export function getMetroDirectBundleOptionsForExpoConfig(
+  projectRoot: string,
+  exp: ExpoConfig,
+  options: Omit<ExpoMetroOptions, 'baseUrl' | 'routerRoot'>
+): Partial<ExpoMetroBundleOptions> {
+  return getMetroDirectBundleOptions({
+    ...options,
+    baseUrl: getBaseUrlFromExpoConfig(exp),
+    routerRoot: getRouterDirectoryModuleIdWithManifest(projectRoot, exp),
+  });
 }
 
 export function getMetroDirectBundleOptions(
@@ -83,6 +98,7 @@ export function getMetroDirectBundleOptions(
     preserveEnvVars,
     rsc,
     baseUrl,
+    routerRoot,
     isExporting,
   } = withDefaults(options);
 
@@ -127,6 +143,7 @@ export function getMetroDirectBundleOptions(
       rsc,
       environment,
       baseUrl,
+      routerRoot,
     },
     customResolverOptions: {
       __proto__: null,
@@ -144,6 +161,18 @@ export function getMetroDirectBundleOptions(
   return bundleOptions;
 }
 
+export function createBundleUrlPathFromExpoConfig(
+  projectRoot: string,
+  exp: ExpoConfig,
+  options: Omit<ExpoMetroOptions, 'baseUrl' | 'routerRoot'>
+): string {
+  return createBundleUrlPath({
+    ...options,
+    baseUrl: getBaseUrlFromExpoConfig(exp),
+    routerRoot: getRouterDirectoryModuleIdWithManifest(projectRoot, exp),
+  });
+}
+
 export function createBundleUrlPath(options: ExpoMetroOptions): string {
   const {
     platform,
@@ -159,6 +188,7 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
     preserveEnvVars,
     rsc,
     baseUrl,
+    routerRoot,
     isExporting,
   } = withDefaults(options);
 
@@ -191,6 +221,9 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
   }
   if (baseUrl) {
     queryParams.append('transform.baseUrl', baseUrl);
+  }
+  if (routerRoot != null) {
+    queryParams.append('transform.routerRoot', routerRoot);
   }
 
   if (environment) {

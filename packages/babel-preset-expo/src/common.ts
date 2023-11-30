@@ -1,3 +1,5 @@
+import path from 'path';
+
 export function hasModule(name: string): boolean {
   try {
     return !!require.resolve(name);
@@ -57,11 +59,20 @@ export function getIsDev(caller: any) {
   return process.env.BABEL_ENV === 'development' || process.env.NODE_ENV === 'development';
 }
 
+export function getIsFastRefreshEnabled(caller: any) {
+  if (!caller) return false;
+  return caller.isHMREnabled && !caller.isServer && !caller.isNodeModule && getIsDev(caller);
+}
+
 export function getIsProd(caller: any) {
   if (caller?.isDev != null) return caller.isDev === false;
 
   // https://babeljs.io/docs/options#envname
   return process.env.BABEL_ENV === 'production' || process.env.NODE_ENV === 'production';
+}
+
+export function getIsNodeModule(caller: any): boolean {
+  return caller?.isNodeModule ?? false;
 }
 
 export function getBaseUrl(caller: any): string {
@@ -72,12 +83,23 @@ export function getIsServer(caller: any) {
   return caller?.isServer ?? false;
 }
 
+export function getExpoRouterAbsoluteAppRoot(caller: any): string {
+  const rootModuleId = caller?.routerRoot ?? './app';
+  if (path.isAbsolute(rootModuleId)) {
+    return rootModuleId;
+  }
+  const projectRoot = getPossibleProjectRoot(caller) || '/';
+
+  return path.join(projectRoot, rootModuleId);
+}
+
 export function getInlineEnvVarsEnabled(caller: any): boolean {
   const isWebpack = getBundler(caller) === 'webpack';
   const isDev = getIsDev(caller);
   const isServer = getIsServer(caller);
+  const isNodeModule = getIsNodeModule(caller);
   const preserveEnvVars = caller?.preserveEnvVars;
   // Development env vars are added in the serializer to avoid caching issues in development.
   // Servers have env vars left as-is to read from the environment.
-  return !isWebpack && !isDev && !isServer && !preserveEnvVars;
+  return !isNodeModule && !isWebpack && !isDev && !isServer && !preserveEnvVars;
 }
