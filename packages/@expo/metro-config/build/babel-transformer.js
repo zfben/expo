@@ -54,7 +54,7 @@ function getBabelCaller({
   filename,
   options
 }) {
-  var _options$customTransf, _options$customTransf2, _options$customTransf3, _options$customTransf4, _options$customTransf5;
+  var _options$customTransf, _options$customTransf2, _options$customTransf3, _options$customTransf4, _options$customTransf5, _options$customTransf6;
   const isNodeModule = filename.includes('node_modules');
   const isServer = ((_options$customTransf = options.customTransformOptions) === null || _options$customTransf === void 0 ? void 0 : _options$customTransf.environment) === 'node';
   return {
@@ -78,7 +78,10 @@ function getBabelCaller({
     // Provide the project root for accurately reading the Expo config.
     projectRoot: options.projectRoot,
     isNodeModule,
-    isHMREnabled: options.hot
+    isHMREnabled: options.hot,
+    isRSC: isCustomTruthy((_options$customTransf6 = options.customTransformOptions) === null || _options$customTransf6 === void 0 ? void 0 : _options$customTransf6.rsc),
+    // Provide the project root for accurately reading the Expo config.
+    serverRoot: options.serverRoot
   };
 }
 const transform = ({

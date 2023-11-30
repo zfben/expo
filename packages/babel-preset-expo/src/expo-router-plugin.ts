@@ -3,7 +3,13 @@ import { getConfig, ProjectConfig } from 'expo/config';
 import nodePath from 'path';
 import resolveFrom from 'resolve-from';
 
-import { getIsServer, getExpoRouterAbsoluteAppRoot, getPlatform, getPossibleProjectRoot, getServerRoot } from './common';
+import {
+  getIsServer,
+  getExpoRouterAbsoluteAppRoot,
+  getPlatform,
+  getPossibleProjectRoot,
+  getServerRoot,
+} from './common';
 
 const debug = require('debug')('expo:babel:router');
 
@@ -166,6 +172,7 @@ export function expoRouterServerComponentClientReferencesPlugin(
 ) {
   const { types: t } = api;
 
+  // @ts-expect-error
   const isServer = api.caller((caller) => caller?.isRSC ?? false);
   const serverRoot = api.caller(getServerRoot) as string;
   return {

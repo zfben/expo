@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getInlineEnvVarsEnabled = exports.getExpoRouterAbsoluteAppRoot = exports.getIsServer = exports.getBaseUrl = exports.getIsNodeModule = exports.getIsProd = exports.getIsFastRefreshEnabled = exports.getIsDev = exports.getPossibleProjectRoot = exports.getPlatform = exports.getBundler = exports.hasModule = void 0;
+exports.getInlineEnvVarsEnabled = exports.getExpoRouterAbsoluteAppRoot = exports.getIsServer = exports.getBaseUrl = exports.getIsNodeModule = exports.getIsProd = exports.getIsFastRefreshEnabled = exports.getIsDev = exports.getPossibleProjectRoot = exports.getServerRoot = exports.getPlatform = exports.getBundler = exports.hasModule = void 0;
 const path_1 = __importDefault(require("path"));
 function hasModule(name) {
     try {
@@ -47,6 +47,14 @@ function getPlatform(caller) {
     return caller.platform;
 }
 exports.getPlatform = getPlatform;
+function getServerRoot(caller) {
+    if (!caller)
+        return null;
+    if (caller.serverRoot)
+        return caller.serverRoot;
+    return getPossibleProjectRoot(caller);
+}
+exports.getServerRoot = getServerRoot;
 function getPossibleProjectRoot(caller) {
     if (!caller)
         return null;

@@ -32,6 +32,13 @@ function _bundleToString() {
   };
   return data;
 }
+function _countLines() {
+  const data = _interopRequireDefault(require("metro/src/lib/countLines"));
+  _countLines = function () {
+    return data;
+  };
+  return data;
+}
 function _path() {
   const data = _interopRequireDefault(require("path"));
   _path = function () {
@@ -42,6 +49,13 @@ function _path() {
 function _pathToRegexp() {
   const data = _interopRequireDefault(require("path-to-regexp"));
   _pathToRegexp = function () {
+    return data;
+  };
+  return data;
+}
+function _jscSafeUrl() {
+  const data = _interopRequireDefault(require("jsc-safe-url"));
+  _jscSafeUrl = function () {
     return data;
   };
   return data;
@@ -89,6 +103,50 @@ async function graphToSerialAssetsAsync(config, serializeChunkOptions, ...props)
     projectRoot: options.projectRoot,
     processModuleFilter: options.processModuleFilter
   });
+  const rscClientReferenceManifest = {};
+
+  // Create client reference manifest for server components
+  props[2].dependencies.forEach(module => {
+    module.output.forEach(output => {
+      // @ts-expect-error
+      const clientReferences = output.data.clientReferences;
+      if (clientReferences) {
+        var _options$serverRoot;
+        const entry = '/' + _path().default.relative((_options$serverRoot = options.serverRoot) !== null && _options$serverRoot !== void 0 ? _options$serverRoot : options.projectRoot, module.path);
+        clientReferences.exports.forEach(exp => {
+          const key = `${entry}#${exp}`;
+          const currentUrl = new URL(_jscSafeUrl().default.toNormalUrl(options.sourceUrl));
+          console.log('options.sourceUrl', options.sourceUrl);
+          currentUrl.pathname = entry.replace(/\.([tj]sx?|[mc]js)$/, '.bundle');
+          currentUrl.searchParams.delete('serializer.output');
+          currentUrl.searchParams.set('modulesOnly', 'true');
+          // TODO: Add params to indicate that `module.exports = __r()` should be used as the run module statement.
+          currentUrl.searchParams.set('runModule', 'false');
+          rscClientReferenceManifest[key] = {
+            id: entry,
+            chunks: [options.dev ? currentUrl.toString() : 'TODO-PRODUCTION-CHUNK-NAMES'],
+            name: exp
+          };
+        });
+      }
+    });
+  });
+  const rscManifestChunkTemplate = preModules.find(module => module.path.endsWith('.expo/metro/rsc-manifest.js'));
+  let rscAsset = null;
+  if (rscManifestChunkTemplate) {
+    rscManifestChunkTemplate.output.forEach(output => {
+      output.data.code = output.data.code.replace(/\$\$expo_rsc_manifest\s?=\s?{}/, `$$$expo_rsc_manifest = ${JSON.stringify(rscClientReferenceManifest)} /* registered */`);
+      // @ts-expect-error
+      output.data.lineCount = (0, _countLines().default)(output.data.code);
+    });
+    rscAsset = {
+      filename: '/dist/_expo/rsc-manifest.js',
+      metadata: {},
+      originFilename: '/rsc-manifest.js',
+      source: JSON.stringify(rscClientReferenceManifest),
+      type: 'json'
+    };
+  }
 
   // Create chunks for splitting.
   const chunks = new Set();
@@ -146,7 +204,8 @@ async function graphToSerialAssetsAsync(config, serializeChunkOptions, ...props)
     publicPath: (_config$transformer$p = (_config$transformer2 = config.transformer) === null || _config$transformer2 === void 0 ? void 0 : _config$transformer2.publicPath) !== null && _config$transformer$p !== void 0 ? _config$transformer$p : '/'
   });
   return {
-    artifacts: [...jsAssets, ...cssDeps],
+    artifacts: [...jsAssets, ...cssDeps, rscAsset].filter(Boolean),
+    rscManifest: rscClientReferenceManifest,
     assets: metroAssets
   };
 }
