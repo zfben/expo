@@ -2,6 +2,7 @@ import { ConfigAPI, NodePath, types } from '@babel/core';
 import { getConfig, ProjectConfig } from 'expo/config';
 import nodePath from 'path';
 import resolveFrom from 'resolve-from';
+import url from 'url';
 
 import {
   getIsServer,
@@ -173,7 +174,7 @@ export function expoRouterServerComponentClientReferencesPlugin(
   const { types: t } = api;
 
   // @ts-expect-error
-  const isServer = api.caller((caller) => caller?.isRSC ?? false);
+  const isServer = api.caller((caller) => caller?.isReactServer ?? false);
   const serverRoot = api.caller(getServerRoot) as string;
   return {
     name: 'expo-rsc-client-references',
@@ -187,7 +188,8 @@ export function expoRouterServerComponentClientReferencesPlugin(
           return;
         }
 
-        const outputKey = '/' + nodePath.relative(serverRoot, state.file.opts.filename);
+        const filePath = '/' + nodePath.relative(serverRoot, state.file.opts.filename);
+        const outputKey = url.pathToFileURL(filePath).href;
 
         // Collect a list of all the exports in the file.
         const exports: string[] = [];

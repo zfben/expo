@@ -87,6 +87,8 @@ export async function graphToSerialAssetsAsync(
     processModuleFilter: options.processModuleFilter,
   });
 
+  // NOTE: Partially replicates the Webpack version.
+  // https://github.com/facebook/react/blob/6c7b41da3de12be2d95c60181b3fe896f824f13a/packages/react-server-dom-webpack/src/ReactFlightWebpackPlugin.js#L387
   const rscClientReferenceManifest: RscManifest = {};
 
   // Create client reference manifest for server components
@@ -126,7 +128,7 @@ export async function graphToSerialAssetsAsync(
   });
 
   const rscManifestChunkTemplate = preModules.find((module) =>
-    module.path.endsWith('.expo/metro/rsc-manifest.js')
+    module.path.endsWith('.expo/metro/react-client-manifest.js')
   );
 
   let rscAsset: SerialAsset | null = null;
@@ -141,9 +143,9 @@ export async function graphToSerialAssetsAsync(
     });
 
     rscAsset = {
-      filename: '/dist/_expo/rsc-manifest.js',
+      filename: '/dist/_expo/react-client-manifest.js',
       metadata: {},
-      originFilename: '/rsc-manifest.js',
+      originFilename: '/react-client-manifest.js',
       source: JSON.stringify(rscClientReferenceManifest),
       type: 'json',
     };

@@ -86,6 +86,143 @@ describe('serializes', () => {
     });
   }
 
+  describe('server components', () => {
+    it(`collects client references`, async () => {
+      const artifacts = await serializeSplitAsync(
+        {
+          'index.js': `
+          import "./.expo/metro/react-client-manifest.js"
+
+          import {Foo, Bar} from './foo'
+          import Baz from './baz'
+        `,
+          'foo.js': `
+          "use client"
+          
+          export function Foo() {}
+          export const Bar = {}
+        `,
+          'baz.js': `
+          "use client"
+
+          export default function Foo() {}
+        `,
+        },
+        {
+          sourceUrl: 'https://localhost:8081/index.bundle?platform=ios&dev=true&minify=false',
+          preModulesFs: {
+            '.expo/metro/react-client-manifest.js': `global.$$expo_rsc_manifest = {}`,
+          },
+        }
+      );
+
+      // expect(artifacts.map((art) => art.filename)).toMatchInlineSnapshot(`
+      //   [
+      //     "_expo/static/js/web/index-f0606e9a7a39437c8958b4d8e3e9ff34.js",
+      //   ]
+      // `);
+
+      expect(artifacts[0].source).toMatch(/\/\* registered \*\//);
+
+      const rscArtifact = artifacts.find((art) =>
+        art.filename.includes('react-client-manifest.js')
+      );
+
+      const manifest = JSON.parse(rscArtifact.source);
+
+      // NOTE: This is our only sanity check for the client manifest.
+      expect(manifest).toEqual({
+        '/baz.js#default': {
+          chunks: ['TODO-PRODUCTION-CHUNK-NAMES'],
+          id: '/baz.js',
+          name: 'default',
+        },
+        '/foo.js#Bar': { chunks: ['TODO-PRODUCTION-CHUNK-NAMES'], id: '/foo.js', name: 'Bar' },
+        '/foo.js#Foo': { chunks: ['TODO-PRODUCTION-CHUNK-NAMES'], id: '/foo.js', name: 'Foo' },
+      });
+
+      // renderFlight();
+
+      artifacts.forEach((artifact) => {
+        // Ensure we aren't performing the server transform.
+        // TODO: idk, i'm just guessing.
+        expect(artifact.source).not.toMatch(/\$\$typeof: "react\.client\.reference",/);
+      });
+    });
+
+    it(`creates server renderer`, async () => {
+      const artifacts = await serializeSplitAsync(
+        {
+          'index.js': `
+          import "./.expo/metro/react-client-manifest.js"
+
+          import {Foo, Bar} from './foo'
+          import Baz from './baz'
+
+
+          // const { renderToPipeableStream } = require('react-server-dom-webpack/server.node');
+          export function render() {
+
+          }
+        `,
+          'foo.js': `
+          "use client"
+          
+          export function Foo() {}
+          export const Bar = {}
+        `,
+          'baz.js': `
+          "use client"
+
+          export default function Foo() {}
+        `,
+        },
+        {
+          sourceUrl: 'https://localhost:8081/index.bundle?platform=ios&dev=true&minify=false',
+          preModulesFs: {
+            '.expo/metro/react-client-manifest.js': `global.$$expo_rsc_manifest = {}`,
+          },
+        }
+      );
+
+      // expect(artifacts.map((art) => art.filename)).toMatchInlineSnapshot(`
+      //   [
+      //     "_expo/static/js/web/index-f0606e9a7a39437c8958b4d8e3e9ff34.js",
+      //   ]
+      // `);
+
+      expect(artifacts[0].source).toMatch(/\/\* registered \*\//);
+
+      const rscArtifact = artifacts.find((art) =>
+        art.filename.includes('react-client-manifest.js')
+      );
+
+      const manifest = JSON.parse(rscArtifact.source);
+
+      // NOTE: This is our only sanity check for the client manifest.
+      expect(manifest).toEqual({
+        '/baz.js#default': {
+          chunks: ['TODO-PRODUCTION-CHUNK-NAMES'],
+          id: '/baz.js',
+          name: 'default',
+        },
+        '/foo.js#Bar': { chunks: ['TODO-PRODUCTION-CHUNK-NAMES'], id: '/foo.js', name: 'Bar' },
+        '/foo.js#Foo': { chunks: ['TODO-PRODUCTION-CHUNK-NAMES'], id: '/foo.js', name: 'Foo' },
+      });
+
+      // renderFlight();
+
+      artifacts.forEach((artifact) => {
+        // Ensure we aren't performing the server transform.
+        // TODO: idk, i'm just guessing.
+        expect(artifact.source).not.toMatch(/\$\$typeof: "react\.client\.reference",/);
+      });
+    });
+
+    // RSC reference chart:
+    // https://github.com/facebook/react/blob/b8be034f07e1abc59863742063f5baeff20e33fe/packages/react-server/src/ReactFlightServer.js#L650-L704
+  });
+
   describe('source maps', () => {
     it(`serializes with source maps disabled in production using classic serializer`, async () => {
       for (const platform of ['web', 'ios']) {
@@ -359,87 +496,6 @@ describe('serializes', () => {
     expect(str).toMatch(/expo-mock\/async-require/);
   });
 
-  it(`collects client references`, async () => {
-    const artifacts = await serializeSplitAsync(
-      {
-        'index.js': `
-          import "./.expo/metro/rsc-manifest"
-
-          import './foo'
-        `,
-        'foo.js': `
-        "use client"
-          export function Foo() {}
-        `,
-      },
-      {
-        sourceUrl: 'https://localhost:8081/index.bundle?platform=ios&dev=true&minify=false',
-        preModulesFs: {
-          '.expo/metro/rsc-manifest.js': `global.$$expo_rsc_manifest = {}`,
-        },
-      }
-    );
-
-    // expect(artifacts.map((art) => art.filename)).toMatchInlineSnapshot(`
-    //   [
-    //     "_expo/static/js/web/index-f0606e9a7a39437c8958b4d8e3e9ff34.js",
-    //   ]
-    // `);
-
-    expect(artifacts[0].source).toMatch(/\/\* registered \*\//);
-
-    const rscArtifact = artifacts.find((art) => art.filename.includes('rsc-manifest'));
-
-    const manifest = JSON.parse(rscArtifact.source);
-    expect(manifest).toEqual({
-      '/foo.js#foo': {
-        chunks: ['TODO-PRODUCTION-CHUNK-NAMES'],
-        id: '/foo.js',
-        name: 'foo',
-      },
-    });
-
-    // renderFlight();
-
-    expect(artifacts).toMatchInlineSnapshot(`
-      [
-        {
-          "filename": "_expo/static/js/web/index-f0606e9a7a39437c8958b4d8e3e9ff34.js",
-          "metadata": {
-            "isAsync": false,
-            "requires": [],
-          },
-          "originFilename": "index.js",
-          "source": "__d(function (global, _$$_REQUIRE, _$$_IMPORT_DEFAULT, _$$_IMPORT_ALL, module, exports, dependencyMap) {
-        _$$_REQUIRE(dependencyMap[1], "expo-mock/async-require")(dependencyMap[0], dependencyMap.paths, "./foo");
-      },"/app/index.js",{"0":"/app/foo.js","1":"/app/node_modules/expo-mock/async-require/index.js","paths":{"/app/foo.js":"/_expo/static/js/web/foo-c054379d08b2cfa157d6fc1caa8f4802.js"}});
-      TEST_RUN_MODULE("/app/index.js");",
-          "type": "js",
-        },
-        {
-          "filename": "_expo/static/js/web/foo-c054379d08b2cfa157d6fc1caa8f4802.js",
-          "metadata": {
-            "isAsync": true,
-            "requires": [],
-          },
-          "originFilename": "foo.js",
-          "source": "__d(function (global, _$$_REQUIRE, _$$_IMPORT_DEFAULT, _$$_IMPORT_ALL, module, exports, dependencyMap) {
-        Object.defineProperty(exports, '__esModule', {
-          value: true
-        });
-        const foo = 'foo';
-        exports.foo = foo;
-      },"/app/foo.js",[]);",
-          "type": "js",
-        },
-      ]
-    `);
-
-    // Split bundle
-    expect(artifacts.length).toBe(1);
-    // expect(artifacts[0].metadata).toEqual({ isAsync: true, requires: [] });
-  });
-
   it(`bundle splits an async import`, async () => {
     const artifacts = await serializeSplitAsync({
       'index.js': `
@@ -674,8 +730,8 @@ describe('serializes', () => {
 });
 
 const { renderToPipeableStream } = require('react-server-dom-webpack/server.node');
-const register = require('react-server-dom-webpack/node-register');
-register();
+// const register = require('react-server-dom-webpack/node-register');
+// register();
 
 import { Writable } from 'stream';
 

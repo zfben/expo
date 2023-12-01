@@ -8,6 +8,7 @@ const core_1 = require("@babel/core");
 const config_1 = require("expo/config");
 const path_1 = __importDefault(require("path"));
 const resolve_from_1 = __importDefault(require("resolve-from"));
+const url_1 = __importDefault(require("url"));
 const common_1 = require("./common");
 const debug = require('debug')('expo:babel:router');
 let config;
@@ -137,7 +138,7 @@ exports.expoRouterBabelPlugin = expoRouterBabelPlugin;
 function expoRouterServerComponentClientReferencesPlugin(api) {
     const { types: t } = api;
     // @ts-expect-error
-    const isServer = api.caller((caller) => caller?.isRSC ?? false);
+    const isServer = api.caller((caller) => caller?.isReactServer ?? false);
     const serverRoot = api.caller(common_1.getServerRoot);
     return {
         name: 'expo-rsc-client-references',
@@ -148,7 +149,8 @@ function expoRouterServerComponentClientReferencesPlugin(api) {
                     // Do nothing for code that isn't marked as a client component.
                     return;
                 }
-                const outputKey = '/' + path_1.default.relative(serverRoot, state.file.opts.filename);
+                const filePath = '/' + path_1.default.relative(serverRoot, state.file.opts.filename);
+                const outputKey = url_1.default.pathToFileURL(filePath).href;
                 // Collect a list of all the exports in the file.
                 const exports = [];
                 path.traverse({

@@ -40,7 +40,7 @@ afterAll(() => {
 it(`does nothing without use client directive`, () => {
   const options = {
     ...DEF_OPTIONS,
-    caller: getCaller({ ...ENABLED_CALLER, isRSC: true, platform: 'ios' }),
+    caller: getCaller({ ...ENABLED_CALLER, isReactServer: true, platform: 'ios' }),
   };
 
   const sourceCode = `
@@ -55,7 +55,7 @@ it(`does nothing without use client directive`, () => {
 it(`replaces client exports with React client references`, () => {
   const options = {
     ...DEF_OPTIONS,
-    caller: getCaller({ ...ENABLED_CALLER, isRSC: true, platform: 'ios' }),
+    caller: getCaller({ ...ENABLED_CALLER, isReactServer: true, platform: 'ios' }),
   };
 
   const sourceCode = `
@@ -76,7 +76,7 @@ export default function App() {
 it(`collects metadata with React client references`, () => {
   const options = {
     ...DEF_OPTIONS,
-    caller: getCaller({ ...ENABLED_CALLER, isRSC: false, platform: 'ios' }),
+    caller: getCaller({ ...ENABLED_CALLER, isReactServer: false, platform: 'ios' }),
   };
 
   const sourceCode = `

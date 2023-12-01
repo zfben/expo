@@ -56,6 +56,8 @@ export function microBundle({
     hermes?: boolean;
     sourceMaps?: boolean;
     sourceUrl?: string;
+    isServer?: boolean;
+    isReactServer?: boolean;
   };
   preModulesFs?: Record<string, string>;
 }): [
@@ -78,6 +80,20 @@ export function microBundle({
     }
   }
 
+  const caller = {
+    name: 'metro',
+    bundler: 'metro',
+    platform: options.platform ?? 'web',
+    baseUrl: options.baseUrl,
+
+    // Empower the babel preset to know the env it's bundling for.
+    // Metro automatically updates the cache to account for the custom transform options.
+    isServer: options.isServer,
+    isReactServer: options.isReactServer,
+    routerRoot: '/',
+    isDev: options.dev,
+    projectRoot,
+  };
   const modules = new Map<string, Module>();
   const visited = new Set<string>();
 
@@ -94,7 +110,10 @@ export function microBundle({
       if (!code) {
         throw new Error(`File not found: ${id}`);
       }
-      const module = parseModule(id, code);
+      const module = parseModule(id, code, {
+        ...caller,
+        isNodeModule: !!id.match(/node_modules/),
+      });
       modules.set(absPath, module);
 
       if (parent?.path) {
@@ -179,7 +198,8 @@ export function microBundle({
 // A small version of the Metro transformer to easily create dependency mocks from a string of code.
 export function parseModule(
   relativeFilePath: string,
-  code: string
+  code: string,
+  caller: Record<string, string | boolean | null | undefined> = {}
 ): Module<{ type: string; data: { lineCount: number; code: string } }> {
   const absoluteFilePath = path.join(projectRoot, relativeFilePath);
   const filename = absoluteFilePath;
@@ -219,9 +239,7 @@ export function parseModule(
     caller: {
       name: 'metro',
       serverRoot: projectRoot,
-
-      // TODO: Maybe not this all the time.
-      isRSC: true,
+      ...caller,
     },
     sourceMaps: false,
     // Not-Cloning the input AST here should be safe because other code paths above this call

@@ -22,7 +22,7 @@ export const NODE_STDLIB_MODULES: string[] = [
   ).filter((x) => !/^_|^(internal|v8|node-inspect)\/|\//.test(x) && !['sys'].includes(x)),
 ].sort();
 
-export const EXTERNAL_RSC_MANIFEST = '.expo/metro/rsc-manifest.js';
+export const EXTERNAL_RSC_MANIFEST = '.expo/metro/react-client-manifest.js';
 export const EXTERNAL_REQUIRE_POLYFILL = '.expo/metro/polyfill.js';
 export const EXTERNAL_REQUIRE_NATIVE_POLYFILL = '.expo/metro/polyfill.native.js';
 export const METRO_EXTERNALS_FOLDER = '.expo/metro/externals';

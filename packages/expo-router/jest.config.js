@@ -24,7 +24,7 @@ module.exports = withWatchPlugins({
       ...nodePreset,
       testEnvironmentOptions: {
         ...(nodePreset.testEnvironmentOptions || {}),
-        customExportConditions: ['node', 'import', 'react-server'],
+        customExportConditions: ['node', 'import', 'react-server', 'server'],
       },
       // transform: {
       //   '^.+\\.jsx?$': 'babel-jest',

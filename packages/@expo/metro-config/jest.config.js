@@ -1,6 +1,9 @@
 /** @type {import('jest').Config} */
 module.exports = {
   ...require('expo-module-scripts/jest-preset-cli'),
+  testEnvironmentOptions: {
+    customExportConditions: ['node', 'react-server', 'server'],
+  },
   clearMocks: true,
   displayName: require('./package').name,
   rootDir: __dirname,

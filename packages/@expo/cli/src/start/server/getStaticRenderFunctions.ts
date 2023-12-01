@@ -48,7 +48,7 @@ type StaticRenderOptions = {
   environment?: 'node';
   engine?: 'hermes';
   baseUrl: string;
-  isRSC?: boolean;
+  isReactServer?: boolean;
   routerRoot: string;
 };
 
@@ -118,7 +118,7 @@ export async function createMetroEndpointAsync(
     environment,
     engine = 'hermes',
     baseUrl,
-    isRSC,
+    isReactServer,
     routerRoot,
   }: StaticRenderOptions
 ): Promise<string> {
@@ -136,7 +136,7 @@ export async function createMetroEndpointAsync(
     minify,
     baseUrl,
     isExporting: true,
-    rsc: isRSC,
+    rsc: isReactServer,
     routerRoot,
   });
 

@@ -67,7 +67,8 @@ function getBabelCaller({ filename, options }: Pick<BabelTransformerArgs, 'filen
 
     isHMREnabled: options.hot,
 
-    isRSC: isCustomTruthy(options.customTransformOptions?.rsc),
+    // Used for React Server Components. The naming maps to the resolver property `--conditions=react-server`.
+    isReactServer: isCustomTruthy(options.customTransformOptions?.rsc),
     // Provide the project root for accurately reading the Expo config.
     serverRoot: options.serverRoot,
   };
