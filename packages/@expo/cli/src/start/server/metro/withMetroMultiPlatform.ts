@@ -381,6 +381,11 @@ export function withExtendedResolver(
         // Node.js runtimes should only be importing main at the moment.
         // This is a temporary fix until we can support the package.json exports.
         context.mainFields = ['main', 'module'];
+
+        // Enable react-server import conditions.
+        if (context.customResolverOptions?.rsc) {
+          context.unstable_conditionNames = ['node', 'require', 'react-server', 'server'];
+        }
       } else {
         // Non-server changes
 

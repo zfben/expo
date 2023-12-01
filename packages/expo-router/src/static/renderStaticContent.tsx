@@ -190,17 +190,17 @@ export async function renderToPipeableStream(
   { $$route: route, ...props },
   moduleMap: WebpackManifest
 ) {
+  const { renderToPipeableStream } = require('react-server-dom-webpack/server');
   const node = getNodeFinder()(route);
 
   // @ts-expect-error
   if (node?._route) {
     // @ts-expect-error
     const { default: Component } = node._route.loadRoute();
-
-    const rsc = ReactDOMServer.renderToPipeableStream(
+    const rsc = renderToPipeableStream(
       // TODO: Does this support async?
-      <Component {...props} />,
-      // await Component(props),
+      // <Component {...props} />,
+      React.createElement(Component, props),
       // TODO: Me!
       moduleMap
     );
