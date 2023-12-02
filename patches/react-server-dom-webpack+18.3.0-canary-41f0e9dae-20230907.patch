@@ -1,0 +1,42 @@
+diff --git a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-server.node.unbundled.development.js b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-server.node.unbundled.development.js
+index a555390..49fd399 100644
+--- a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-server.node.unbundled.development.js
++++ b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-server.node.unbundled.development.js
+@@ -2666,7 +2666,8 @@ function preloadModule(metadata) {
+     return existingPromise;
+   } else {
+     // $FlowFixMe[unsupported-syntax]
+-    var modulePromise = import(metadata.specifier);
++    console.log('DYNAMIC_STATIC_IMPORT', metadata.specifier);
++    var modulePromise = globalThis.__r(metadata.specifier);
+ 
+     if (metadata.async) {
+       // If the module is async, it must have been a CJS module.
+diff --git a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-server.node.unbundled.production.min.js b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-server.node.unbundled.production.min.js
+index a8fe5b6..d27a1da 100644
+--- a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-server.node.unbundled.production.min.js
++++ b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-server.node.unbundled.production.min.js
+@@ -58,7 +58,7 @@ null;d++;break}g.splice(0,d)}finally{a.flushScheduled=!1,l&&0<m&&b.write(l.subar
+ function yb(a,b){if(1===a.status)a.status=2,b.destroy(a.fatalError);else if(2!==a.status&&null===a.destination){a.destination=b;try{R(a,b)}catch(c){P(a,c),wb(a,c)}}}
+ function zb(a,b){try{var c=a.abortableTasks;if(0<c.size){var d=void 0===b?Error("The render was aborted by the server without a reason."):b,e=P(a,d);a.pendingChunks++;var f=a.nextChunkId++;Q(a,f,e,d);c.forEach(function(g){g.status=3;var h=T(f);g=sb(a,g.id,h);a.completedErrorChunks.push(g)});c.clear()}null!==a.destination&&R(a,a.destination)}catch(g){P(a,g),wb(a,g)}}
+ function jb(a){if(a){var b=D;Ka(null);for(var c=0;c<a.length;c++){var d=a[c],e=d[0];d=d[1];cb[e]||(cb[e]=ca.createServerContext(e,Da));La(cb[e],d)}a=D;Ka(b);return a}return null}function Ab(a,b){var c=b.lastIndexOf("#");a=b.slice(0,c);b=b.slice(c+1);return{specifier:a,name:b}}var Bb=new Map;
+-function Cb(a){var b=Bb.get(a.specifier);if(b)return"fulfilled"===b.status?null:b;var c=import(a.specifier);a.async&&(c=c.then(function(d){return d.default}));c.then(function(d){var e=c;e.status="fulfilled";e.value=d},function(d){var e=c;e.status="rejected";e.reason=d});Bb.set(a.specifier,c);return c}function U(a){var b=Bb.get(a.specifier);if("fulfilled"===b.status)b=b.value;else throw b.reason;return"*"===a.name?b:""===a.name?b.default:b[a.name]}
++function Cb(a){var b=Bb.get(a.specifier);if(b)return"fulfilled"===b.status?null:b;console.log('DYNAMIC_IMPORT.FROM_REACT_WEBPACK:', a);var c=globalThis.__r(a.specifier);a.async&&(c=c.then(function(d){return d.default}));c.then(function(d){var e=c;e.status="fulfilled";e.value=d},function(d){var e=c;e.status="rejected";e.reason=d});Bb.set(a.specifier,c);return c}function U(a){var b=Bb.get(a.specifier);if("fulfilled"===b.status)b=b.value;else throw b.reason;return"*"===a.name?b:""===a.name?b.default:b[a.name]}
+ function V(a,b,c,d){this.status=a;this.value=b;this.reason=c;this._response=d}V.prototype=Object.create(Promise.prototype);V.prototype.then=function(a,b){switch(this.status){case "resolved_model":W(this)}switch(this.status){case "fulfilled":a(this.value);break;case "pending":case "blocked":a&&(null===this.value&&(this.value=[]),this.value.push(a));b&&(null===this.reason&&(this.reason=[]),this.reason.push(b));break;default:b(this.reason)}};function Db(a,b){for(var c=0;c<a.length;c++)(0,a[c])(b)}
+ function Eb(a,b){if("pending"===a.status||"blocked"===a.status){var c=a.reason;a.status="rejected";a.reason=b;null!==c&&Db(c,b)}}function Fb(a,b,c,d,e,f){var g=Ab(a._bundlerConfig,b);a=Cb(g);if(c)c=Promise.all([c,a]).then(function(h){h=h[0];var k=U(g);return k.bind.apply(k,[null].concat(h))});else if(a)c=Promise.resolve(a).then(function(){return U(g)});else return U(g);c.then(Gb(d,e,f),Hb(d));return null}var X=null,Y=null;
+ function W(a){var b=X,c=Y;X=a;Y=null;try{var d=JSON.parse(a.value,a._response._fromJSON);null!==Y&&0<Y.deps?(Y.value=d,a.status="blocked",a.value=null,a.reason=null):(a.status="fulfilled",a.value=d)}catch(e){a.status="rejected",a.reason=e}finally{X=b,Y=c}}function Ib(a,b){a._chunks.forEach(function(c){"pending"===c.status&&Eb(c,b)})}
+diff --git a/node_modules/react-server-dom-webpack/server.node.unbundled.js b/node_modules/react-server-dom-webpack/server.node.unbundled.js
+index 5f75de8..9f14858 100644
+--- a/node_modules/react-server-dom-webpack/server.node.unbundled.js
++++ b/node_modules/react-server-dom-webpack/server.node.unbundled.js
+@@ -1,7 +1,5 @@
+ 'use strict';
+ 
+-if (process.env.NODE_ENV === 'production') {
+-  module.exports = require('./cjs/react-server-dom-webpack-server.node.unbundled.production.min.js');
+-} else {
+-  module.exports = require('./cjs/react-server-dom-webpack-server.node.unbundled.development.js');
+-}
++
++module.exports = require('./cjs/react-server-dom-webpack-server.node.unbundled.development.js');
++
