@@ -529,21 +529,40 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         }
       };
 
+      const mockManifest = {
+        'file:///Users/evanbacon/Documents/GitHub/expo/apps/sandbox/components/Timer.tsx': {
+          // '/apps/sandbox/app/index.tsx#default': {
+          id: '/apps/sandbox/components/Timer.tsx',
+          chunks: [
+            'http://localhost:8081/apps/sandbox/components/Timer.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false',
+          ],
+          name: '*',
+        },
+        'file:///Users/evanbacon/Documents/GitHub/expo/apps/sandbox/components/Timer.tsx#': {
+          // '/apps/sandbox/app/index.tsx#default': {
+          id: '/apps/sandbox/components/Timer.tsx',
+          chunks: [
+            'http://localhost:8081/apps/sandbox/components/Timer.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false',
+          ],
+          name: '',
+        },
+        'file:///Users/evanbacon/Documents/GitHub/expo/apps/sandbox/components/Timer.tsx#default': {
+          // '/apps/sandbox/app/index.tsx#default': {
+          id: '/apps/sandbox/components/Timer.tsx',
+          chunks: [
+            'http://localhost:8081/apps/sandbox/components/Timer.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false',
+          ],
+          name: 'default',
+        },
+      };
+
       setTimeout(() => {
         // NOTE: test case
         renderRsc(
           // Props / location
           { $$route: './index.tsx' },
           // Manifest
-          {
-            '/apps/sandbox/app/index.tsx#default': {
-              id: '/apps/sandbox/app/index.tsx',
-              chunks: [
-                'http://localhost:8081/apps/sandbox/app/index.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false',
-              ],
-              name: 'default',
-            },
-          }
+          mockManifest
         )
           .then((data) => {
             console.log('data', data);
@@ -563,24 +582,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
           // Props / location
           { $$route: './index.tsx' },
           // Manifest
-          // {
-          //   '/apps/sandbox/app/index.tsx#default': {
-          //     id: '/apps/sandbox/app/index.tsx',
-          //     chunks: [
-          //       'http://localhost:8081/apps/sandbox/app/index.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false',
-          //     ],
-          //     name: 'default',
-          //   },
-          // }
-          {
-            '/apps/sandbox/components/Timer.tsx#default': {
-              id: '/apps/sandbox/components/Timer.tsx',
-              chunks: [
-                'http://localhost:8081/apps/sandbox/components/Timer.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false',
-              ],
-              name: 'default',
-            },
-          }
+          mockManifest
         )
           .then((data) => {
             console.log('data', data);

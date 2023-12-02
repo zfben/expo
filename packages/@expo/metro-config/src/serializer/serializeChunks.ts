@@ -21,6 +21,7 @@ import countLines from 'metro/src/lib/countLines';
 import { ConfigT, SerializerConfigT } from 'metro-config';
 import path from 'path';
 import pathToRegExp from 'path-to-regexp';
+import { pathToFileURL } from 'url';
 
 import { buildHermesBundleAsync } from './exportHermes';
 import { getExportPathForDependencyWithOptions } from './exportPath';
@@ -102,26 +103,53 @@ export async function graphToSerialAssetsAsync(
 
       if (clientReferences) {
         const entry = '/' + path.relative(options.serverRoot ?? options.projectRoot, module.path);
-        clientReferences.exports.forEach((exp) => {
-          const key = `${entry}#${exp}`;
+        const currentUrl = new URL(jscSafeUrl.toNormalUrl(options.sourceUrl!));
 
-          const currentUrl = new URL(jscSafeUrl.toNormalUrl(options.sourceUrl!));
+        console.log('options.sourceUrl', options.sourceUrl);
 
-          console.log('options.sourceUrl', options.sourceUrl);
+        currentUrl.pathname = entry.replace(/\.([tj]sx?|[mc]js)$/, '.bundle');
 
-          currentUrl.pathname = entry.replace(/\.([tj]sx?|[mc]js)$/, '.bundle');
+        currentUrl.searchParams.delete('serializer.output');
 
-          currentUrl.searchParams.delete('serializer.output');
+        currentUrl.searchParams.set('modulesOnly', 'true');
+        // TODO: Add params to indicate that `module.exports = __r()` should be used as the run module statement.
+        currentUrl.searchParams.set('runModule', 'false');
 
-          currentUrl.searchParams.set('modulesOnly', 'true');
-          // TODO: Add params to indicate that `module.exports = __r()` should be used as the run module statement.
-          currentUrl.searchParams.set('runModule', 'false');
+        const outputKey = pathToFileURL(module.path).href;
+
+        // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/NoteEditor.js": {
+        //   "id": "./src/NoteEditor.js",
+        //   "chunks": [
+        //     "vendors-node_modules_sanitize-html_index_js-node_modules_marked_lib_marked_esm_js",
+        //     "client1"
+        //   ],
+        //   "name": "*"
+        // },
+        // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/NoteEditor.js#": {
+        //   "id": "./src/NoteEditor.js",
+        //   "chunks": [
+        //     "vendors-node_modules_sanitize-html_index_js-node_modules_marked_lib_marked_esm_js",
+        //     "client1"
+        //   ],
+        //   "name": ""
+        // },
+
+        const pushRef = (exp: string) => {
+          const key = `${outputKey}${exp === '*' ? '' : `#${exp}`}`;
 
           rscClientReferenceManifest[key] = {
             id: entry,
             chunks: [options.dev ? currentUrl.toString() : 'TODO-PRODUCTION-CHUNK-NAMES'],
             name: exp,
           };
+        };
+
+        // NOTE: These come from the demo, not sure why we need them.
+        pushRef('*');
+        pushRef('');
+
+        clientReferences.exports.forEach((exp) => {
+          pushRef(exp);
         });
       }
     });

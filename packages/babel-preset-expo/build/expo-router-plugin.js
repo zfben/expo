@@ -139,17 +139,55 @@ function expoRouterServerComponentClientReferencesPlugin(api) {
     const { types: t } = api;
     // @ts-expect-error
     const isServer = api.caller((caller) => caller?.isReactServer ?? false);
+    const isDev = api.caller(common_1.getIsDev);
+    const mode = isDev ? 'development' : 'production';
     const serverRoot = api.caller(common_1.getServerRoot);
     return {
         name: 'expo-rsc-client-references',
         visitor: {
+            // Fast cheap react optimizer
+            // IfStatement(path, state) {
+            //   const test = path.node.test;
+            //   if (!state.file.opts.filename?.includes('react')) {
+            //     return;
+            //   }
+            //   // Check if the test is a strict equality comparison involving process.env.NODE_ENV
+            //   if (
+            //     t.isBinaryExpression(test) &&
+            //     test.operator === '===' &&
+            //     t.isMemberExpression(test.left) &&
+            //     t.isIdentifier(test.left.object, { name: 'process' }) &&
+            //     t.isIdentifier(test.left.property, { name: 'env' }) &&
+            //     t.isMemberExpression(test.left.object) &&
+            //     t.isIdentifier(test.left.object.property, { name: 'NODE_ENV' }) &&
+            //     t.isStringLiteral(test.right)
+            //   ) {
+            //     const envValue = test.right.value;
+            //     // If the environment matches the input transform environment, replace the if statement
+            //     if (envValue === mode) {
+            //       if (isDev) {
+            //         if (path.node.alternate) {
+            //           path.replaceWith(path.node.alternate);
+            //         } else {
+            //           path.remove();
+            //         }
+            //       } else {
+            //         path.replaceWith(path.node.consequent);
+            //       }
+            //     } else {
+            //       // If it's the other condition, remove the if statement
+            //       path.remove();
+            //     }
+            //   }
+            // },
             Program(path, state) {
+                const isUseClient = path.node.directives.some((directive) => directive.value.value === 'use client');
                 // File starts with "use client" directive.
-                if (!path.node.directives.some((directive) => directive.value.value === 'use client')) {
+                if (!isUseClient) {
                     // Do nothing for code that isn't marked as a client component.
                     return;
                 }
-                const filePath = '/' + path_1.default.relative(serverRoot, state.file.opts.filename);
+                const filePath = state.file.opts.filename; //nodePath.relative(serverRoot, state.file.opts.filename);
                 const outputKey = url_1.default.pathToFileURL(filePath).href;
                 // Collect a list of all the exports in the file.
                 const exports = [];
@@ -182,54 +220,76 @@ function expoRouterServerComponentClientReferencesPlugin(api) {
                     exports,
                 };
                 if (isServer) {
-                    // Now we'll replace all the code in the file with client references, e.g.
-                    // export default { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#default", name: "default" }
                     // Clear the body
-                    // path.node.body = [];
-                    // path.node.directives = [];
-                    // for (const exp of exports) {
-                    //   if (exp === 'default') {
-                    //     // export default { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#default", name: "default" }
-                    //     path.pushContainer(
-                    //       'body',
-                    //       t.exportDefaultDeclaration(
-                    //         t.objectExpression([
-                    //           t.objectProperty(
-                    //             t.identifier('$$typeof'),
-                    //             t.stringLiteral('react.client.reference')
-                    //           ),
-                    //           t.objectProperty(t.identifier('$$async'), t.booleanLiteral(false)),
-                    //           t.objectProperty(t.identifier('$$id'), t.stringLiteral(`${outputKey}#default`)),
-                    //           t.objectProperty(t.identifier('name'), t.stringLiteral('default')),
-                    //         ])
-                    //       )
-                    //     );
-                    //   } else {
-                    //     // export const ${exp} = { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#${exp}", name: "${exp}" }
-                    //     path.pushContainer(
-                    //       'body',
-                    //       t.exportNamedDeclaration(
-                    //         t.variableDeclaration('const', [
-                    //           t.variableDeclarator(
-                    //             t.identifier(exp),
-                    //             t.objectExpression([
-                    //               t.objectProperty(
-                    //                 t.identifier('$$typeof'),
-                    //                 t.stringLiteral('react.client.reference')
-                    //               ),
-                    //               t.objectProperty(t.identifier('$$async'), t.booleanLiteral(false)),
-                    //               t.objectProperty(
-                    //                 t.identifier('$$id'),
-                    //                 t.stringLiteral(`${outputKey}#${exp}`)
-                    //               ),
-                    //               t.objectProperty(t.identifier('name'), t.stringLiteral(exp)),
-                    //             ])
-                    //           ),
-                    //         ])
-                    //       )
-                    //     );
-                    //   }
-                    // }
+                    path.node.body = [];
+                    path.node.directives = [];
+                    if (isUseClient) {
+                        // Inject the following:
+                        // console.log('Loaded client module proxy for', outputKey, require('react-server-dom-webpack/server'))
+                        path.pushContainer('body', t.expressionStatement(t.callExpression(t.identifier('console.log'), [
+                            t.stringLiteral('Loaded client module proxy for'),
+                            t.stringLiteral(outputKey),
+                            t.callExpression(t.identifier('require'), [
+                                t.stringLiteral('react-server-dom-webpack/server'),
+                            ]),
+                        ])));
+                        // Inject the following:
+                        //
+                        // module.exports = require('react-server-dom-webpack/server').createClientModuleProxy(outputKey)
+                        path.pushContainer('body', t.expressionStatement(t.assignmentExpression('=', t.memberExpression(t.identifier('module'), t.identifier('exports')), t.callExpression(t.memberExpression(t.callExpression(t.identifier('require'), [
+                            t.stringLiteral('react-server-dom-webpack/server'),
+                        ]), t.identifier('createClientModuleProxy')), [t.stringLiteral(outputKey)]))));
+                        return;
+                    }
+                    else {
+                        // Now we'll replace all the code in the file with client references, e.g.
+                        // export default { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#default", name: "default" }
+                        // const registerServerReference = require('react-server-dom-webpack/server').registerServerReference;
+                        // const createClientModuleProxy = require('react-server-dom-webpack/server').createClientModuleProxy;
+                        // for (const exp of exports) {
+                        //   if (exp === 'default') {
+                        //     // export default { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#default", name: "default" }
+                        //     path.pushContainer(
+                        //       'body',
+                        //       t.exportDefaultDeclaration(
+                        //         t.objectExpression([
+                        //           t.objectProperty(
+                        //             t.identifier('$$typeof'),
+                        //             t.stringLiteral('react.client.reference')
+                        //           ),
+                        //           t.objectProperty(t.identifier('$$async'), t.booleanLiteral(false)),
+                        //           t.objectProperty(t.identifier('$$id'), t.stringLiteral(`${outputKey}#default`)),
+                        //           t.objectProperty(t.identifier('name'), t.stringLiteral('default')),
+                        //         ])
+                        //       )
+                        //     );
+                        //   } else {
+                        //     // export const ${exp} = { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#${exp}", name: "${exp}" }
+                        //     path.pushContainer(
+                        //       'body',
+                        //       t.exportNamedDeclaration(
+                        //         t.variableDeclaration('const', [
+                        //           t.variableDeclarator(
+                        //             t.identifier(exp),
+                        //             t.objectExpression([
+                        //               t.objectProperty(
+                        //                 t.identifier('$$typeof'),
+                        //                 t.stringLiteral('react.client.reference')
+                        //               ),
+                        //               t.objectProperty(t.identifier('$$async'), t.booleanLiteral(false)),
+                        //               t.objectProperty(
+                        //                 t.identifier('$$id'),
+                        //                 t.stringLiteral(`${outputKey}#${exp}`)
+                        //               ),
+                        //               t.objectProperty(t.identifier('name'), t.stringLiteral(exp)),
+                        //             ])
+                        //           ),
+                        //         ])
+                        //       )
+                        //     );
+                        //   }
+                        // }
+                    }
                 }
             },
         },
