@@ -48,19 +48,5 @@ declare function getBuildTimeServerManifestAsync(options?: Parameters<typeof get
     }[];
 }>;
 export declare function getStaticContent(location: URL): string;
-type WebpackManifestSubType = {
-    id: string;
-    chunks: string[];
-    name: string;
-};
-type WebpackManifest = {
-    [filepath: string]: {
-        [name: string]: WebpackManifestSubType;
-    };
-};
-export declare function renderToPipeableStream({ $$route: route, ...props }: {
-    [x: string]: any;
-    $$route: any;
-}, moduleMap: WebpackManifest): Promise<any>;
 export { getManifest, getBuildTimeServerManifestAsync };
 //# sourceMappingURL=renderStaticContent.d.ts.map

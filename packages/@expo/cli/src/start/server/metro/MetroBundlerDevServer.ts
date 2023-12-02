@@ -27,7 +27,10 @@ import { logEventAsync } from '../../../utils/analytics/rudderstackClient';
 import { CommandError } from '../../../utils/errors';
 import { getFreePortAsync } from '../../../utils/port';
 import { BundlerDevServer, BundlerStartOptions, DevServerInstance } from '../BundlerDevServer';
-import { getStaticRenderFunctions } from '../getStaticRenderFunctions';
+import {
+  getStaticRenderFunctions,
+  getStaticRenderFunctionsForEntry,
+} from '../getStaticRenderFunctions';
 import { ContextModuleSourceMapsMiddleware } from '../middleware/ContextModuleSourceMapsMiddleware';
 import { CreateFileMiddleware } from '../middleware/CreateFileMiddleware';
 import { DevToolsPluginMiddleware } from '../middleware/DevToolsPluginMiddleware';
@@ -49,6 +52,7 @@ import {
 import { prependMiddleware } from '../middleware/mutations';
 import { startTypescriptTypeGenerationAsync } from '../type-generation/startTypescriptTypeGeneration';
 import { ServerNext, ServerRequest, ServerResponse } from '../middleware/server.types';
+import { logMetroError } from './metroErrorInterface';
 
 export class ForwardHtmlError extends CommandError {
   constructor(
@@ -172,23 +176,18 @@ export class MetroBundlerDevServer extends BundlerDevServer {
   }) {
     const url = this.getDevServerUrl()!;
 
-    const {
-      getStaticContent,
-      renderToPipeableStream,
-      getManifest,
-      getBuildTimeServerManifestAsync,
-    } = await getStaticRenderFunctions(this.projectRoot, url, {
-      minify,
-      dev: mode !== 'production',
-      // Ensure the API Routes are included
-      environment: 'node',
-      baseUrl,
-      routerRoot,
-      isReactServer,
-    });
+    const { getStaticContent, getManifest, getBuildTimeServerManifestAsync } =
+      await getStaticRenderFunctions(this.projectRoot, url, {
+        minify,
+        dev: mode !== 'production',
+        // Ensure the API Routes are included
+        environment: 'node',
+        baseUrl,
+        routerRoot,
+        isReactServer,
+      });
 
     return {
-      renderToPipeableStream,
       serverManifest: await getBuildTimeServerManifestAsync(),
       // Get routes from Expo Router.
       manifest: await getManifest({ fetchData: true, preserveApiRoutes: false }),
@@ -196,6 +195,47 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       async renderAsync(path: string) {
         return await getStaticContent(new URL(path, url));
       },
+    };
+  }
+
+  private async getReactServerFunctionAsync({
+    mode,
+    minify = mode !== 'development',
+    baseUrl,
+    isReactServer,
+    routerRoot,
+  }: {
+    mode: 'development' | 'production';
+    minify?: boolean;
+    baseUrl: string;
+    isReactServer?: boolean;
+    routerRoot: string;
+  }) {
+    const url = this.getDevServerUrl()!;
+
+    const {
+      // getStaticContent,
+      renderToPipeableStream,
+      // getManifest,
+      // getBuildTimeServerManifestAsync,
+    } = await getStaticRenderFunctionsForEntry(
+      this.projectRoot,
+      url,
+      {
+        minify,
+        dev: mode !== 'production',
+        // Ensure the API Routes are included
+        environment: 'node',
+        baseUrl,
+        routerRoot,
+        isReactServer,
+      },
+
+      'expo-router/node/rsc.js'
+    );
+
+    return {
+      renderToPipeableStream,
     };
   }
 
@@ -468,7 +508,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
       const renderRsc = async (location: any, manifest: any) => {
         console.log('Get RSC Renderer:', location, manifest);
-        const { renderToPipeableStream } = await this.getStaticRenderFunctionAsync({
+        const { renderToPipeableStream } = await this.getReactServerFunctionAsync({
           mode: options.mode ?? 'development',
           minify: options.minify,
           baseUrl,
@@ -478,9 +518,15 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         });
 
         console.log('Render RSC:', renderToPipeableStream);
-        const pipe = await renderToPipeableStream(location, manifest);
+        try {
+          const pipe = await renderToPipeableStream(location, manifest);
 
-        return pipe;
+          return pipe;
+        } catch (error: any) {
+          await logMetroError(this.projectRoot, { error });
+
+          throw error;
+        }
       };
 
       setTimeout(() => {
@@ -512,6 +558,39 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         res: ServerResponse,
         redirectToId: string | null
       ) => {
+        // NOTE: test case
+        renderRsc(
+          // Props / location
+          { $$route: './index.tsx' },
+          // Manifest
+          // {
+          //   '/apps/sandbox/app/index.tsx#default': {
+          //     id: '/apps/sandbox/app/index.tsx',
+          //     chunks: [
+          //       'http://localhost:8081/apps/sandbox/app/index.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false',
+          //     ],
+          //     name: 'default',
+          //   },
+          // }
+          {
+            '/apps/sandbox/components/Timer.tsx#default': {
+              id: '/apps/sandbox/components/Timer.tsx',
+              chunks: [
+                'http://localhost:8081/apps/sandbox/components/Timer.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false',
+              ],
+              name: 'default',
+            },
+          }
+        )
+          .then((data) => {
+            console.log('data', data);
+          })
+          .catch((error) => {
+            Log.log('Error rendering rsc');
+            Log.error(error);
+          });
+        res.end('funky');
+        return;
         const query = new URL(req.url!, 'http://e').searchParams;
 
         const loc = query.get('props');

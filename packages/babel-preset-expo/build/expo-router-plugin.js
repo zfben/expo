@@ -185,30 +185,51 @@ function expoRouterServerComponentClientReferencesPlugin(api) {
                     // Now we'll replace all the code in the file with client references, e.g.
                     // export default { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#default", name: "default" }
                     // Clear the body
-                    path.node.body = [];
-                    path.node.directives = [];
-                    for (const exp of exports) {
-                        if (exp === 'default') {
-                            // export default { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#default", name: "default" }
-                            path.pushContainer('body', t.exportDefaultDeclaration(t.objectExpression([
-                                t.objectProperty(t.identifier('$$typeof'), t.stringLiteral('react.client.reference')),
-                                t.objectProperty(t.identifier('$$async'), t.booleanLiteral(false)),
-                                t.objectProperty(t.identifier('$$id'), t.stringLiteral(`${outputKey}#default`)),
-                                t.objectProperty(t.identifier('name'), t.stringLiteral('default')),
-                            ])));
-                        }
-                        else {
-                            // export const ${exp} = { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#${exp}", name: "${exp}" }
-                            path.pushContainer('body', t.exportNamedDeclaration(t.variableDeclaration('const', [
-                                t.variableDeclarator(t.identifier(exp), t.objectExpression([
-                                    t.objectProperty(t.identifier('$$typeof'), t.stringLiteral('react.client.reference')),
-                                    t.objectProperty(t.identifier('$$async'), t.booleanLiteral(false)),
-                                    t.objectProperty(t.identifier('$$id'), t.stringLiteral(`${outputKey}#${exp}`)),
-                                    t.objectProperty(t.identifier('name'), t.stringLiteral(exp)),
-                                ])),
-                            ])));
-                        }
-                    }
+                    // path.node.body = [];
+                    // path.node.directives = [];
+                    // for (const exp of exports) {
+                    //   if (exp === 'default') {
+                    //     // export default { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#default", name: "default" }
+                    //     path.pushContainer(
+                    //       'body',
+                    //       t.exportDefaultDeclaration(
+                    //         t.objectExpression([
+                    //           t.objectProperty(
+                    //             t.identifier('$$typeof'),
+                    //             t.stringLiteral('react.client.reference')
+                    //           ),
+                    //           t.objectProperty(t.identifier('$$async'), t.booleanLiteral(false)),
+                    //           t.objectProperty(t.identifier('$$id'), t.stringLiteral(`${outputKey}#default`)),
+                    //           t.objectProperty(t.identifier('name'), t.stringLiteral('default')),
+                    //         ])
+                    //       )
+                    //     );
+                    //   } else {
+                    //     // export const ${exp} = { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#${exp}", name: "${exp}" }
+                    //     path.pushContainer(
+                    //       'body',
+                    //       t.exportNamedDeclaration(
+                    //         t.variableDeclaration('const', [
+                    //           t.variableDeclarator(
+                    //             t.identifier(exp),
+                    //             t.objectExpression([
+                    //               t.objectProperty(
+                    //                 t.identifier('$$typeof'),
+                    //                 t.stringLiteral('react.client.reference')
+                    //               ),
+                    //               t.objectProperty(t.identifier('$$async'), t.booleanLiteral(false)),
+                    //               t.objectProperty(
+                    //                 t.identifier('$$id'),
+                    //                 t.stringLiteral(`${outputKey}#${exp}`)
+                    //               ),
+                    //               t.objectProperty(t.identifier('name'), t.stringLiteral(exp)),
+                    //             ])
+                    //           ),
+                    //         ])
+                    //       )
+                    //     );
+                    //   }
+                    // }
                 }
             },
         },

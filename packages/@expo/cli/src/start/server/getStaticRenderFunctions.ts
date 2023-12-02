@@ -29,8 +29,11 @@ function wrapBundle(str: string) {
 }
 
 // TODO(EvanBacon): Group all the code together and version.
-const getRenderModuleId = (projectRoot: string): string => {
-  const moduleId = resolveFrom.silent(projectRoot, 'expo-router/node/render.js');
+const getRenderModuleId = (
+  projectRoot: string,
+  entry: string = 'expo-router/node/render.js'
+): string => {
+  const moduleId = resolveFrom.silent(projectRoot, entry);
   if (!moduleId) {
     throw new Error(
       `A version of expo-router with Node.js support is not installed in the project.`
@@ -68,10 +71,20 @@ const moveStaticRenderFunction = memoize(async (projectRoot: string, requiredMod
 async function getStaticRenderFunctionsContentAsync(
   projectRoot: string,
   devServerUrl: string,
-  { dev = false, minify = false, environment, baseUrl, routerRoot }: StaticRenderOptions
+  {
+    dev = false,
+    minify = false,
+    environment,
+    baseUrl,
+    routerRoot,
+    isReactServer,
+    engine,
+    platform,
+  }: StaticRenderOptions,
+  entry?: string
 ): Promise<string> {
   const root = getMetroServerRoot(projectRoot);
-  const requiredModuleId = getRenderModuleId(root);
+  const requiredModuleId = getRenderModuleId(root, entry);
   let moduleId = requiredModuleId;
 
   // Cannot be accessed using Metro's server API, we need to move the file
@@ -86,6 +99,9 @@ async function getStaticRenderFunctionsContentAsync(
     environment,
     baseUrl,
     routerRoot,
+    isReactServer,
+    engine,
+    platform,
   });
 }
 
@@ -189,10 +205,24 @@ export async function getStaticRenderFunctions(
   devServerUrl: string,
   options: StaticRenderOptions
 ): Promise<Record<string, (...args: any[]) => Promise<any>>> {
+  return getStaticRenderFunctionsForEntry(
+    projectRoot,
+    devServerUrl,
+    options,
+    'expo-router/node/render.js'
+  );
+}
+export async function getStaticRenderFunctionsForEntry(
+  projectRoot: string,
+  devServerUrl: string,
+  options: StaticRenderOptions,
+  entry: string
+): Promise<Record<string, (...args: any[]) => Promise<any>>> {
   const scriptContents = await getStaticRenderFunctionsContentAsync(
     projectRoot,
     devServerUrl,
-    options
+    options,
+    entry
   );
 
   return evalMetroAndWrapFunctions(projectRoot, scriptContents);
@@ -202,6 +232,7 @@ function evalMetroAndWrapFunctions<T = Record<string, (...args: any[]) => Promis
   projectRoot: string,
   script: string
 ): Promise<T> {
+  console.log(script);
   const contents = evalMetro(script);
 
   // wrap each function with a try/catch that uses Metro's error formatter
@@ -215,6 +246,7 @@ function evalMetroAndWrapFunctions<T = Record<string, (...args: any[]) => Promis
       try {
         return await fn.apply(this, props);
       } catch (error: any) {
+        console.error('Err:', error);
         await logMetroError(projectRoot, { error });
         throw new SilentError(error);
       }
