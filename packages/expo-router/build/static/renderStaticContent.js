@@ -158,20 +158,22 @@ function getNodeFinder() {
     };
 }
 async function renderToPipeableStream({ $$route: route, ...props }, moduleMap) {
-    const node = getNodeFinder()(route);
-    // @ts-expect-error
-    if (node?._route) {
-        // @ts-expect-error
-        const { default: Component } = node._route.loadRoute();
-        const rsc = server_1.default.renderToPipeableStream(
-        // TODO: Does this support async?
-        <Component {...props}/>, 
-        // await Component(props),
-        // TODO: Me!
-        moduleMap);
-        return rsc.pipe;
+    const { renderToPipeableStream } = require('react-server-dom-webpack/server');
+    if (!_ctx_1.ctx.keys().includes(route)) {
+        throw new Error('Failed to find route: ' + route + '. Expected one of: ' + _ctx_1.ctx.keys().join(', '));
     }
-    throw new Error('Failed to render server component at: ' + route);
+    const { default: Component } = await (0, _ctx_1.ctx)(route);
+    console.log('Initial component', Component, route);
+    // const node = getNodeFinder()(route);
+    // if (node?._route) {
+    // const { default: Component } = node._route.loadRoute();
+    const rsc = renderToPipeableStream(
+    // TODO: Does this support async?
+    // <Component {...props} />,
+    react_1.default.createElement(Component, props), moduleMap);
+    return rsc.pipe;
+    // }
+    // throw new Error('Failed to render server component at: ' + route);
 }
 exports.renderToPipeableStream = renderToPipeableStream;
 //# sourceMappingURL=renderStaticContent.js.map

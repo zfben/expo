@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { Writable } from 'stream';
 
 import { microBundle, projectRoot } from '../fork/__tests__/mini-metro';
 import {
@@ -6,6 +7,8 @@ import {
   createSerializerFromSerialProcessors,
   withSerializerPlugins,
 } from '../withExpoSerializers';
+// const register = require('react-server-dom-webpack/node-register');
+// register();
 
 describe(withSerializerPlugins, () => {
   it(`executes in the expected order`, async () => {
@@ -730,10 +733,6 @@ describe('serializes', () => {
 });
 
 const { renderToPipeableStream } = require('react-server-dom-webpack/server.node');
-// const register = require('react-server-dom-webpack/node-register');
-// register();
-
-import { Writable } from 'stream';
 
 async function renderFlight(component: React.ReactNode, moduleMap: any) {
   const rsc = renderToPipeableStream(component, moduleMap);

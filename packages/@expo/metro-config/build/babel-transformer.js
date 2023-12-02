@@ -79,7 +79,8 @@ function getBabelCaller({
     projectRoot: options.projectRoot,
     isNodeModule,
     isHMREnabled: options.hot,
-    isRSC: isCustomTruthy((_options$customTransf6 = options.customTransformOptions) === null || _options$customTransf6 === void 0 ? void 0 : _options$customTransf6.rsc),
+    // Used for React Server Components. The naming maps to the resolver property `--conditions=react-server`.
+    isReactServer: isCustomTruthy((_options$customTransf6 = options.customTransformOptions) === null || _options$customTransf6 === void 0 ? void 0 : _options$customTransf6.rsc),
     // Provide the project root for accurately reading the Expo config.
     serverRoot: options.serverRoot
   };

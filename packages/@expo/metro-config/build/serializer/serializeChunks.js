@@ -11,6 +11,13 @@ function _assert() {
   };
   return data;
 }
+function _jscSafeUrl() {
+  const data = _interopRequireDefault(require("jsc-safe-url"));
+  _jscSafeUrl = function () {
+    return data;
+  };
+  return data;
+}
 function _getAssets() {
   const data = _interopRequireDefault(require("metro/src/DeltaBundler/Serializers/getAssets"));
   _getAssets = function () {
@@ -49,13 +56,6 @@ function _path() {
 function _pathToRegexp() {
   const data = _interopRequireDefault(require("path-to-regexp"));
   _pathToRegexp = function () {
-    return data;
-  };
-  return data;
-}
-function _jscSafeUrl() {
-  const data = _interopRequireDefault(require("jsc-safe-url"));
-  _jscSafeUrl = function () {
     return data;
   };
   return data;
@@ -103,6 +103,9 @@ async function graphToSerialAssetsAsync(config, serializeChunkOptions, ...props)
     projectRoot: options.projectRoot,
     processModuleFilter: options.processModuleFilter
   });
+
+  // NOTE: Partially replicates the Webpack version.
+  // https://github.com/facebook/react/blob/6c7b41da3de12be2d95c60181b3fe896f824f13a/packages/react-server-dom-webpack/src/ReactFlightWebpackPlugin.js#L387
   const rscClientReferenceManifest = {};
 
   // Create client reference manifest for server components
@@ -131,7 +134,7 @@ async function graphToSerialAssetsAsync(config, serializeChunkOptions, ...props)
       }
     });
   });
-  const rscManifestChunkTemplate = preModules.find(module => module.path.endsWith('.expo/metro/rsc-manifest.js'));
+  const rscManifestChunkTemplate = preModules.find(module => module.path.endsWith('.expo/metro/react-client-manifest.js'));
   let rscAsset = null;
   if (rscManifestChunkTemplate) {
     rscManifestChunkTemplate.output.forEach(output => {
@@ -140,9 +143,9 @@ async function graphToSerialAssetsAsync(config, serializeChunkOptions, ...props)
       output.data.lineCount = (0, _countLines().default)(output.data.code);
     });
     rscAsset = {
-      filename: '/dist/_expo/rsc-manifest.js',
+      filename: '/dist/_expo/react-client-manifest.js',
       metadata: {},
-      originFilename: '/rsc-manifest.js',
+      originFilename: '/react-client-manifest.js',
       source: JSON.stringify(rscClientReferenceManifest),
       type: 'json'
     };

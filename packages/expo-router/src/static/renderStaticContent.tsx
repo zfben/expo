@@ -191,24 +191,31 @@ export async function renderToPipeableStream(
   moduleMap: WebpackManifest
 ) {
   const { renderToPipeableStream } = require('react-server-dom-webpack/server');
-  const node = getNodeFinder()(route);
 
-  // @ts-expect-error
-  if (node?._route) {
-    // @ts-expect-error
-    const { default: Component } = node._route.loadRoute();
-    const rsc = renderToPipeableStream(
-      // TODO: Does this support async?
-      // <Component {...props} />,
-      React.createElement(Component, props),
-      // TODO: Me!
-      moduleMap
+  if (!ctx.keys().includes(route)) {
+    throw new Error(
+      'Failed to find route: ' + route + '. Expected one of: ' + ctx.keys().join(', ')
     );
-
-    return rsc.pipe;
   }
 
-  throw new Error('Failed to render server component at: ' + route);
+  const { default: Component } = await ctx(route);
+  console.log('Initial component', Component, route);
+  // const node = getNodeFinder()(route);
+
+  // if (node?._route) {
+
+  // const { default: Component } = node._route.loadRoute();
+  const rsc = renderToPipeableStream(
+    // TODO: Does this support async?
+    // <Component {...props} />,
+    React.createElement(Component, props),
+    moduleMap
+  );
+
+  return rsc.pipe;
+  // }
+
+  // throw new Error('Failed to render server component at: ' + route);
 }
 
 // Re-export for use in server

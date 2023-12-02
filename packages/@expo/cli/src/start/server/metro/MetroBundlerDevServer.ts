@@ -464,6 +464,49 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       const baseUrl = getBaseUrlFromExpoConfig(exp);
       const routerRoot = getRouterDirectoryModuleIdWithManifest(this.projectRoot, exp);
 
+      //
+
+      const renderRsc = async (location: any, manifest: any) => {
+        console.log('Get RSC Renderer:', location, manifest);
+        const { renderToPipeableStream } = await this.getStaticRenderFunctionAsync({
+          mode: options.mode ?? 'development',
+          minify: options.minify,
+          baseUrl,
+          isReactServer: true,
+          routerRoot,
+          // TODO: Pass platform somehow haha
+        });
+
+        console.log('Render RSC:', renderToPipeableStream);
+        const pipe = await renderToPipeableStream(location, manifest);
+
+        return pipe;
+      };
+
+      setTimeout(() => {
+        // NOTE: test case
+        renderRsc(
+          // Props / location
+          { $$route: './index.tsx' },
+          // Manifest
+          {
+            '/apps/sandbox/app/index.tsx#default': {
+              id: '/apps/sandbox/app/index.tsx',
+              chunks: [
+                'http://localhost:8081/apps/sandbox/app/index.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false',
+              ],
+              name: 'default',
+            },
+          }
+        )
+          .then((data) => {
+            console.log('data', data);
+          })
+          .catch((error) => {
+            Log.log('Error rendering rsc');
+            Log.error(error);
+          });
+      }, 10);
       const sendResponse = async (
         req: ServerRequest,
         res: ServerResponse,
@@ -495,16 +538,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         res.setHeader('X-Location', JSON.stringify(location));
 
         try {
-          const { renderToPipeableStream } = await this.getStaticRenderFunctionAsync({
-            mode: options.mode ?? 'development',
-            minify: options.minify,
-            baseUrl,
-            isReactServer: true,
-            routerRoot,
-            // TODO: Pass platform somehow haha
-          });
-
-          const pipe = await renderToPipeableStream(location, clientReferenceManifest);
+          const pipe = await renderRsc(location, clientReferenceManifest);
 
           pipe(res);
         } catch (error: any) {

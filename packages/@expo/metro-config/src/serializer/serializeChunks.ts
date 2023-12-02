@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 import assert from 'assert';
+import jscSafeUrl from 'jsc-safe-url';
 import {
   AssetData,
   MetroConfig,
@@ -20,7 +21,6 @@ import countLines from 'metro/src/lib/countLines';
 import { ConfigT, SerializerConfigT } from 'metro-config';
 import path from 'path';
 import pathToRegExp from 'path-to-regexp';
-import jscSafeUrl from 'jsc-safe-url';
 
 import { buildHermesBundleAsync } from './exportHermes';
 import { getExportPathForDependencyWithOptions } from './exportPath';
