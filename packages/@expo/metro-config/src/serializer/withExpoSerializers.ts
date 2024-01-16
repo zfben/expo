@@ -14,7 +14,7 @@ import {
   serverPreludeSerializerPlugin,
 } from './environmentVariableSerializerPlugin';
 import { ExpoSerializerOptions, baseJSBundle } from './fork/baseJSBundle';
-import { graphToSerialAssetsAsync } from './serializeChunks';
+import { clientManifestSerializerPlugin, graphToSerialAssetsAsync } from './serializeChunks';
 import { SerialAsset } from './serializerAssets';
 import { env } from '../env';
 
@@ -37,6 +37,8 @@ export function withExpoSerializers(config: InputConfigT): InputConfigT {
   if (!env.EXPO_NO_CLIENT_ENV_VARS) {
     processors.push(environmentVariableSerializerPlugin);
   }
+
+  processors.push(clientManifestSerializerPlugin);
 
   return withSerializerPlugins(config, processors);
 }
@@ -109,14 +111,13 @@ function getDefaultSerializer(
     })();
 
     if (serializerOptions?.outputMode !== 'static') {
-
       const res = await defaultSerializer(...props);
-//  console.log('>>', res, props);
+      //  console.log('>>', res, props);
       // if (typeof res === 'string')  {}
 
       // if (options.runModule) {
       //   const paths = [...options.runBeforeMainModule, entryPoint];
-    
+
       //   for (const path of paths) {
       //     if (modules.some((module: Module<>) => module.path === path)) {
       //       const code = options.getRunModuleStatement(
@@ -142,7 +143,7 @@ function getDefaultSerializer(
       //   }
       // }
 
-      return res
+      return res;
     }
 
     // Mutate the serializer options with the parsed options.

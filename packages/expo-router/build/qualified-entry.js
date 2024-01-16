@@ -20,7 +20,9 @@ function App() {
     console.log('ctx', _ctx_1.ctx.keys());
     // {/* <ExpoRoot context={ctx} /> */}
     return (<head_1.Head.Provider>
-      <client_1.Root>
+      <client_1.Root initialSearchParamsString={`platform=${'web'}&manifest=${encodeURIComponent(
+        // Injected by the serializer in development
+        JSON.stringify(global.$$expo_rsc_manifest))}`}>
         <client_1.Slot id="App"/>
       </client_1.Root>
     </head_1.Head.Provider>);

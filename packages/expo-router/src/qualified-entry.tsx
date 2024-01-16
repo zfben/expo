@@ -18,7 +18,11 @@ export function App() {
   // {/* <ExpoRoot context={ctx} /> */}
   return (
     <Head.Provider>
-      <Root>
+      <Root
+        initialSearchParamsString={`platform=${'web'}&manifest=${encodeURIComponent(
+          // Injected by the serializer in development
+          JSON.stringify(global.$$expo_rsc_manifest)
+        )}`}>
         <Slot id="App" />
       </Root>
     </Head.Provider>

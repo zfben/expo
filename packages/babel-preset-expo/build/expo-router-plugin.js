@@ -214,6 +214,7 @@ function expoRouterServerComponentClientReferencesPlugin(api) {
                     },
                 });
                 // TODO: Handle module.exports somehow...
+                console.log('Client references', filePath, outputKey, exports);
                 // Bundling for the RSC requests, collect the manifest as metadata.
                 state.file.metadata['clientReferences'] = {
                     entryPoint: outputKey,

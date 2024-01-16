@@ -53,6 +53,8 @@ import { prependMiddleware } from '../middleware/mutations';
 import { startTypescriptTypeGenerationAsync } from '../type-generation/startTypescriptTypeGeneration';
 import { ServerNext, ServerRequest, ServerResponse } from '../middleware/server.types';
 import { logMetroError } from './metroErrorInterface';
+import { respond } from '@expo/server/build/vendor/http';
+import { ExpoResponse } from '@expo/server';
 
 export class ForwardHtmlError extends CommandError {
   constructor(
@@ -578,77 +580,91 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         res: ServerResponse,
         redirectToId: string | null
       ) => {
+        const url = new URL(req.url!, 'http://e');
+        const route = url.pathname.replace(/^\/rsc\//, '');
+        const inputManifest = url.searchParams.get('manifest')!;
+        const clientReferenceManifest = JSON.parse(inputManifest);
+
+        console.log('Render route:', route, clientReferenceManifest);
+
         // NOTE: test case
         renderRsc(
           // Props / location
           { $$route: './index.tsx' },
           // Manifest
-          mockManifest
+          // mockManifest
+          clientReferenceManifest
         )
           .then((data) => {
             console.log('data', data);
-            res.end(data);
+            // Stream RSC data response
+
+            // res.statusCode = 200;
+            // res.setHeader('Content-Type', 'application/json');
+            // res.end(data);
+
+            respond(res, new ExpoResponse(data));
           })
           .catch((error) => {
             Log.log('Error rendering rsc');
             Log.error(error);
           });
-        
+
         return;
-        const query = new URL(req.url!, 'http://e').searchParams;
+        // const query = new URL(req.url!, 'http://e').searchParams;
 
-        const loc = query.get('props');
-        const manifest = query.get('manifest');
-        // const platform = query.get('platform') ?? 'web';
+        // const loc = query.get('props');
+        // const manifest = query.get('manifest');
+        // // const platform = query.get('platform') ?? 'web';
 
-        if (!loc || !manifest) {
-          res.statusCode = 400;
-          res.setHeader('Content-Type', 'application/json');
-          res.end(
-            JSON.stringify({
-              error: 'No props provided to server component request.',
-            })
-          );
-          return;
-        }
+        // if (!loc || !manifest) {
+        //   res.statusCode = 400;
+        //   res.setHeader('Content-Type', 'application/json');
+        //   res.end(
+        //     JSON.stringify({
+        //       error: 'No props provided to server component request.',
+        //     })
+        //   );
+        //   return;
+        // }
 
-        const clientReferenceManifest = JSON.parse(manifest);
-        const location = JSON.parse(loc);
-        if (redirectToId) {
-          location.selectedId = redirectToId;
-        }
+        // const clientReferenceManifest = JSON.parse(manifest);
+        // const location = JSON.parse(loc);
+        // if (redirectToId) {
+        //   location.selectedId = redirectToId;
+        // }
 
-        res.setHeader('X-Location', JSON.stringify(location));
+        // res.setHeader('X-Location', JSON.stringify(location));
 
-        try {
-          const pipe = await renderRsc(location, clientReferenceManifest);
+        // try {
+        //   const pipe = await renderRsc(location, clientReferenceManifest);
 
-          pipe(res);
-        } catch (error: any) {
-          console.error(error);
+        //   pipe(res);
+        // } catch (error: any) {
+        //   console.error(error);
 
-          res.statusCode = 500;
-          res.setHeader('Content-Type', 'application/json');
-          if (error.message.includes('__fbBatchedBridgeConfig is not set')) {
-            res.end(
-              JSON.stringify({
-                error: 'The server component contains react-native code.',
-              })
-            );
-            return;
-          }
+        //   res.statusCode = 500;
+        //   res.setHeader('Content-Type', 'application/json');
+        //   if (error.message.includes('__fbBatchedBridgeConfig is not set')) {
+        //     res.end(
+        //       JSON.stringify({
+        //         error: 'The server component contains react-native code.',
+        //       })
+        //     );
+        //     return;
+        //   }
 
-          res.end(
-            JSON.stringify({
-              error: error.message,
-            })
-          );
-        }
+        //   res.end(
+        //     JSON.stringify({
+        //       error: error.message,
+        //     })
+        //   );
+        // }
       };
 
       // Server components
       middleware.use(async (req: ServerRequest, res: ServerResponse, next: ServerNext) => {
-        if (!req?.url || !req.url.startsWith('/rsc')) {
+        if (!req?.url || !req.url.startsWith('/rsc/')) {
           return next();
         }
         return sendResponse(req, res, null);

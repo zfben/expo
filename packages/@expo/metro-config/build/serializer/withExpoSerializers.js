@@ -22,6 +22,7 @@ function withExpoSerializers(config) {
     if (!env_1.env.EXPO_NO_CLIENT_ENV_VARS) {
         processors.push(environmentVariableSerializerPlugin_1.environmentVariableSerializerPlugin);
     }
+    processors.push(serializeChunks_1.clientManifestSerializerPlugin);
     return withSerializerPlugins(config, processors);
 }
 exports.withExpoSerializers = withExpoSerializers;

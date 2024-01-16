@@ -1,4 +1,4 @@
-import { AssetData, MetroConfig } from 'metro';
+import { AssetData, MetroConfig, MixedOutput, Module, ReadOnlyGraph, SerializerOptions } from 'metro';
 import { ConfigT } from 'metro-config';
 import { SerialAsset } from './serializerAssets';
 type RscClientReference = {
@@ -32,6 +32,8 @@ export type SerializeChunkOptions = {
     includeSourceMaps: boolean;
     includeBytecode: boolean;
 };
+/** Strips the process.env polyfill in server environments to allow for accessing environment variables off the global. */
+export declare function clientManifestSerializerPlugin(entryPoint: string, preModules: readonly Module<MixedOutput>[], graph: ReadOnlyGraph, options: SerializerOptions): SerializerParameters;
 export declare function graphToSerialAssetsAsync(config: MetroConfig, serializeChunkOptions: SerializeChunkOptions, ...props: SerializerParameters): Promise<{
     artifacts: SerialAsset[] | null;
     rscManifest: RscManifest;
