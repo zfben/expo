@@ -70,7 +70,6 @@ const createRerender = (0, react_1.cache)(() => {
     };
     const getRerender = () => stableRerender;
     const setRerender = (newRerender) => {
-        console.log('> setRerender');
         rerender = newRerender;
     };
     return [getRerender, setRerender];
@@ -81,7 +80,6 @@ const Root = ({ initialInput, initialSearchParamsString, children, }) => {
     setRerender(setElements);
     const refetch = (0, react_1.useCallback)((input, searchParams) => {
         const data = (0, exports.fetchRSC)(input, searchParams?.toString() || '', getRerender());
-        console.log('> refetch', input);
         setElements((prev) => mergeElements(prev, data));
     }, [getRerender]);
     console.log('Render with elements,', elements);
@@ -105,6 +103,7 @@ const Slot = ({ id, children, fallback, }) => {
         console.log('Expected one of:', elements);
         // throw new Error('Not found: ' + id);
     }
+    // TODO: Fix this to support multiple children
     return (0, react_1.createElement)(ChildrenContextProvider, { value: children }, elements);
     // return createElement(ChildrenContextProvider, { value: children }, elements[id]);
 };

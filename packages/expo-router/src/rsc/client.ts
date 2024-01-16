@@ -103,7 +103,6 @@ const createRerender = cache(() => {
   };
   const getRerender = () => stableRerender;
   const setRerender = (newRerender: NonNullable<typeof rerender>) => {
-    console.log('> setRerender');
     rerender = newRerender;
   };
   return [getRerender, setRerender] as const;
@@ -126,7 +125,6 @@ export const Root = ({
   const refetch = useCallback(
     (input: string, searchParams?: URLSearchParams) => {
       const data = fetchRSC(input, searchParams?.toString() || '', getRerender());
-      console.log('> refetch', input);
       setElements((prev) => mergeElements(prev, data));
     },
     [getRerender]
@@ -166,6 +164,7 @@ export const Slot = ({
     // throw new Error('Not found: ' + id);
 
   }
+  // TODO: Fix this to support multiple children
   return createElement(ChildrenContextProvider, { value: children }, elements);
   // return createElement(ChildrenContextProvider, { value: children }, elements[id]);
 };
