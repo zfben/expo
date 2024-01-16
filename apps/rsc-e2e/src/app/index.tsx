@@ -1,4 +1,4 @@
-import { Counter } from '../components/Counter';
+// import { Counter } from '../components/Counter';
 
 const App = ({ name }: { name: string }) => {
   return (
@@ -6,7 +6,7 @@ const App = ({ name }: { name: string }) => {
       <title>RSC example</title>
       <h1>Hello {name}!!</h1>
       <h3>This is a server component.</h3>
-      <Counter />
+      {/* <Counter /> */}
       <div>{new Date().toISOString()}</div>
     </div>
   );

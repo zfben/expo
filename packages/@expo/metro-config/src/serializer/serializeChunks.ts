@@ -112,8 +112,7 @@ export function clientManifestSerializerPlugin(
         currentUrl.searchParams.set('modulesOnly', 'true');
         // TODO: Add params to indicate that `module.exports = __r()` should be used as the run module statement.
         currentUrl.searchParams.set('runModule', 'false');
-        // A custom flag to indicate that we should evaluate and return the exports from the module instead of attempting to negotiate around Metro's opaque (poorly designed) module system.
-        currentUrl.searchParams.set('returnExport', 'true');
+
 
         const outputKey = pathToFileURL(module.path).href;
 
@@ -222,8 +221,6 @@ export async function graphToSerialAssetsAsync(
         currentUrl.searchParams.set('modulesOnly', 'true');
         // TODO: Add params to indicate that `module.exports = __r()` should be used as the run module statement.
         currentUrl.searchParams.set('runModule', 'false');
-        // A custom flag to indicate that we should evaluate and return the exports from the module instead of attempting to negotiate around Metro's opaque (poorly designed) module system.
-        currentUrl.searchParams.set('returnExport', 'true');
 
         const outputKey = pathToFileURL(module.path).href;
 

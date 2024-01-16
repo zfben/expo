@@ -28,7 +28,7 @@ export async function renderToPipeableStream(
   { $$route: route, ...props },
   moduleMap: WebpackManifest
 ) {
-  const { renderToPipeableStream } = require('react-server-dom-webpack/server');
+  const { renderToReadableStream } = require('react-server-dom-webpack/server.edge');
 
   if (!ctx.keys().includes(route)) {
     throw new Error(
@@ -43,14 +43,44 @@ export async function renderToPipeableStream(
   // if (node?._route) {
 
   // const { default: Component } = node._route.loadRoute();
-  const rsc = renderToPipeableStream(
-    // TODO: Does this support async?
-    // <Component {...props} />,
-    React.createElement(Component, props),
-    moduleMap
+  // const rsc = renderToPipeableStream(
+  //   // TODO: Does this support async?
+  //   // <Component {...props} />,
+  //   React.createElement(Component, props),
+  //   moduleMap
+  // );
+
+  // return await pipeTo(rsc.pipe);
+
+  // method === 'GET'
+  // const renderContext: RenderContext = {
+  //   rerender: () => {
+  //     throw new Error('Cannot rerender');
+  //   },
+  //   context,
+  // };
+
+  const bundlerConfig = new Proxy(
+    {},
+    {
+      get(_target, encodedId: string) {
+        console.log('Get manifest entry:', encodedId);
+        return moduleMap[encodedId];
+        // const [file, name] = encodedId.split('#') as [string, string];
+        // const id = resolveClientEntry(file, config, isDev);
+        // moduleIdCallback?.(id);
+        // return { id, chunks: [id], name, async: true };
+      },
+    },
   );
 
-  return await pipeTo(rsc.pipe);
+
+  
+  //   moduleMap
+
+  const elements = React.createElement(Component, props);
+  return renderToReadableStream(elements, bundlerConfig);
+
   // return rsc.pipe;
   // }
 

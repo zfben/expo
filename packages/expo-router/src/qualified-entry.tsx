@@ -23,7 +23,7 @@ export function App() {
           // Injected by the serializer in development
           JSON.stringify(global.$$expo_rsc_manifest)
         )}`}>
-        <Slot id="App" />
+        <Slot id="index" />
       </Root>
     </Head.Provider>
   );

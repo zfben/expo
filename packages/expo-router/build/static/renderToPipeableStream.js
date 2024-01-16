@@ -13,7 +13,7 @@ exports.renderToPipeableStream = void 0;
 const react_1 = __importDefault(require("react"));
 const _ctx_1 = require("../../_ctx");
 async function renderToPipeableStream({ $$route: route, ...props }, moduleMap) {
-    const { renderToPipeableStream } = require('react-server-dom-webpack/server');
+    const { renderToReadableStream } = require('react-server-dom-webpack/server.edge');
     if (!_ctx_1.ctx.keys().includes(route)) {
         throw new Error('Failed to find route: ' + route + '. Expected one of: ' + _ctx_1.ctx.keys().join(', '));
     }
@@ -22,11 +22,33 @@ async function renderToPipeableStream({ $$route: route, ...props }, moduleMap) {
     // const node = getNodeFinder()(route);
     // if (node?._route) {
     // const { default: Component } = node._route.loadRoute();
-    const rsc = renderToPipeableStream(
-    // TODO: Does this support async?
-    // <Component {...props} />,
-    react_1.default.createElement(Component, props), moduleMap);
-    return await pipeTo(rsc.pipe);
+    // const rsc = renderToPipeableStream(
+    //   // TODO: Does this support async?
+    //   // <Component {...props} />,
+    //   React.createElement(Component, props),
+    //   moduleMap
+    // );
+    // return await pipeTo(rsc.pipe);
+    // method === 'GET'
+    // const renderContext: RenderContext = {
+    //   rerender: () => {
+    //     throw new Error('Cannot rerender');
+    //   },
+    //   context,
+    // };
+    const bundlerConfig = new Proxy({}, {
+        get(_target, encodedId) {
+            console.log('Get manifest entry:', encodedId);
+            return moduleMap[encodedId];
+            // const [file, name] = encodedId.split('#') as [string, string];
+            // const id = resolveClientEntry(file, config, isDev);
+            // moduleIdCallback?.(id);
+            // return { id, chunks: [id], name, async: true };
+        },
+    });
+    //   moduleMap
+    const elements = react_1.default.createElement(Component, props);
+    return renderToReadableStream(elements, bundlerConfig);
     // return rsc.pipe;
     // }
     // throw new Error('Failed to render server component at: ' + route);

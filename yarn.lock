@@ -16618,13 +16618,13 @@ react-devtools-core@^4.27.7:
     shell-quote "^1.6.1"
     ws "^7"
 
-react-dom@18.2.0, react-dom@18.3.0-canary-41f0e9dae-20230907:
-  version "18.3.0-canary-41f0e9dae-20230907"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.3.0-canary-41f0e9dae-20230907.tgz#ba672b18e4d894c68684d8042fa24eca1603d24e"
-  integrity sha512-Yn+jzKwpT/NkKdenUKhGzhKAEQbm+MB50Ghr8rOGQkLFzCxT9C+JKllPZyqfkrs5MZ7fHbFLmfVt9OlMfKpTgQ==
+react-dom@18.2.0, react-dom@18.3.0-canary-c5b937576-20231219:
+  version "18.3.0-canary-c5b937576-20231219"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.3.0-canary-c5b937576-20231219.tgz#7d279ae9855e99f261c230e592b9c1a38c2ea18a"
+  integrity sha512-MahkLDRcM+y8gNEgDHZOvfogjinhvwjjDhgNuTNHyqtC78Xz0iClZ7weD+Gdv9XL2R/AKV/EqYCpUzpey9mDLA==
   dependencies:
     loose-envify "^1.1.0"
-    scheduler "0.24.0-canary-41f0e9dae-20230907"
+    scheduler "0.24.0-canary-c5b937576-20231219"
 
 react-error-boundary@^3.1.0:
   version "3.1.4"
@@ -16917,10 +16917,10 @@ react-refresh@0.14.0, react-refresh@^0.14.0:
   resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.14.0.tgz#4e02825378a5f227079554d4284889354e5f553e"
   integrity sha512-wViHqhAd8OHeLS/IRMJjTSDHF3U9eWi62F/MledQGPdJGDhodXJ9PBLNGr6WWL7qlH12Mt3TyTpbS+hGXMjCzQ==
 
-react-server-dom-webpack@0.0.1, react-server-dom-webpack@18.3.0-canary-41f0e9dae-20230907:
-  version "18.3.0-canary-41f0e9dae-20230907"
-  resolved "https://registry.yarnpkg.com/react-server-dom-webpack/-/react-server-dom-webpack-18.3.0-canary-41f0e9dae-20230907.tgz#d06fc9c468845993d3804d872dd3b45439228606"
-  integrity sha512-BorBmiJ+7kvoo6ZuyeEIMvejCxp8aEjkvkEVFNCWXjzHbSIek6WH+FOuNl79mDHYL4HxfnU4lAIzI8G2UDfi2g==
+react-server-dom-webpack@0.0.1, react-server-dom-webpack@18.3.0-canary-c5b937576-20231219:
+  version "18.3.0-canary-c5b937576-20231219"
+  resolved "https://registry.yarnpkg.com/react-server-dom-webpack/-/react-server-dom-webpack-18.3.0-canary-c5b937576-20231219.tgz#dc19e05fffff1524aefe3a33d4ccfb9229f29ee8"
+  integrity sha512-Btwz2z+6+hgJUt/LnQNQkR+uuVW8aD+87BNZyPqJPkkhXRxbQkGFflTFGYJFPZyRIzmdGJG9WBfQiAMmfHCISQ==
   dependencies:
     acorn-loose "^8.3.0"
     loose-envify "^1.1.0"
@@ -16955,10 +16955,10 @@ react-timer-mixin@^0.13.3:
   resolved "https://registry.yarnpkg.com/react-timer-mixin/-/react-timer-mixin-0.13.4.tgz#75a00c3c94c13abe29b43d63b4c65a88fc8264d3"
   integrity sha512-4+ow23tp/Tv7hBM5Az5/Be/eKKF7DIvJ09voz5LyHGQaqqz9WV8YMs31eFvcYQs7d451LSg7kDJV70XYN/Ug/Q==
 
-react@18.2.0, react@18.3.0-canary-41f0e9dae-20230907:
-  version "18.3.0-canary-41f0e9dae-20230907"
-  resolved "https://registry.yarnpkg.com/react/-/react-18.3.0-canary-41f0e9dae-20230907.tgz#18114b747e4a66c4140770238dd8d803c4e003b9"
-  integrity sha512-4F7k5G3ftLC2zbGqRr6KODEj9FBj89oPcTIbrQjoGm8xinPW1s21+NCSC+QUCI1SSLLT8rgSt9fFce4ij4epzw==
+react@18.2.0, react@18.3.0-canary-c5b937576-20231219:
+  version "18.3.0-canary-c5b937576-20231219"
+  resolved "https://registry.yarnpkg.com/react/-/react-18.3.0-canary-c5b937576-20231219.tgz#3d9a794c906e2bdd23f1e80610015dcc36495fff"
+  integrity sha512-gvMxGf2wlOMq387pdOypG4li5iuLdpu/wDRuyETZsdLFrDcCH4RuJCIcTWcLIlP/oG5uD5yXMi2hePYuB+toyw==
   dependencies:
     loose-envify "^1.1.0"
 
@@ -17599,10 +17599,10 @@ saxes@^6.0.0:
   dependencies:
     xmlchars "^2.2.0"
 
-scheduler@0.24.0-canary-41f0e9dae-20230907:
-  version "0.24.0-canary-41f0e9dae-20230907"
-  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.24.0-canary-41f0e9dae-20230907.tgz#0e07d602486c5f8ad8a3165ddd2bef63903de9bb"
-  integrity sha512-97KvTfU2on1bhT/wo/49Ax2m9UTJf6SCCtEBs6wObz4Jg8wjeFPtJ8j4zC39a+nbcwZSzBPxAQ8o/HlPlkNKjg==
+scheduler@0.24.0-canary-c5b937576-20231219:
+  version "0.24.0-canary-c5b937576-20231219"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.24.0-canary-c5b937576-20231219.tgz#b55ba25b61117d27a179ac2005fcf6ce0b212d50"
+  integrity sha512-eFiLsRse2DGq3davC8B6qmVlbdrikiHDcqeys+Dp7l5YQ+Jw9tPVQ5RZbEA0o7zO2rjyPFzxNOtE6fRMQcWrKQ==
   dependencies:
     loose-envify "^1.1.0"
 

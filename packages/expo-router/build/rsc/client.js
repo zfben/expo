@@ -37,6 +37,7 @@ exports.fetchRSC = (0, react_1.cache)((input, searchParamsString, rerender) => {
             });
             const data = createFromFetch(checkStatus(response), options);
             (0, react_1.startTransition)(() => {
+                console.log('update renderer:', data);
                 // FIXME this causes rerenders even if data is empty
                 rerender((prev) => mergeElements(prev, data));
             });
@@ -69,6 +70,7 @@ const createRerender = (0, react_1.cache)(() => {
     };
     const getRerender = () => stableRerender;
     const setRerender = (newRerender) => {
+        console.log('> setRerender');
         rerender = newRerender;
     };
     return [getRerender, setRerender];
@@ -79,8 +81,10 @@ const Root = ({ initialInput, initialSearchParamsString, children, }) => {
     setRerender(setElements);
     const refetch = (0, react_1.useCallback)((input, searchParams) => {
         const data = (0, exports.fetchRSC)(input, searchParams?.toString() || '', getRerender());
+        console.log('> refetch', input);
         setElements((prev) => mergeElements(prev, data));
     }, [getRerender]);
+    console.log('Render with elements,', elements);
     return (0, react_1.createElement)(RefetchContext.Provider, { value: refetch }, (0, react_1.createElement)(ElementsContext.Provider, { value: elements }, children));
 };
 exports.Root = Root;
@@ -98,9 +102,11 @@ const Slot = ({ id, children, fallback, }) => {
         if (fallback) {
             return fallback;
         }
-        throw new Error('Not found: ' + id);
+        console.log('Expected one of:', elements);
+        // throw new Error('Not found: ' + id);
     }
-    return (0, react_1.createElement)(ChildrenContextProvider, { value: children }, elements[id]);
+    return (0, react_1.createElement)(ChildrenContextProvider, { value: children }, elements);
+    // return createElement(ChildrenContextProvider, { value: children }, elements[id]);
 };
 exports.Slot = Slot;
 const Children = () => (0, react_1.use)(ChildrenContext);

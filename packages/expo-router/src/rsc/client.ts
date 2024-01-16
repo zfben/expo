@@ -63,6 +63,7 @@ export const fetchRSC = cache(
         });
         const data = createFromFetch<Awaited<Elements>>(checkStatus(response), options);
         startTransition(() => {
+          console.log('update renderer:', data)
           // FIXME this causes rerenders even if data is empty
           rerender((prev) => mergeElements(prev, data));
         });
@@ -102,6 +103,7 @@ const createRerender = cache(() => {
   };
   const getRerender = () => stableRerender;
   const setRerender = (newRerender: NonNullable<typeof rerender>) => {
+    console.log('> setRerender');
     rerender = newRerender;
   };
   return [getRerender, setRerender] as const;
@@ -124,10 +126,12 @@ export const Root = ({
   const refetch = useCallback(
     (input: string, searchParams?: URLSearchParams) => {
       const data = fetchRSC(input, searchParams?.toString() || '', getRerender());
+      console.log('> refetch', input);
       setElements((prev) => mergeElements(prev, data));
     },
     [getRerender]
   );
+  console.log('Render with elements,', elements)
   return createElement(
     RefetchContext.Provider,
     { value: refetch },
@@ -158,9 +162,12 @@ export const Slot = ({
     if (fallback) {
       return fallback;
     }
-    throw new Error('Not found: ' + id);
+    console.log('Expected one of:', elements)
+    // throw new Error('Not found: ' + id);
+
   }
-  return createElement(ChildrenContextProvider, { value: children }, elements[id]);
+  return createElement(ChildrenContextProvider, { value: children }, elements);
+  // return createElement(ChildrenContextProvider, { value: children }, elements[id]);
 };
 
 export const Children = () => use(ChildrenContext);
