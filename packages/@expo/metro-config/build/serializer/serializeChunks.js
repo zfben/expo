@@ -63,10 +63,14 @@ function clientManifestSerializerPlugin(entryPoint, preModules, graph, options) 
                 // },
                 const pushRef = (exp) => {
                     const key = `${outputKey}${exp === '*' ? '' : `#${exp}`}`;
+                    const chunk = options.dev ? currentUrl.toString() + `#${opaqueId}` : 'TODO-PRODUCTION-CHUNK-NAMES';
                     rscClientReferenceManifest[key] = {
-                        id: entry,
+                        // TODO: Make this the opaque Metro ID
+                        id: chunk,
+                        // id: entry,
                         chunks: [
-                            options.dev ? currentUrl.toString() + `#${opaqueId}` : 'TODO-PRODUCTION-CHUNK-NAMES',
+                            // TODO: This should be the URL where the chunk can be requested from.
+                            chunk,
                         ],
                         name: exp,
                     };
