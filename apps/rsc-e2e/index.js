@@ -9,10 +9,9 @@ globalThis.__webpack_chunk_load__ = (id) => {
     return __expo_metro_load_chunk__(id).then(() => {
         console.log('loaded module.1:', id)
         try {
-            const m = eval("__r")(numericMetroId);
+            const m = __r(numericMetroId);
             console.log('loaded module.2:', id, m)
             globalThis.__waku_module_cache__.set(id, m);
-            console.log('loaded module.3')
             return m;
         } catch (e) {
             console.log('failed to load module:', e)
