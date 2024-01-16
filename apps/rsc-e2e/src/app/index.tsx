@@ -1,7 +1,10 @@
 // import { Counter } from '../components/Counter';
+import { View, Text } from 'react-native-web';
 
 const App = ({ name }: { name: string }) => {
   return (
+    <View style={{flex: 1}}>
+      <Text>Hey</Text>
     <div style={{ border: '3px red dashed', margin: '1em', padding: '1em' }}>
       <title>Expo x Metro RSC</title>
       {/* <h1>Hello {name}!!</h1> */}
@@ -10,6 +13,7 @@ const App = ({ name }: { name: string }) => {
       {/* <Counter /> */}
       <div>{new Date().toISOString()}</div>
     </div>
+    </View>
   );
 };
 
