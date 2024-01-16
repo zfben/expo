@@ -530,30 +530,31 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       };
 
       const mockManifest = {
-        'file:///Users/evanbacon/Documents/GitHub/expo/apps/sandbox/components/Timer.tsx': {
+        'file:///Users/evanbacon/Documents/GitHub/expo/apps/rsc-e2e/src/components/Counter.tsx': {
           // '/apps/sandbox/app/index.tsx#default': {
-          id: '/apps/sandbox/components/Timer.tsx',
+          id: '/apps/rsc-e2e/src/components/Counter.tsx',
           chunks: [
-            'http://localhost:8081/apps/sandbox/components/Timer.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false',
+            'http://localhost:8081/apps/rsc-e2e/src/components/Counter.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false#-1139933840',
           ],
           name: '*',
         },
-        'file:///Users/evanbacon/Documents/GitHub/expo/apps/sandbox/components/Timer.tsx#': {
+        'file:///Users/evanbacon/Documents/GitHub/expo/apps/rsc-e2e/src/components/Counter.tsx#': {
           // '/apps/sandbox/app/index.tsx#default': {
-          id: '/apps/sandbox/components/Timer.tsx',
+          id: '/apps/rsc-e2e/src/components/Counter.tsx',
           chunks: [
-            'http://localhost:8081/apps/sandbox/components/Timer.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false',
+            'http://localhost:8081/apps/rsc-e2e/src/components/Counter.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false#-1139933840',
           ],
           name: '',
         },
-        'file:///Users/evanbacon/Documents/GitHub/expo/apps/sandbox/components/Timer.tsx#default': {
-          // '/apps/sandbox/app/index.tsx#default': {
-          id: '/apps/sandbox/components/Timer.tsx',
-          chunks: [
-            'http://localhost:8081/apps/sandbox/components/Timer.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false',
-          ],
-          name: 'default',
-        },
+        'file:///Users/evanbacon/Documents/GitHub/expo/apps/rsc-e2e/src/components/Counter.tsx#default':
+          {
+            // '/apps/sandbox/app/index.tsx#default': {
+            id: '/apps/rsc-e2e/src/components/Counter.tsx',
+            chunks: [
+              'http://localhost:8081/apps/rsc-e2e/src/components/Counter.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false#-1139933840',
+            ],
+            name: 'default',
+          },
       };
 
       setTimeout(() => {
@@ -586,12 +587,13 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         )
           .then((data) => {
             console.log('data', data);
+            res.end(data);
           })
           .catch((error) => {
             Log.log('Error rendering rsc');
             Log.error(error);
           });
-        res.end('funky');
+        
         return;
         const query = new URL(req.url!, 'http://e').searchParams;
 
@@ -646,7 +648,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
       // Server components
       middleware.use(async (req: ServerRequest, res: ServerResponse, next: ServerNext) => {
-        if (!req?.url || !req.url.startsWith('/_expo/rsc')) {
+        if (!req?.url || !req.url.startsWith('/rsc')) {
           return next();
         }
         return sendResponse(req, res, null);

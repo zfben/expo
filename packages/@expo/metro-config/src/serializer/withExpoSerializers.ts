@@ -109,7 +109,40 @@ function getDefaultSerializer(
     })();
 
     if (serializerOptions?.outputMode !== 'static') {
-      return defaultSerializer(...props);
+
+      const res = await defaultSerializer(...props);
+//  console.log('>>', res, props);
+      // if (typeof res === 'string')  {}
+
+      // if (options.runModule) {
+      //   const paths = [...options.runBeforeMainModule, entryPoint];
+    
+      //   for (const path of paths) {
+      //     if (modules.some((module: Module<>) => module.path === path)) {
+      //       const code = options.getRunModuleStatement(
+      //         options.createModuleId(path),
+      //       );
+      //       output.push({
+      //         path: `require-${path}`,
+      //         dependencies: new Map(),
+      //         getSource: (): Buffer => Buffer.from(''),
+      //         inverseDependencies: new CountingSet(),
+      //         output: [
+      //           {
+      //             type: 'js/script/virtual',
+      //             data: {
+      //               code,
+      //               lineCount: countLines(code),
+      //               map: [],
+      //             },
+      //           },
+      //         ],
+      //       });
+      //     }
+      //   }
+      // }
+
+      return res
     }
 
     // Mutate the serializer options with the parsed options.

@@ -30,10 +30,10 @@ export function fetchThenEvalAsync(url: string): Promise<void> {
     // Some engines do not support `sourceURL` as a comment. We expose a
     // `globalEvalWithSourceUrl` function to handle updates in that case.
     if (global.globalEvalWithSourceUrl) {
-      global.globalEvalWithSourceUrl(body, url);
+      return global.globalEvalWithSourceUrl(body, url);
     } else {
       // eslint-disable-next-line no-eval
-      eval(body);
+      return eval(body);
     }
   });
 }

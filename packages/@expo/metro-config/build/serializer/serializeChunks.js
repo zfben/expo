@@ -46,6 +46,8 @@ async function graphToSerialAssetsAsync(config, serializeChunkOptions, ...props)
                 currentUrl.searchParams.set('modulesOnly', 'true');
                 // TODO: Add params to indicate that `module.exports = __r()` should be used as the run module statement.
                 currentUrl.searchParams.set('runModule', 'false');
+                // A custom flag to indicate that we should evaluate and return the exports from the module instead of attempting to negotiate around Metro's opaque (poorly designed) module system.
+                currentUrl.searchParams.set('returnExport', 'true');
                 const outputKey = (0, url_1.pathToFileURL)(module.path).href;
                 // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/NoteEditor.js": {
                 //   "id": "./src/NoteEditor.js",

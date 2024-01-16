@@ -8,14 +8,19 @@
 import { ctx } from 'expo-router/_ctx';
 import React from 'react';
 
-import { ExpoRoot } from './ExpoRoot';
+// import { ExpoRoot } from './ExpoRoot';
 import { Head } from './head';
+import { Slot, Root } from './rsc/client';
 
 // Must be exported or Fast Refresh won't update the context
 export function App() {
+  console.log('ctx', ctx.keys());
+  // {/* <ExpoRoot context={ctx} /> */}
   return (
     <Head.Provider>
-      <ExpoRoot context={ctx} />
+      <Root>
+        <Slot id="App" />
+      </Root>
     </Head.Provider>
   );
 }
