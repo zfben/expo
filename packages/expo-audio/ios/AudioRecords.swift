@@ -26,3 +26,19 @@ enum AudioCategory: String, Enumerable {
   }
 }
 
+enum PitchCorrectionQuality: String, Enumerable {
+  case low
+  case medium
+  case high
+  
+  func toPitchAlgorithm() -> AVAudioTimePitchAlgorithm {
+    switch self {
+    case .low:
+      return .timeDomain
+    case .medium:
+      return .varispeed
+    case .high:
+      return .spectral
+    }
+  }
+}
