@@ -92,7 +92,7 @@ public final class SharedObjectRegistry {
   /**
    Deletes the shared objects pair with a given ID.
    */
-  internal static func delete(_ id: SharedObjectId) {
+  public static func delete(_ id: SharedObjectId) {
     Self.lockQueue.async {
       if let pair = pairs[id] {
         // Reset an ID on the objects.
