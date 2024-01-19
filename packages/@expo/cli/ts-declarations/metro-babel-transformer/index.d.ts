@@ -40,6 +40,10 @@ declare module 'metro-babel-transformer' {
     transform: (args: BabelTransformerArgs) => {
       ast: Ast;
       metadata?: BabelFileMetadata & {
+        clientReferences?: Array<{
+          entryPoint: string;
+          exports: string[];
+        }> | null,
         metro?: {
           functionMap?: FBSourceFunctionMap | null;
         };
