@@ -21,4 +21,4 @@ globalThis.__webpack_chunk_load__ = (id) => {
 };
 globalThis.__webpack_require__ = (id) => globalThis.__waku_module_cache__.get(id);
 
-import 'expo-router/entry';
+require('expo-router/entry');
