@@ -12,14 +12,19 @@ import { AssetData } from 'metro';
 import fetch from 'node-fetch';
 import path from 'path';
 
-import { bundleApiRoute, rebundleApiRoute } from './bundleApiRoutes';
+import { bundleApiRoute, invalidateApiRouteCache } from './bundleApiRoutes';
 import { createRouteHandlerMiddleware } from './createServerRouteMiddleware';
 import { ExpoRouterServerManifestV1, fetchManifest } from './fetchRouterManifest';
 import { instantiateMetroAsync } from './instantiateMetro';
 import { metroWatchTypeScriptFiles } from './metroWatchTypeScriptFiles';
-import { getRouterDirectoryModuleIdWithManifest, isApiRouteConvention } from './router';
+import {
+  getRouterDirectoryModuleIdWithManifest,
+  hasWarnedAboutApiRoutes,
+  isApiRouteConvention,
+  warnInvalidWebOutput,
+} from './router';
 import { serializeHtmlWithAssets } from './serializeHtml';
-import { observeApiRouteChanges, observeFileChanges } from './waitForMetroToObserveTypeScriptFile';
+import { observeAnyFileChanges, observeFileChanges } from './waitForMetroToObserveTypeScriptFile';
 import { ExportAssetMap } from '../../../export/saveAssets';
 import { Log } from '../../../log';
 import getDevClientProperties from '../../../utils/analytics/getDevClientProperties';
@@ -48,6 +53,7 @@ import {
   shouldEnableAsyncImports,
   createBundleUrlPath,
   getBaseUrlFromExpoConfig,
+  getAsyncRoutesFromExpoConfig,
 } from '../middleware/metroOptions';
 import { prependMiddleware } from '../middleware/mutations';
 import { startTypescriptTypeGenerationAsync } from '../type-generation/startTypescriptTypeGeneration';
@@ -55,6 +61,10 @@ import { ServerNext, ServerRequest, ServerResponse } from '../middleware/server.
 import { logMetroError } from './metroErrorInterface';
 import { respond } from '@expo/server/build/vendor/http';
 import { ExpoResponse } from '@expo/server';
+
+export type ExpoRouterRuntimeManifest = Awaited<
+  ReturnType<typeof import('expo-router/build/static/renderStaticContent').getManifest>
+>;
 
 export class ForwardHtmlError extends CommandError {
   constructor(
@@ -175,7 +185,11 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     baseUrl: string;
     isReactServer?: boolean;
     routerRoot: string;
-  }) {
+  }): Promise<{
+    serverManifest: ExpoRouterServerManifestV1;
+    manifest: ExpoRouterRuntimeManifest;
+    renderAsync: (path: string) => Promise<string>;
+  }> {
     const url = this.getDevServerUrl()!;
 
     const { getStaticContent, getManifest, getBuildTimeServerManifestAsync } =
@@ -248,6 +262,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     baseUrl,
     mainModuleName,
     isExporting,
+    asyncRoutes,
     routerRoot,
   }: {
     isExporting: boolean;
@@ -256,6 +271,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     includeSourceMaps?: boolean;
     baseUrl?: string;
     mainModuleName?: string;
+    asyncRoutes: boolean;
     routerRoot: string;
   }): Promise<{ artifacts: SerialAsset[]; assets?: AssetData[] }> {
     const devBundleUrlPathname = createBundleUrlPath({
@@ -268,6 +284,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       mainModuleName:
         mainModuleName ?? resolveMainModuleName(this.projectRoot, { platform: 'web' }),
       lazy: shouldEnableAsyncImports(this.projectRoot),
+      asyncRoutes,
       baseUrl,
       isExporting,
       routerRoot,
@@ -332,7 +349,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     );
   }
 
-  async getStaticPageAsync(
+  private async getStaticPageAsync(
     pathname: string,
     {
       mode,
@@ -340,11 +357,13 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       baseUrl,
       routerRoot,
       isExporting,
+      asyncRoutes,
     }: {
       isExporting: boolean;
       mode: 'development' | 'production';
       minify?: boolean;
       baseUrl: string;
+      asyncRoutes: boolean;
       routerRoot: string;
     }
   ) {
@@ -356,6 +375,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       lazy: shouldEnableAsyncImports(this.projectRoot),
       baseUrl,
       isExporting,
+      asyncRoutes,
       routerRoot,
     });
 
@@ -378,7 +398,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     };
 
     const [{ artifacts: resources }, staticHtml] = await Promise.all([
-      this.getStaticResourcesAsync({ isExporting, mode, minify, baseUrl, routerRoot }),
+      this.getStaticResourcesAsync({ isExporting, mode, minify, baseUrl, asyncRoutes, routerRoot }),
       bundleStaticHtml(),
     ]);
     const content = serializeHtmlWithAssets({
@@ -435,10 +455,6 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       port: options.port,
       maxWorkers: options.maxWorkers,
       resetCache: options.resetDevServer,
-
-      // Use the unversioned metro config.
-      // TODO: Deprecate this property when expo-cli goes away.
-      unversioned: false,
     };
 
     // Required for symbolication:
@@ -494,7 +510,8 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
     // Append support for redirecting unhandled requests to the index.html page on web.
     if (this.isTargetingWeb()) {
-      const { exp } = getConfig(this.projectRoot, { skipSDKVersionRequirement: true });
+      const config = getConfig(this.projectRoot, { skipSDKVersionRequirement: true });
+      const { exp } = config;
       const useServerRendering = ['static', 'server'].includes(exp.web?.output ?? '');
 
       // This MUST be after the manifest middleware so it doesn't have a chance to serve the template `public/index.html`.
@@ -672,6 +689,8 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
       if (useServerRendering) {
         const baseUrl = getBaseUrlFromExpoConfig(exp);
+        const asyncRoutes = getAsyncRoutesFromExpoConfig(exp, options.mode ?? 'development', 'web');
+        const routerRoot = getRouterDirectoryModuleIdWithManifest(this.projectRoot, exp);
         const appDir = path.join(this.projectRoot, routerRoot);
         middleware.use(
           createRouteHandlerMiddleware(this.projectRoot, {
@@ -679,6 +698,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
             appDir,
             baseUrl,
             routerRoot,
+            config,
             getWebBundleUrl: manifestMiddleware.getWebBundleUrl.bind(manifestMiddleware),
             getStaticPageAsync: (pathname) => {
               return this.getStaticPageAsync(pathname, {
@@ -686,39 +706,42 @@ export class MetroBundlerDevServer extends BundlerDevServer {
                 mode: options.mode ?? 'development',
                 minify: options.minify,
                 baseUrl,
+                asyncRoutes,
                 routerRoot,
               });
             },
           })
         );
 
-        // @ts-expect-error: TODO
-        if (exp.web?.output === 'server') {
-          // Cache observation for API Routes...
-          observeApiRouteChanges(
-            appDir,
-            {
-              metro,
-              server,
-            },
-            async (filepath, op) => {
-              if (isApiRouteConvention(filepath)) {
-                debug(`[expo-cli] ${op} ${filepath}`);
-                if (op === 'change' || op === 'add') {
-                  rebundleApiRoute(this.projectRoot, filepath, {
-                    ...options,
-                    routerRoot,
-                    baseUrl,
-                  });
-                }
-
-                if (op === 'delete') {
-                  // TODO: Cancel the bundling of the deleted route.
+        observeAnyFileChanges(
+          {
+            metro,
+            server,
+          },
+          (events) => {
+            if (exp.web?.output === 'server') {
+              // NOTE(EvanBacon): We aren't sure what files the API routes are using so we'll just invalidate
+              // aggressively to ensure we always have the latest. The only caching we really get here is for
+              // cases where the user is making subsequent requests to the same API route without changing anything.
+              // This is useful for testing but pretty suboptimal. Luckily our caching is pretty aggressive so it makes
+              // up for a lot of the overhead.
+              invalidateApiRouteCache();
+            } else if (!hasWarnedAboutApiRoutes()) {
+              for (const event of events) {
+                if (
+                  // If the user did not delete a file that matches the Expo Router API Route convention, then we should warn that
+                  // API Routes are not enabled in the project.
+                  event.metadata?.type !== 'd' &&
+                  // Ensure the file is in the project's routes directory to prevent false positives in monorepos.
+                  event.filePath.startsWith(appDir) &&
+                  isApiRouteConvention(event.filePath)
+                ) {
+                  warnInvalidWebOutput();
                 }
               }
             }
-          );
-        }
+          }
+        );
       } else {
         // This MUST run last since it's the fallback.
         middleware.use(

@@ -99,6 +99,8 @@ const home = [
         makePage('debugging/errors-and-warnings.mdx'),
         makePage('debugging/runtime-issues.mdx'),
         makePage('debugging/tools.mdx'),
+        makePage('debugging/devtools-plugins.mdx'),
+        makePage('debugging/create-devtools-plugins.mdx'),
       ],
       { expanded: false }
     ),
@@ -139,11 +141,19 @@ const general = [
       'Web',
       [
         makePage('workflow/web.mdx'),
-        makePage('guides/progressive-web-apps.mdx'),
         makePage('distribution/publishing-websites.mdx'),
         makePage('guides/customizing-metro.mdx'),
-        makePage('guides/customizing-webpack.mdx'),
-        makePage('guides/web-performance.mdx'),
+        makePage('guides/progressive-web-apps.mdx'),
+      ],
+      { expanded: false }
+    ),
+    makeGroup(
+      'Bundling',
+      [
+        makePage('guides/customizing-metro.mdx'),
+        makePage('guides/analyzing-bundles.mdx'),
+        makePage('guides/tree-shaking.mdx'),
+        makePage('guides/minify.mdx'),
       ],
       { expanded: false }
     ),
@@ -156,6 +166,7 @@ const general = [
         makePage('workflow/common-development-errors.mdx'),
         makePage('workflow/android-studio-emulator.mdx'),
         makePage('workflow/ios-simulator.mdx'),
+        makePage('guides/new-architecture.mdx'),
       ],
       { expanded: false }
     ),
@@ -186,6 +197,7 @@ const general = [
       makePage('router/reference/redirects.mdx'),
       makePage('router/reference/static-rendering.mdx'),
       makePage('router/reference/async-routes.mdx'),
+      makePage('router/reference/api-routes.mdx'),
       makePage('router/reference/sitemap.mdx'),
       makePage('router/reference/typed-routes.mdx'),
       makePage('router/reference/authentication.mdx'),
@@ -233,6 +245,7 @@ const general = [
     makePage('build/updates.mdx'),
     makePage('build/building-on-ci.mdx'),
     makePage('build/building-from-github.mdx'),
+    makePage('build/orbit.mdx'),
     makeGroup(
       'App Signing',
       [
@@ -311,9 +324,12 @@ const general = [
       makePage('eas-update/environment-variables.mdx'),
       makePage('eas-update/code-signing.mdx'),
       makePage('eas-update/rollouts.mdx'),
+      makePage('eas-update/rollbacks.mdx'),
+      makePage('eas-update/asset-selection.mdx'),
     ]),
     makeGroup('Reference', [
       makePage('eas-update/migrate-from-classic-updates.mdx'),
+      makePage('eas-update/custom-updates-server.mdx'),
       makePage('eas-update/codepush.mdx'),
       makePage('eas-update/updating-your-app.mdx'),
       makePage('eas-update/faq.mdx'),
@@ -352,7 +368,6 @@ const general = [
     makePage('distribution/introduction.mdx'),
     makePage('distribution/app-stores.mdx'),
     makePage('distribution/runtime-versions.mdx'),
-    makePage('distribution/custom-updates-server.mdx'),
     makePage('distribution/app-transfers.mdx'),
   ]),
   makeSection(
@@ -383,6 +398,7 @@ const general = [
         makePage('guides/using-eslint.mdx'),
         makePage('guides/using-nextjs.mdx'),
         makePage('guides/using-sentry.mdx'),
+        makePage('guides/building-for-tv.mdx'),
         makePage('guides/typescript.mdx'),
       ]),
       makeSection('Expo accounts', [
@@ -400,6 +416,7 @@ const general = [
         makePage('bare/using-expo-client.mdx'),
         makePage('bare/install-dev-builds-in-bare.mdx'),
         makePage('bare/error-recovery.mdx'),
+        makePage('bare/upgrade.mdx'),
       ]),
     ],
     { expanded: true }
@@ -451,7 +468,6 @@ const preview = [
     makePage('preview/support.mdx'),
     makePage('router/reference/not-found.mdx'),
     { expanded: true },
-    makeSection('Expo Router', [makePage('preview/api-routes.mdx')]),
   ]),
 ];
 
@@ -481,6 +497,8 @@ const archive = [
     makePage('archive/expo-cli.mdx'),
     makePage('archive/managed-vs-bare.mdx'),
     makePage('archive/notification-channels.mdx'),
+    makePage('archive/publishing-websites-webpack.mdx'),
+    makePage('archive/customizing-webpack.mdx'),
     makePage('archive/glossary.mdx'),
   ]),
 ];

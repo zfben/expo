@@ -680,6 +680,9 @@ module.exports = {
           totalMemory: { type: 'number', mock: 17179869184 },
         },
         ExpoDocumentPicker: {},
+        ExpoFontLoader: {
+          customNativeFonts: { type: 'array' },
+        },
         ExpoHaptics: {},
         ExpoImage: {},
         ExpoImageManipulator: {},
@@ -715,6 +718,7 @@ module.exports = {
           WhiteBalance: { type: 'object' },
         },
         ExponentConstants: {
+          AppOwnership: { type: 'object' },
           appOwnership: { type: 'string' },
           debugMode: { type: 'boolean', mock: false },
           deviceName: { type: 'string' },

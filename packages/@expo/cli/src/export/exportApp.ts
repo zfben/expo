@@ -15,7 +15,10 @@ import { createAssetMap, createSourceMapDebugHtml } from './writeContents';
 import * as Log from '../log';
 import { getRouterDirectoryModuleIdWithManifest } from '../start/server/metro/router';
 import { serializeHtmlWithAssets } from '../start/server/metro/serializeHtml';
-import { getBaseUrlFromExpoConfig } from '../start/server/middleware/metroOptions';
+import {
+  getAsyncRoutesFromExpoConfig,
+  getBaseUrlFromExpoConfig,
+} from '../start/server/middleware/metroOptions';
 import { createTemplateHtmlFromExpoConfigAsync } from '../start/server/webTemplate';
 import { env } from '../utils/env';
 import { setNodeEnv } from '../utils/nodeEnv';
@@ -30,9 +33,17 @@ export async function exportAppAsync(
     dumpAssetmap,
     sourceMaps,
     minify,
+    maxWorkers,
   }: Pick<
     Options,
-    'dumpAssetmap' | 'sourceMaps' | 'dev' | 'clear' | 'outputDir' | 'platforms' | 'minify'
+    | 'dumpAssetmap'
+    | 'sourceMaps'
+    | 'dev'
+    | 'clear'
+    | 'outputDir'
+    | 'platforms'
+    | 'minify'
+    | 'maxWorkers'
   >
 ): Promise<void> {
   setNodeEnv(dev ? 'development' : 'production');
@@ -73,6 +84,7 @@ export async function exportAppAsync(
     sourcemaps: sourceMaps,
     platforms: useServerRendering ? platforms.filter((platform) => platform !== 'web') : platforms,
     dev,
+    maxWorkers,
   });
 
   // Write the JS bundles to disk, and get the bundle file names (this could change with async chunk loading support).
@@ -135,7 +147,6 @@ export async function exportAppAsync(
 
   if (platforms.includes('web')) {
     if (useServerRendering) {
-      // @ts-expect-error: server not on type yet
       const exportServer = exp.web?.output === 'server';
 
       if (exportServer) {
@@ -150,8 +161,10 @@ export async function exportAppAsync(
         minify,
         baseUrl,
         includeSourceMaps: sourceMaps,
+        asyncRoutes: getAsyncRoutesFromExpoConfig(exp, dev ? 'development' : 'production', 'web'),
         routerRoot: getRouterDirectoryModuleIdWithManifest(projectRoot, exp),
         exportServer,
+        maxWorkers,
       });
     } else {
       // TODO: Unify with exportStaticAsync

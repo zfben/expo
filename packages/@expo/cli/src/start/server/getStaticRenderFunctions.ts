@@ -153,6 +153,7 @@ export async function createMetroEndpointAsync(
     baseUrl,
     isExporting: true,
     rsc: isReactServer,
+    asyncRoutes: false,
     routerRoot,
   });
 

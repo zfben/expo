@@ -33,6 +33,8 @@ export type ExpoMetroOptions = {
   engine?: 'hermes';
   preserveEnvVars?: boolean;
   rsc?: boolean;
+  asyncRoutes?: boolean;
+
   baseUrl?: string;
   isExporting: boolean;
   /** Module ID relative to the projectRoot for the Expo Router app directory. */
@@ -68,16 +70,31 @@ function withDefaults({
 export function getBaseUrlFromExpoConfig(exp: ExpoConfig) {
   return exp.experiments?.baseUrl?.trim().replace(/\/+$/, '') ?? '';
 }
+export function getAsyncRoutesFromExpoConfig(exp: ExpoConfig, mode: string, platform: string) {
+  let asyncRoutesSetting;
+
+  if (exp.extra?.router?.asyncRoutes) {
+    const asyncRoutes = exp.extra?.router?.asyncRoutes;
+    if (['boolean', 'string'].includes(typeof asyncRoutes)) {
+      asyncRoutesSetting = asyncRoutes;
+    } else if (typeof asyncRoutes === 'object') {
+      asyncRoutesSetting = asyncRoutes[platform] ?? asyncRoutes.default;
+    }
+  }
+
+  return [mode, true].includes(asyncRoutesSetting);
+}
 
 export function getMetroDirectBundleOptionsForExpoConfig(
   projectRoot: string,
   exp: ExpoConfig,
-  options: Omit<ExpoMetroOptions, 'baseUrl' | 'routerRoot'>
+  options: Omit<ExpoMetroOptions, 'baseUrl' | 'routerRoot' | 'asyncRoutes'>
 ): Partial<ExpoMetroBundleOptions> {
   return getMetroDirectBundleOptions({
     ...options,
     baseUrl: getBaseUrlFromExpoConfig(exp),
     routerRoot: getRouterDirectoryModuleIdWithManifest(projectRoot, exp),
+    asyncRoutes: getAsyncRoutesFromExpoConfig(exp, options.mode, options.platform),
   });
 }
 
@@ -97,6 +114,7 @@ export function getMetroDirectBundleOptions(
     engine,
     preserveEnvVars,
     rsc,
+    asyncRoutes,
     baseUrl,
     routerRoot,
     isExporting,
@@ -141,6 +159,7 @@ export function getMetroDirectBundleOptions(
       engine,
       preserveEnvVars,
       rsc,
+      asyncRoutes,
       environment,
       baseUrl,
       routerRoot,
@@ -188,6 +207,7 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
     engine,
     preserveEnvVars,
     rsc,
+    asyncRoutes,
     baseUrl,
     routerRoot,
     isExporting,
@@ -217,6 +237,9 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
   if (rsc) {
     queryParams.append('transform.rsc', String(rsc));
     queryParams.append('resolver.rsc', String(rsc));
+  }
+  if (asyncRoutes) {
+    queryParams.append('transform.asyncRoutes', String(asyncRoutes));
   }
   if (preserveEnvVars) {
     queryParams.append('transform.preserveEnvVars', String(preserveEnvVars));

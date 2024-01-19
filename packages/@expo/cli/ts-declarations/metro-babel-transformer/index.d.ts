@@ -17,15 +17,16 @@ declare module 'metro-babel-transformer' {
     enableBabelRuntime: boolean;
     experimentalImportSupport?: boolean;
     hot: boolean;
-    inlineRequires: boolean;
+    inlineRequires?: boolean;
     minify: boolean;
     unstable_disableES6Transforms?: boolean;
-    platform: ?string;
+    platform: string | null;
     projectRoot: string;
     serverRoot?: string;
     publicPath: string;
     extendsBabelConfigPath?: string;
     hermesParser?: boolean;
+    globalPrefix?: string;
   };
 
   export type BabelTransformerArgs = {
@@ -38,7 +39,11 @@ declare module 'metro-babel-transformer' {
   export type BabelTransformer = {
     transform: (args: BabelTransformerArgs) => {
       ast: Ast;
-      metadata?: BabelFileMetadata;
+      metadata?: BabelFileMetadata & {
+        metro?: {
+          functionMap?: FBSourceFunctionMap | null;
+        };
+      };
       code?: string | null;
       functionMap?: FBSourceFunctionMap | null;
     };
