@@ -20,7 +20,6 @@ import { Screen } from './primitives';
 import { EmptyRoute } from './views/EmptyRoute';
 import { SuspenseFallback } from './views/SuspenseFallback';
 import { Try } from './views/Try';
-import { ServerComponentHost } from './ServerComponentHost';
 
 export type ScreenProps<
   TOptions extends Record<string, any> = Record<string, any>,

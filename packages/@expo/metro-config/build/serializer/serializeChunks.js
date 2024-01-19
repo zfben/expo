@@ -14,7 +14,6 @@ const assert_1 = __importDefault(require("assert"));
 const jsc_safe_url_1 = __importDefault(require("jsc-safe-url"));
 const sourceMapString_1 = __importDefault(require("metro/src/DeltaBundler/Serializers/sourceMapString"));
 const bundleToString_1 = __importDefault(require("metro/src/lib/bundleToString"));
-const countLines_1 = __importDefault(require("metro/src/lib/countLines"));
 const path_1 = __importDefault(require("path"));
 const url_1 = require("url");
 const debugId_1 = require("./debugId");
@@ -95,22 +94,27 @@ function clientManifestSerializerPlugin(entryPoint, preModules, graph, options) 
             }
         });
     });
-    const rscManifestChunkTemplate = preModules.find((module) => module.path.endsWith('.expo/metro/react-client-manifest.js'));
-    // let rscAsset: SerialAsset | null = null;
-    if (rscManifestChunkTemplate) {
-        rscManifestChunkTemplate.output.forEach((output) => {
-            output.data.code = output.data.code.replace(/\$\$expo_rsc_manifest\s?=\s?{}/, `$$$expo_rsc_manifest = ${JSON.stringify(rscClientReferenceManifest)} /* registered */`);
-            // @ts-expect-error
-            output.data.lineCount = (0, countLines_1.default)(output.data.code);
-        });
-        // rscAsset = {
-        //   filename: '/dist/_expo/react-client-manifest.js',
-        //   metadata: {},
-        //   originFilename: '/react-client-manifest.js',
-        //   source: JSON.stringify(rscClientReferenceManifest),
-        //   type: 'json',
-        // };
-    }
+    // const rscManifestChunkTemplate = preModules.find((module) =>
+    //   module.path.endsWith('.expo/metro/react-client-manifest.js')
+    // );
+    // // let rscAsset: SerialAsset | null = null;
+    // if (rscManifestChunkTemplate) {
+    //   rscManifestChunkTemplate.output.forEach((output) => {
+    //     output.data.code = output.data.code.replace(
+    //       /\$\$expo_rsc_manifest\s?=\s?{}/,
+    //       `$$$expo_rsc_manifest = ${JSON.stringify(rscClientReferenceManifest)} /* registered */`
+    //     );
+    //     // @ts-expect-error
+    //     output.data.lineCount = countLines(output.data.code);
+    //   });
+    //   // rscAsset = {
+    //   //   filename: '/dist/_expo/react-client-manifest.js',
+    //   //   metadata: {},
+    //   //   originFilename: '/react-client-manifest.js',
+    //   //   source: JSON.stringify(rscClientReferenceManifest),
+    //   //   type: 'json',
+    //   // };
+    // }
     return [entryPoint, preModules, graph, options];
 }
 exports.clientManifestSerializerPlugin = clientManifestSerializerPlugin;
@@ -171,22 +175,27 @@ async function graphToSerialAssetsAsync(config, serializeChunkOptions, ...props)
             }
         });
     });
-    const rscManifestChunkTemplate = preModules.find((module) => module.path.endsWith('.expo/metro/react-client-manifest.js'));
-    let rscAsset = null;
-    if (rscManifestChunkTemplate) {
-        rscManifestChunkTemplate.output.forEach((output) => {
-            output.data.code = output.data.code.replace(/\$\$expo_rsc_manifest\s?=\s?{}/, `$$$expo_rsc_manifest = ${JSON.stringify(rscClientReferenceManifest)} /* registered */`);
-            // @ts-expect-error
-            output.data.lineCount = (0, countLines_1.default)(output.data.code);
-        });
-        rscAsset = {
-            filename: '/dist/_expo/react-client-manifest.js',
-            metadata: {},
-            originFilename: '/react-client-manifest.js',
-            source: JSON.stringify(rscClientReferenceManifest),
-            type: 'json',
-        };
-    }
+    // const rscManifestChunkTemplate = preModules.find((module) =>
+    //   module.path.endsWith('.expo/metro/react-client-manifest.js')
+    // );
+    // let rscAsset: SerialAsset | null = null;
+    // if (rscManifestChunkTemplate) {
+    //   rscManifestChunkTemplate.output.forEach((output) => {
+    //     output.data.code = output.data.code.replace(
+    //       /\$\$expo_rsc_manifest\s?=\s?{}/,
+    //       `$$$expo_rsc_manifest = ${JSON.stringify(rscClientReferenceManifest)} /* registered */`
+    //     );
+    //     // @ts-expect-error
+    //     output.data.lineCount = countLines(output.data.code);
+    //   });
+    //   rscAsset = {
+    //     filename: '/dist/_expo/react-client-manifest.js',
+    //     metadata: {},
+    //     originFilename: '/react-client-manifest.js',
+    //     source: JSON.stringify(rscClientReferenceManifest),
+    //     type: 'json',
+    //   };
+    // }
     // Create chunks for splitting.
     const chunks = new Set();
     [
@@ -272,7 +281,11 @@ async function graphToSerialAssetsAsync(config, serializeChunkOptions, ...props)
         publicPath,
     }));
     return {
-        artifacts: [...jsAssets, ...cssDeps, rscAsset].filter(Boolean),
+        artifacts: [
+            ...jsAssets,
+            ...cssDeps,
+            // rscAsset
+        ].filter(Boolean),
         rscManifest: rscClientReferenceManifest,
         assets: metroAssets,
     };

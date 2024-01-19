@@ -16,7 +16,7 @@ import {
 } from 'metro';
 import sourceMapString from 'metro/src/DeltaBundler/Serializers/sourceMapString';
 import bundleToString from 'metro/src/lib/bundleToString';
-import countLines from 'metro/src/lib/countLines';
+// import countLines from 'metro/src/lib/countLines';
 import { ConfigT, SerializerConfigT } from 'metro-config';
 import path from 'path';
 import { pathToFileURL } from 'url';
@@ -174,29 +174,29 @@ export function clientManifestSerializerPlugin(
     });
   });
 
-  const rscManifestChunkTemplate = preModules.find((module) =>
-    module.path.endsWith('.expo/metro/react-client-manifest.js')
-  );
+  // const rscManifestChunkTemplate = preModules.find((module) =>
+  //   module.path.endsWith('.expo/metro/react-client-manifest.js')
+  // );
 
-  // let rscAsset: SerialAsset | null = null;
-  if (rscManifestChunkTemplate) {
-    rscManifestChunkTemplate.output.forEach((output) => {
-      output.data.code = output.data.code.replace(
-        /\$\$expo_rsc_manifest\s?=\s?{}/,
-        `$$$expo_rsc_manifest = ${JSON.stringify(rscClientReferenceManifest)} /* registered */`
-      );
-      // @ts-expect-error
-      output.data.lineCount = countLines(output.data.code);
-    });
+  // // let rscAsset: SerialAsset | null = null;
+  // if (rscManifestChunkTemplate) {
+  //   rscManifestChunkTemplate.output.forEach((output) => {
+  //     output.data.code = output.data.code.replace(
+  //       /\$\$expo_rsc_manifest\s?=\s?{}/,
+  //       `$$$expo_rsc_manifest = ${JSON.stringify(rscClientReferenceManifest)} /* registered */`
+  //     );
+  //     // @ts-expect-error
+  //     output.data.lineCount = countLines(output.data.code);
+  //   });
 
-    // rscAsset = {
-    //   filename: '/dist/_expo/react-client-manifest.js',
-    //   metadata: {},
-    //   originFilename: '/react-client-manifest.js',
-    //   source: JSON.stringify(rscClientReferenceManifest),
-    //   type: 'json',
-    // };
-  }
+  //   // rscAsset = {
+  //   //   filename: '/dist/_expo/react-client-manifest.js',
+  //   //   metadata: {},
+  //   //   originFilename: '/react-client-manifest.js',
+  //   //   source: JSON.stringify(rscClientReferenceManifest),
+  //   //   type: 'json',
+  //   // };
+  // }
 
   return [entryPoint, preModules, graph, options];
 }
@@ -280,29 +280,29 @@ export async function graphToSerialAssetsAsync(
     });
   });
 
-  const rscManifestChunkTemplate = preModules.find((module) =>
-    module.path.endsWith('.expo/metro/react-client-manifest.js')
-  );
+  // const rscManifestChunkTemplate = preModules.find((module) =>
+  //   module.path.endsWith('.expo/metro/react-client-manifest.js')
+  // );
 
-  let rscAsset: SerialAsset | null = null;
-  if (rscManifestChunkTemplate) {
-    rscManifestChunkTemplate.output.forEach((output) => {
-      output.data.code = output.data.code.replace(
-        /\$\$expo_rsc_manifest\s?=\s?{}/,
-        `$$$expo_rsc_manifest = ${JSON.stringify(rscClientReferenceManifest)} /* registered */`
-      );
-      // @ts-expect-error
-      output.data.lineCount = countLines(output.data.code);
-    });
+  // let rscAsset: SerialAsset | null = null;
+  // if (rscManifestChunkTemplate) {
+  //   rscManifestChunkTemplate.output.forEach((output) => {
+  //     output.data.code = output.data.code.replace(
+  //       /\$\$expo_rsc_manifest\s?=\s?{}/,
+  //       `$$$expo_rsc_manifest = ${JSON.stringify(rscClientReferenceManifest)} /* registered */`
+  //     );
+  //     // @ts-expect-error
+  //     output.data.lineCount = countLines(output.data.code);
+  //   });
 
-    rscAsset = {
-      filename: '/dist/_expo/react-client-manifest.js',
-      metadata: {},
-      originFilename: '/react-client-manifest.js',
-      source: JSON.stringify(rscClientReferenceManifest),
-      type: 'json',
-    };
-  }
+  //   rscAsset = {
+  //     filename: '/dist/_expo/react-client-manifest.js',
+  //     metadata: {},
+  //     originFilename: '/react-client-manifest.js',
+  //     source: JSON.stringify(rscClientReferenceManifest),
+  //     type: 'json',
+  //   };
+  // }
 
   // Create chunks for splitting.
   const chunks = new Set<Chunk>();
@@ -408,7 +408,11 @@ export async function graphToSerialAssetsAsync(
   })) as AssetData[];
 
   return {
-    artifacts: [...jsAssets, ...cssDeps, rscAsset].filter(Boolean) as SerialAsset[],
+    artifacts: [
+      ...jsAssets,
+      ...cssDeps,
+      // rscAsset
+    ].filter(Boolean) as SerialAsset[],
     rscManifest: rscClientReferenceManifest,
     assets: metroAssets,
   };

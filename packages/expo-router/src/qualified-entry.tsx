@@ -28,10 +28,6 @@ export function App() {
   return (
     <Head.Provider>
       <Root initialSearchParamsString={searchParams}>
-        {/* initialSearchParamsString={`platform=${'web'}&manifest=${encodeURIComponent(
-          // Injected by the serializer in development
-          JSON.stringify(global.$$expo_rsc_manifest)
-        )}`}> */}
         <Slot id="index" />
       </Root>
     </Head.Provider>

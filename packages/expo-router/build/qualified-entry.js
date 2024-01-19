@@ -24,10 +24,6 @@ function App() {
     // {/* <ExpoRoot context={ctx} /> */}
     return (<head_1.Head.Provider>
       <client_1.Root initialSearchParamsString={searchParams}>
-        {/* initialSearchParamsString={`platform=${'web'}&manifest=${encodeURIComponent(
-          // Injected by the serializer in development
-          JSON.stringify(global.$$expo_rsc_manifest)
-        )}`}> */}
         <client_1.Slot id="index"/>
       </client_1.Root>
     </head_1.Head.Provider>);

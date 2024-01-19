@@ -16,7 +16,7 @@ import { createFastResolver } from './createExpoMetroResolver';
 import {
   EXTERNAL_REQUIRE_NATIVE_POLYFILL,
   EXTERNAL_REQUIRE_POLYFILL,
-  EXTERNAL_RSC_MANIFEST,
+  // EXTERNAL_RSC_MANIFEST,
   METRO_SHIMS_FOLDER,
   getNodeExternalModuleId,
   isNodeExternal,
@@ -53,7 +53,7 @@ function withWebPolyfills(config: ConfigT): ConfigT {
       return [
         // NOTE: We might need this for all platforms
         path.join(config.projectRoot, EXTERNAL_REQUIRE_POLYFILL),
-        path.join(config.projectRoot, EXTERNAL_RSC_MANIFEST),
+        // path.join(config.projectRoot, EXTERNAL_RSC_MANIFEST),
         // TODO: runtime polyfills, i.e. Fast Refresh, error overlay, React Dev Tools...
       ];
     }
@@ -63,7 +63,7 @@ function withWebPolyfills(config: ConfigT): ConfigT {
     return [
       ...polyfills,
       path.join(config.projectRoot, EXTERNAL_REQUIRE_NATIVE_POLYFILL),
-      path.join(config.projectRoot, EXTERNAL_RSC_MANIFEST),
+      // path.join(config.projectRoot, EXTERNAL_RSC_MANIFEST),
     ];
   };
 

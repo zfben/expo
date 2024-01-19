@@ -17,7 +17,7 @@ import {
 } from './environmentVariableSerializerPlugin';
 import { ExpoSerializerOptions, baseJSBundle } from './fork/baseJSBundle';
 import {
-  clientManifestSerializerPlugin,
+  // clientManifestSerializerPlugin,
   getSortedModules,
   graphToSerialAssetsAsync,
 } from './serializeChunks';
@@ -55,7 +55,7 @@ export function withExpoSerializers(
     processors.push(environmentVariableSerializerPlugin);
   }
 
-  processors.push(clientManifestSerializerPlugin);
+  // processors.push(clientManifestSerializerPlugin);
 
   return withSerializerPlugins(config, processors, options);
 }
