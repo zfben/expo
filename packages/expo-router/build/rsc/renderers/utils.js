@@ -1,7 +1,7 @@
 "use strict";
 // This file should not include Node specific code.
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deepFreeze = exports.generatePrefetchCode = exports.codeToInject = exports.hasStatusCode = exports.decodeInput = exports.encodeInput = void 0;
+exports.deepFreeze = exports.generatePrefetchCode = exports.hasStatusCode = exports.decodeInput = exports.encodeInput = void 0;
 const encodeInput = (input) => {
     if (input === '') {
         return 'index.txt';
@@ -32,10 +32,6 @@ const decodeInput = (encodedInput) => {
 exports.decodeInput = decodeInput;
 const hasStatusCode = (x) => typeof x?.statusCode === 'number';
 exports.hasStatusCode = hasStatusCode;
-exports.codeToInject = `
-  globalThis.__waku_module_cache__ = new Map();
-  globalThis.__webpack_chunk_load__ = (id) => import(id).then((m) => globalThis.__waku_module_cache__.set(id, m));
-  globalThis.__webpack_require__ = (id) => globalThis.__waku_module_cache__.get(id);`;
 const generatePrefetchCode = (basePrefix, inputs, moduleIds) => {
     const inputsArray = Array.from(inputs);
     let code = '';

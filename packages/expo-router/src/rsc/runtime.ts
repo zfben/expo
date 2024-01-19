@@ -1,0 +1,27 @@
+/**
+ * Copyright © 2024 650 Industries.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+// Runtime code for patching Webpack's require function to use Metro.
+const rscClientModuleCache = new Map();
+
+globalThis.__webpack_chunk_load__ = (id) => {
+  // ID is a URL with the opaque Metro require ID as the hash.
+  // http://localhost:8081/node_modules/react-native-web/dist/exports/Text/index.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=src%2Fapp&modulesOnly=true&runModule=false#798513620
+  // This is generated in a proxy in the server.
+  const url = new URL(id);
+  const numericMetroId = parseInt(url.hash.slice(1));
+  console.log('__webpack_chunk_load__', id, numericMetroId);
+  const loadBundleAsync = global[`${__METRO_GLOBAL_PREFIX__}__loadBundleAsync`];
+  return loadBundleAsync(id).then(() => {
+    const m = __r(numericMetroId);
+    rscClientModuleCache.set(id, m);
+    console.log('loaded module.2:', id, m);
+    return m;
+  });
+};
+
+globalThis.__webpack_require__ = (id) => rscClientModuleCache.get(id);
