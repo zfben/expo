@@ -45,7 +45,7 @@ import { DevToolsPluginMiddleware } from '../middleware/DevToolsPluginMiddleware
 import { FaviconMiddleware } from '../middleware/FaviconMiddleware';
 import { HistoryFallbackMiddleware } from '../middleware/HistoryFallbackMiddleware';
 import { InterstitialPageMiddleware } from '../middleware/InterstitialPageMiddleware';
-import { resolveMainModuleName } from '../middleware/ManifestMiddleware';
+import { getMetroServerRoot, resolveMainModuleName } from '../middleware/ManifestMiddleware';
 import { ReactDevToolsPageMiddleware } from '../middleware/ReactDevToolsPageMiddleware';
 import {
   DeepLinkHandler,
@@ -459,6 +459,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
     // Required for symbolication:
     process.env.EXPO_DEV_SERVER_ORIGIN = `http://localhost:${options.port}`;
+    const serverRoot = getMetroServerRoot(this.projectRoot);
 
     const { metro, server, middleware, messageSocket } = await instantiateMetroAsync(
       this,
@@ -525,10 +526,11 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
       //
 
-      const renderRsc = async (location: any, manifest: any) => {
-        console.log('Get RSC Renderer:', location, manifest);
+      const renderRsc = async (location: any, { url }: { url: URL }) => {
+        console.log('Get RSC Renderer:', location, url);
+        const mode = options.mode ?? 'development';
         const { renderToPipeableStream } = await this.getReactServerFunctionAsync({
-          mode: options.mode ?? 'development',
+          mode,
           minify: options.minify,
           baseUrl,
           isReactServer: true,
@@ -538,7 +540,14 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
         console.log('Render RSC:', renderToPipeableStream);
         try {
-          const pipe = await renderToPipeableStream(location, manifest);
+          const pipe = await renderToPipeableStream(
+            { ...location },
+            {
+              mode,
+              serverRoot,
+              url,
+            }
+          );
 
           return pipe;
         } catch (error: any) {
@@ -576,41 +585,42 @@ export class MetroBundlerDevServer extends BundlerDevServer {
           },
       };
 
-      setTimeout(() => {
-        // NOTE: test case
-        renderRsc(
-          // Props / location
-          { $$route: './index.tsx' },
-          // Manifest
-          mockManifest
-        )
-          .then((data) => {
-            console.log('data', data);
-          })
-          .catch((error) => {
-            Log.log('Error rendering rsc');
-            Log.error(error);
-          });
-      }, 10);
+      // setTimeout(() => {
+      //   // NOTE: test case
+      //   renderRsc(
+      //     // Props / location
+      //     { $$route: './index.tsx' },
+      //     // Manifest
+      //     mockManifest
+      //   )
+      //     .then((data) => {
+      //       console.log('data', data);
+      //     })
+      //     .catch((error) => {
+      //       Log.log('Error rendering rsc');
+      //       Log.error(error);
+      //     });
+      // }, 10);
       const sendResponse = async (
         req: ServerRequest,
         res: ServerResponse,
         redirectToId: string | null
       ) => {
-        const url = new URL(req.url!, 'http://e');
+        const url = new URL(req.url!, this.getDevServerUrl()!);
         const route = url.pathname.replace(/^\/rsc\//, '');
-        const inputManifest = url.searchParams.get('manifest')!;
-        const clientReferenceManifest = JSON.parse(inputManifest);
+        // const inputManifest = url.searchParams.get('manifest')!;
+        // const clientReferenceManifest = JSON.parse(inputManifest);
 
-        console.log('Render route:', route, clientReferenceManifest);
+        console.log('Render route:', route);
 
         // NOTE: test case
         renderRsc(
           // Props / location
           { $$route: './index.tsx' },
+          { url }
           // Manifest
           // mockManifest
-          clientReferenceManifest
+          // clientReferenceManifest
         )
           .then((data) => {
             console.log('data', data);

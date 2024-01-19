@@ -12,17 +12,26 @@ import React from 'react';
 import { Head } from './head';
 import { Slot, Root } from './rsc/client';
 
+// MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
+import getDevServer from '@expo/metro-runtime/build/getDevServer';
+
+const introUrl = getDevServer().fullBundleUrl;
+// TODO: This is buggy and doesn't work well, maybe inject the query params in babel.
+const searchParams = introUrl ? new URL(introUrl).searchParams.toString() : '';
+
+// console.log('searchParams', searchParams);
 // Must be exported or Fast Refresh won't update the context
 export function App() {
-  console.log('ctx', ctx.keys());
+  // console.log('ctx', ctx.keys());
   // {/* <ExpoRoot context={ctx} /> */}
+
   return (
     <Head.Provider>
-      <Root
-        initialSearchParamsString={`platform=${'web'}&manifest=${encodeURIComponent(
+      <Root initialSearchParamsString={searchParams}>
+        {/* initialSearchParamsString={`platform=${'web'}&manifest=${encodeURIComponent(
           // Injected by the serializer in development
           JSON.stringify(global.$$expo_rsc_manifest)
-        )}`}>
+        )}`}> */}
         <Slot id="index" />
       </Root>
     </Head.Provider>

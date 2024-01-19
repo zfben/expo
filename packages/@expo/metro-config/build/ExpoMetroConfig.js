@@ -100,6 +100,7 @@ function fastCreateModuleIdFactory() {
 // path to a numeric hash.
 function stableCreateModuleIdFactory() {
     const fileToIdMap = new Map();
+    // This is an absolute file path.
     return (modulePath) => {
         let id = fileToIdMap.get(modulePath);
         if (typeof id !== 'number') {

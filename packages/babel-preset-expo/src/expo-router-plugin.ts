@@ -210,7 +210,7 @@ export function expoRouterServerComponentClientReferencesPlugin(
 
             // Inject the following:
             //
-            // module.exports = require('react-server-dom-webpack/server').createClientModuleProxy(outputKey)
+            // module.exports = require('react-server-dom-webpack/server').createClientModuleProxy(`${outputKey}#${require.resolveWeak(filePath)}`)
             path.pushContainer(
               'body',
               t.expressionStatement(
@@ -224,7 +224,26 @@ export function expoRouterServerComponentClientReferencesPlugin(
                       ]),
                       t.identifier('createClientModuleProxy')
                     ),
-                    [t.stringLiteral(outputKey)]
+                    // `${outputKey}#${require.resolveWeak(filePath)}`
+                    [
+                      t.stringLiteral(outputKey),
+                      // t.stringLiteral(
+                      //   `${outputKey}#${
+                      //     // NOTE: This is super fragile!!
+                      //     stringToHash(filePath)
+                      //   }`
+                      // ),
+
+                      // Now add "+ require.resolveWeak(filePath)"
+                      // This didn't work for some reason so we'll just hack in the fact that the name is stable in metro-runtime (it should be like this anyways).
+                      // t.binaryExpression(
+                      //   '+',
+                      //   t.stringLiteral(`${outputKey}#`),
+                      //   t.callExpression(t.identifier('require.resolveWeak'), [
+                      //     t.stringLiteral(filePath),
+                      //   ])
+                      // ),
+                    ]
                   )
                 )
               )

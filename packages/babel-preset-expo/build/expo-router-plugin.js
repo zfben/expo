@@ -181,10 +181,29 @@ function expoRouterServerComponentClientReferencesPlugin(api) {
                         ])));
                         // Inject the following:
                         //
-                        // module.exports = require('react-server-dom-webpack/server').createClientModuleProxy(outputKey)
+                        // module.exports = require('react-server-dom-webpack/server').createClientModuleProxy(`${outputKey}#${require.resolveWeak(filePath)}`)
                         path.pushContainer('body', t.expressionStatement(t.assignmentExpression('=', t.memberExpression(t.identifier('module'), t.identifier('exports')), t.callExpression(t.memberExpression(t.callExpression(t.identifier('require'), [
                             t.stringLiteral('react-server-dom-webpack/server'),
-                        ]), t.identifier('createClientModuleProxy')), [t.stringLiteral(outputKey)]))));
+                        ]), t.identifier('createClientModuleProxy')), 
+                        // `${outputKey}#${require.resolveWeak(filePath)}`
+                        [
+                            t.stringLiteral(outputKey),
+                            // t.stringLiteral(
+                            //   `${outputKey}#${
+                            //     // NOTE: This is super fragile!!
+                            //     stringToHash(filePath)
+                            //   }`
+                            // ),
+                            // Now add "+ require.resolveWeak(filePath)"
+                            // This didn't work for some reason so we'll just hack in the fact that the name is stable in metro-runtime (it should be like this anyways).
+                            // t.binaryExpression(
+                            //   '+',
+                            //   t.stringLiteral(`${outputKey}#`),
+                            //   t.callExpression(t.identifier('require.resolveWeak'), [
+                            //     t.stringLiteral(filePath),
+                            //   ])
+                            // ),
+                        ]))));
                     }
                     else {
                         // Now we'll replace all the code in the file with client references, e.g.

@@ -47,7 +47,7 @@ function clientManifestSerializerPlugin(entryPoint, preModules, graph, options) 
                 const currentUrl = new URL(jsc_safe_url_1.default.toNormalUrl(options.sourceUrl));
                 // NOTE: This is a hack to find the opaque module ID for usage later when loading the bundle on the client.
                 const opaqueId = options.createModuleId(module.path);
-                console.log('options.sourceUrl', options.sourceUrl, opaqueId);
+                // console.log('options.sourceUrl', options.sourceUrl, opaqueId);
                 currentUrl.pathname = entry.replace(/\.([tj]sx?|[mc]js)$/, '.bundle');
                 currentUrl.searchParams.delete('serializer.output');
                 currentUrl.searchParams.set('modulesOnly', 'true');
@@ -131,7 +131,7 @@ async function graphToSerialAssetsAsync(config, serializeChunkOptions, ...props)
             if (clientReferences) {
                 const entry = '/' + path_1.default.relative(options.serverRoot ?? options.projectRoot, module.path);
                 const currentUrl = new URL(jsc_safe_url_1.default.toNormalUrl(options.sourceUrl));
-                console.log('options.sourceUrl', options.sourceUrl);
+                // console.log('options.sourceUrl', options.sourceUrl);
                 currentUrl.pathname = entry.replace(/\.([tj]sx?|[mc]js)$/, '.bundle');
                 currentUrl.searchParams.delete('serializer.output');
                 currentUrl.searchParams.set('modulesOnly', 'true');

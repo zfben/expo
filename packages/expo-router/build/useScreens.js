@@ -98,6 +98,20 @@ function getQualifiedRouteComponent(value) {
         return qualifiedStore.get(value);
     }
     let ScreenComponent;
+    // getLoadable = (props: any, ref: any) => (
+    //   <React.Suspense fallback={<SuspenseFallback route={value} />}>
+    //     <ServerComponentHost $$route={value.route} segment={value.route} />
+    //     {/* <AsyncComponent
+    //       {...{
+    //         ...props,
+    //         ref,
+    //         // Expose the template segment path, e.g. `(home)`, `[foo]`, `index`
+    //         // the intention is to make it possible to deduce shared routes.
+    //         segment: value.route,
+    //       }}
+    //     /> */}
+    //   </React.Suspense>
+    // );
     // TODO: This ensures sync doesn't use React.lazy, but it's not ideal.
     if (import_mode_1.default === 'lazy') {
         ScreenComponent = react_1.default.lazy(async () => {
