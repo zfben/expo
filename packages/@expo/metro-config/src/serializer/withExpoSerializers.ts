@@ -16,7 +16,11 @@ import {
   serverPreludeSerializerPlugin,
 } from './environmentVariableSerializerPlugin';
 import { ExpoSerializerOptions, baseJSBundle } from './fork/baseJSBundle';
-import { clientManifestSerializerPlugin, getSortedModules, graphToSerialAssetsAsync } from './serializeChunks';
+import {
+  clientManifestSerializerPlugin,
+  getSortedModules,
+  graphToSerialAssetsAsync,
+} from './serializeChunks';
 import { SerialAsset } from './serializerAssets';
 import { env } from '../env';
 

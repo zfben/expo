@@ -29,7 +29,7 @@ export function fetchThenEvalAsync(
 
     script.onload = () => {
       script.parentNode && script.parentNode.removeChild(script);
-      
+
       resolve();
     };
     // Create a new error object to preserve the original stack trace.

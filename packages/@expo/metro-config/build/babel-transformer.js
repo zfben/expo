@@ -69,7 +69,7 @@ function getBabelCaller({
   filename,
   options
 }) {
-  var _options$customTransf, _options$customTransf2, _options$customTransf3, _options$customTransf4, _options$customTransf5, _options$customTransf6;
+  var _options$customTransf, _options$customTransf2, _options$customTransf3, _options$customTransf4, _options$customTransf5, _options$customTransf6, _options$customTransf7;
   const isNodeModule = filename.includes('node_modules');
   const isServer = ((_options$customTransf = options.customTransformOptions) === null || _options$customTransf === void 0 ? void 0 : _options$customTransf.environment) === 'node';
   const routerRoot = typeof ((_options$customTransf2 = options.customTransformOptions) === null || _options$customTransf2 === void 0 ? void 0 : _options$customTransf2.routerRoot) === 'string' ? decodeURI(options.customTransformOptions.routerRoot) : undefined;
@@ -100,6 +100,10 @@ function getBabelCaller({
     projectRoot: options.projectRoot,
     isNodeModule,
     isHMREnabled: options.hot,
+    // Used for React Server Components. The naming maps to the resolver property `--conditions=react-server`.
+    isReactServer: isCustomTruthy((_options$customTransf7 = options.customTransformOptions) === null || _options$customTransf7 === void 0 ? void 0 : _options$customTransf7.rsc),
+    // Provide the project root for accurately reading the Expo config.
+    serverRoot: options.serverRoot,
     // Set the standard Babel flag to disable ESM transformations.
     supportsStaticESM: options.experimentalImportSupport
   };

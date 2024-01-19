@@ -185,7 +185,6 @@ function expoRouterServerComponentClientReferencesPlugin(api) {
                         path.pushContainer('body', t.expressionStatement(t.assignmentExpression('=', t.memberExpression(t.identifier('module'), t.identifier('exports')), t.callExpression(t.memberExpression(t.callExpression(t.identifier('require'), [
                             t.stringLiteral('react-server-dom-webpack/server'),
                         ]), t.identifier('createClientModuleProxy')), [t.stringLiteral(outputKey)]))));
-                        return;
                     }
                     else {
                         // Now we'll replace all the code in the file with client references, e.g.

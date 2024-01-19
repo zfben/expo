@@ -198,6 +198,42 @@ function patchMetroGraphToSupportUncachedModules() {
     Graph.prototype.traverseDependencies.__patched = true;
   }
 }
+function fastCreateModuleIdFactory() {
+  const fileToIdMap = new Map();
+  let nextId = 0;
+  return modulePath => {
+    let id = fileToIdMap.get(modulePath);
+    if (typeof id !== 'number') {
+      id = nextId++;
+      fileToIdMap.set(modulePath, id);
+    }
+    return id;
+  };
+}
+
+// Creates module IDs that are stable across multiple builds by converting the string
+// path to a numeric hash.
+function stableCreateModuleIdFactory() {
+  const fileToIdMap = new Map();
+  return modulePath => {
+    let id = fileToIdMap.get(modulePath);
+    if (typeof id !== 'number') {
+      id = stringToHash(modulePath);
+      fileToIdMap.set(modulePath, id);
+    }
+    return id;
+  };
+}
+function stringToHash(str) {
+  let hash = 0;
+  if (str.length === 0) return hash;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+}
 function getDefaultConfig(projectRoot, {
   mode,
   isCSSEnabled = true,
@@ -299,6 +335,7 @@ function getDefaultConfig(projectRoot, {
       additionalExts: envFiles.map(file => file.replace(/^\./, ''))
     },
     serializer: {
+      createModuleIdFactory: stableCreateModuleIdFactory,
       getModulesRunBeforeMainModule: () => {
         const preModules = [
         // MUST be first

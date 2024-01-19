@@ -67,7 +67,7 @@ function babelPresetExpo(api: ConfigAPI, options: BabelPresetExpoOptions = {}): 
   const isDev = api.caller(getIsDev);
   const isFastRefreshEnabled = api.caller(getIsFastRefreshEnabled);
   const baseUrl = api.caller(getBaseUrl);
-  const isServer = api.caller(getIsServer);
+  // const isServer = api.caller(getIsServer);
   const supportsStaticESM: boolean | undefined = api.caller(
     (caller) => (caller as any)?.supportsStaticESM
   );

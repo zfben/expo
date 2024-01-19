@@ -7,6 +7,8 @@
 import { getConfig } from '@expo/config';
 import * as runtimeEnv from '@expo/env';
 import { SerialAsset } from '@expo/metro-config/build/serializer/serializerAssets';
+import { ExpoResponse } from '@expo/server';
+import { respond } from '@expo/server/build/vendor/http';
 import chalk from 'chalk';
 import { AssetData } from 'metro';
 import fetch from 'node-fetch';
@@ -16,6 +18,7 @@ import { bundleApiRoute, invalidateApiRouteCache } from './bundleApiRoutes';
 import { createRouteHandlerMiddleware } from './createServerRouteMiddleware';
 import { ExpoRouterServerManifestV1, fetchManifest } from './fetchRouterManifest';
 import { instantiateMetroAsync } from './instantiateMetro';
+import { logMetroError } from './metroErrorInterface';
 import { metroWatchTypeScriptFiles } from './metroWatchTypeScriptFiles';
 import {
   getRouterDirectoryModuleIdWithManifest,
@@ -56,11 +59,8 @@ import {
   getAsyncRoutesFromExpoConfig,
 } from '../middleware/metroOptions';
 import { prependMiddleware } from '../middleware/mutations';
-import { startTypescriptTypeGenerationAsync } from '../type-generation/startTypescriptTypeGeneration';
 import { ServerNext, ServerRequest, ServerResponse } from '../middleware/server.types';
-import { logMetroError } from './metroErrorInterface';
-import { respond } from '@expo/server/build/vendor/http';
-import { ExpoResponse } from '@expo/server';
+import { startTypescriptTypeGenerationAsync } from '../type-generation/startTypescriptTypeGeneration';
 
 export type ExpoRouterRuntimeManifest = Awaited<
   ReturnType<typeof import('expo-router/build/static/renderStaticContent').getManifest>
@@ -627,7 +627,6 @@ export class MetroBundlerDevServer extends BundlerDevServer {
             Log.error(error);
           });
 
-        return;
         // const query = new URL(req.url!, 'http://e').searchParams;
 
         // const loc = query.get('props');

@@ -126,7 +126,6 @@ export function clientManifestSerializerPlugin(
         // TODO: Add params to indicate that `module.exports = __r()` should be used as the run module statement.
         currentUrl.searchParams.set('runModule', 'false');
 
-
         const outputKey = pathToFileURL(module.path).href;
 
         // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/NoteEditor.js": {
@@ -149,7 +148,9 @@ export function clientManifestSerializerPlugin(
         const pushRef = (exp: string) => {
           const key = `${outputKey}${exp === '*' ? '' : `#${exp}`}`;
 
-          const chunk = options.dev ? currentUrl.toString() + `#${opaqueId}` : 'TODO-PRODUCTION-CHUNK-NAMES';
+          const chunk = options.dev
+            ? currentUrl.toString() + `#${opaqueId}`
+            : 'TODO-PRODUCTION-CHUNK-NAMES';
           rscClientReferenceManifest[key] = {
             // TODO: Make this the opaque Metro ID
             id: chunk,

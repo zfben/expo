@@ -4,7 +4,6 @@ import resolveFrom from 'resolve-from';
 import url from 'url';
 
 import {
-  getIsServer,
   getExpoRouterAbsoluteAppRoot,
   getPlatform,
   getPossibleProjectRoot,
@@ -12,7 +11,6 @@ import {
   getIsDev,
   getAsyncRoutes,
 } from './common';
-
 
 const debug = require('debug')('expo:babel:router');
 
@@ -231,8 +229,6 @@ export function expoRouterServerComponentClientReferencesPlugin(
                 )
               )
             );
-
-            return;
           } else {
             // Now we'll replace all the code in the file with client references, e.g.
             // export default { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#default", name: "default" }

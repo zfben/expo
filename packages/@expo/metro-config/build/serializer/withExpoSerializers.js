@@ -90,6 +90,7 @@ function withExpoSerializers(config, options = {}) {
   if (!_env().env.EXPO_NO_CLIENT_ENV_VARS) {
     processors.push(_environmentVariableSerializerPlugin().environmentVariableSerializerPlugin);
   }
+  processors.push(_serializeChunks().clientManifestSerializerPlugin);
   return withSerializerPlugins(config, processors, options);
 }
 
@@ -226,7 +227,39 @@ function getDefaultSerializer(config, fallbackSerializer, configOptions = {}) {
       return null;
     })();
     if ((serializerOptions === null || serializerOptions === void 0 ? void 0 : serializerOptions.outputMode) !== 'static') {
-      return defaultSerializer(...props);
+      const res = await defaultSerializer(...props);
+      //  console.log('>>', res, props);
+      // if (typeof res === 'string')  {}
+
+      // if (options.runModule) {
+      //   const paths = [...options.runBeforeMainModule, entryPoint];
+
+      //   for (const path of paths) {
+      //     if (modules.some((module: Module<>) => module.path === path)) {
+      //       const code = options.getRunModuleStatement(
+      //         options.createModuleId(path),
+      //       );
+      //       output.push({
+      //         path: `require-${path}`,
+      //         dependencies: new Map(),
+      //         getSource: (): Buffer => Buffer.from(''),
+      //         inverseDependencies: new CountingSet(),
+      //         output: [
+      //           {
+      //             type: 'js/script/virtual',
+      //             data: {
+      //               code,
+      //               lineCount: countLines(code),
+      //               map: [],
+      //             },
+      //           },
+      //         ],
+      //       });
+      //     }
+      //   }
+      // }
+
+      return res;
     }
 
     // Mutate the serializer options with the parsed options.
