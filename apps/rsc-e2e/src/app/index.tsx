@@ -1,5 +1,6 @@
 import { Counter } from '../components/Counter';
 import { View, Text } from 'react-native-web';
+import DateStatic from '../components/Date-static';
 
 const App = ({ name }: { name: string }) => {
   return (
@@ -10,6 +11,7 @@ const App = ({ name }: { name: string }) => {
         {/* <h1>Hello {name}!!</h1> */}
         <h3>Expo x Metro RSC (web) demo.</h3>
         <h3>This is a server component.</h3>
+        <DateStatic />
         <Counter />
         <div>{new Date().toISOString()}</div>
       </div>
