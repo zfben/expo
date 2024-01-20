@@ -1,7 +1,7 @@
-// import { Counter } from '../components/Counter';
+import { Counter } from '../components/Counter';
 import { View, Text } from 'react-native-web';
-// import DateStatic from '../components/Date-static';
-// import AsyncBuildData from '../components/AsyncBuildData';
+import DateStatic from '../components/Date-static';
+import AsyncBuildData from '../components/AsyncBuildData';
 
 const App = ({ name }: { name: string }) => {
   return (
@@ -11,7 +11,7 @@ const App = ({ name }: { name: string }) => {
         {/* <h1>Hello {name}!!</h1> */}
         <h3>Expo x Metro RSC (web) demo.</h3>
         <h3>This is a server component.</h3>
-        {/* <DateStatic />
+        <DateStatic />
         <AsyncBuildData />
         <Counter>
           <div style={{ border: '3px dodgerblue dashed', margin: '1em', padding: '1em' }}>
@@ -21,7 +21,10 @@ const App = ({ name }: { name: string }) => {
         <div style={{ border: '3px purple dashed', margin: '1em', padding: '1em' }}>
           <Text>React Native Web client components</Text>
         </div>
-        <div>{new Date().toISOString()}</div> */}
+        <div style={{ border: '3px lime dashed', margin: '1em', padding: '1em' }}>
+          <Text>Secret variable {process.env.EXPO_NOT_PUBLIC_TEST_VALUE}</Text>
+        </div>
+        <div>{new Date().toISOString()}</div>
       </div>
     </View>
   );
