@@ -7,6 +7,7 @@ declare global {
 type Elements = Promise<Record<string, ReactNode>>;
 export declare const fetchRSC: any;
 export declare const prefetchRSC: any;
+export declare function ServerComponentHost(props: any): any;
 export declare const Root: ({ initialInput, initialSearchParamsString, children, }: {
     initialInput?: string | undefined;
     initialSearchParamsString?: string | undefined;

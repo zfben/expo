@@ -6,7 +6,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ServerRoot = exports.Children = exports.Slot = exports.useRefetch = exports.Root = exports.prefetchRSC = exports.fetchRSC = void 0;
+exports.ServerRoot = exports.Children = exports.Slot = exports.useRefetch = exports.Root = exports.ServerComponentHost = exports.prefetchRSC = exports.fetchRSC = void 0;
 const react_1 = require("react");
 const client_1 = __importDefault(require("react-server-dom-webpack/client"));
 const utils_1 = require("./renderers/utils");
@@ -74,6 +74,10 @@ const createRerender = (0, react_1.cache)(() => {
     };
     return [getRerender, setRerender];
 });
+function ServerComponentHost(props) {
+    return useServerComponent(props).readRoot();
+}
+exports.ServerComponentHost = ServerComponentHost;
 const Root = ({ initialInput, initialSearchParamsString, children, }) => {
     const [getRerender, setRerender] = createRerender();
     const [elements, setElements] = (0, react_1.useState)(() => (0, exports.fetchRSC)(initialInput || '', initialSearchParamsString || '', getRerender()));

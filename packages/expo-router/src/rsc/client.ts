@@ -108,6 +108,11 @@ const createRerender = cache(() => {
   return [getRerender, setRerender] as const;
 });
 
+export function ServerComponentHost(props) {
+  return useServerComponent(props).readRoot();
+}
+
+
 export const Root = ({
   initialInput,
   initialSearchParamsString,

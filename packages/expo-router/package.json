@@ -91,7 +91,7 @@
     "tsd": "^0.28.1"
   },
   "dependencies": {
-    "react-server-dom-webpack": "0.0.1",
+    "react-server-dom-webpack": "18.3.0-canary-c5b937576-20231219",
     "@expo/metro-runtime": "3.1.0",
     "@expo/server": "^0.3.0",
     "@radix-ui/react-slot": "1.0.1",

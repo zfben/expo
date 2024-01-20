@@ -6,10 +6,13 @@
     "start": "expo start"
   },
   "dependencies": {
+    "base-64": "^1.0.0",
     "expo": "~50.0.0-alpha.0",
     "expo-router": "^3.0.0",
     "react": "18.2.0",
-    "react-native": "0.73.0-rc.6"
+    "react-native": "0.73.0-rc.6",
+    "react-native-fetch-api": "^3.0.0",
+    "react-native-polyfill-globals": "^3.1.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.16",
