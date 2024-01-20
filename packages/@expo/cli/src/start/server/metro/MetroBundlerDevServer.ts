@@ -220,12 +220,14 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     baseUrl,
     isReactServer,
     routerRoot,
+    platform
   }: {
     mode: 'development' | 'production';
     minify?: boolean;
     baseUrl: string;
     isReactServer?: boolean;
     routerRoot: string;
+    platform?: string;
   }) {
     const url = this.getDevServerUrl()!;
 
@@ -239,6 +241,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       url,
       {
         minify,
+        platform,
         dev: mode !== 'production',
         // Ensure the API Routes are included
         environment: 'node',
@@ -531,6 +534,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         const mode = options.mode ?? 'development';
         const { renderToPipeableStream } = await this.getReactServerFunctionAsync({
           mode,
+          platform: url.searchParams.get('platform') ?? 'web',
           minify: options.minify,
           baseUrl,
           isReactServer: true,
@@ -557,33 +561,33 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         }
       };
 
-      const mockManifest = {
-        'file:///Users/evanbacon/Documents/GitHub/expo/apps/rsc-e2e/src/components/Counter.tsx': {
-          // '/apps/sandbox/app/index.tsx#default': {
-          id: '/apps/rsc-e2e/src/components/Counter.tsx',
-          chunks: [
-            'http://localhost:8081/apps/rsc-e2e/src/components/Counter.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false#-1139933840',
-          ],
-          name: '*',
-        },
-        'file:///Users/evanbacon/Documents/GitHub/expo/apps/rsc-e2e/src/components/Counter.tsx#': {
-          // '/apps/sandbox/app/index.tsx#default': {
-          id: '/apps/rsc-e2e/src/components/Counter.tsx',
-          chunks: [
-            'http://localhost:8081/apps/rsc-e2e/src/components/Counter.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false#-1139933840',
-          ],
-          name: '',
-        },
-        'file:///Users/evanbacon/Documents/GitHub/expo/apps/rsc-e2e/src/components/Counter.tsx#default':
-          {
-            // '/apps/sandbox/app/index.tsx#default': {
-            id: '/apps/rsc-e2e/src/components/Counter.tsx',
-            chunks: [
-              'http://localhost:8081/apps/rsc-e2e/src/components/Counter.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false#-1139933840',
-            ],
-            name: 'default',
-          },
-      };
+      // const mockManifest = {
+      //   'file:///Users/evanbacon/Documents/GitHub/expo/apps/rsc-e2e/src/components/Counter.tsx': {
+      //     // '/apps/sandbox/app/index.tsx#default': {
+      //     id: '/apps/rsc-e2e/src/components/Counter.tsx',
+      //     chunks: [
+      //       'http://localhost:8081/apps/rsc-e2e/src/components/Counter.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false#-1139933840',
+      //     ],
+      //     name: '*',
+      //   },
+      //   'file:///Users/evanbacon/Documents/GitHub/expo/apps/rsc-e2e/src/components/Counter.tsx#': {
+      //     // '/apps/sandbox/app/index.tsx#default': {
+      //     id: '/apps/rsc-e2e/src/components/Counter.tsx',
+      //     chunks: [
+      //       'http://localhost:8081/apps/rsc-e2e/src/components/Counter.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false#-1139933840',
+      //     ],
+      //     name: '',
+      //   },
+      //   'file:///Users/evanbacon/Documents/GitHub/expo/apps/rsc-e2e/src/components/Counter.tsx#default':
+      //     {
+      //       // '/apps/sandbox/app/index.tsx#default': {
+      //       id: '/apps/rsc-e2e/src/components/Counter.tsx',
+      //       chunks: [
+      //         'http://localhost:8081/apps/rsc-e2e/src/components/Counter.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false#-1139933840',
+      //       ],
+      //       name: 'default',
+      //     },
+      // };
 
       // setTimeout(() => {
       //   // NOTE: test case
