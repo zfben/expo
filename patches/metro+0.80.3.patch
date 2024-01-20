@@ -1,0 +1,152 @@
+diff --git a/node_modules/metro/src/lib/getPrependedScripts.js b/node_modules/metro/src/lib/getPrependedScripts.js
+index 28beef3..d92a599 100644
+--- a/node_modules/metro/src/lib/getPrependedScripts.js
++++ b/node_modules/metro/src/lib/getPrependedScripts.js
+@@ -9,33 +9,28 @@
+  * @oncall react_native
+  */
+ 
+-"use strict";
++'use strict';
+ 
+-var _CountingSet = _interopRequireDefault(require("./CountingSet"));
++var _CountingSet = _interopRequireDefault(require('./CountingSet'));
+ function _interopRequireDefault(obj) {
+   return obj && obj.__esModule ? obj : { default: obj };
+ }
+-const countLines = require("./countLines");
+-const getPreludeCode = require("./getPreludeCode");
+-const transformHelpers = require("./transformHelpers");
+-const defaults = require("metro-config/src/defaults/defaults");
+-async function getPrependedScripts(
+-  config,
+-  options,
+-  resolverOptions,
+-  bundler,
+-  deltaBundler
+-) {
++const countLines = require('./countLines');
++const getPreludeCode = require('./getPreludeCode');
++const transformHelpers = require('./transformHelpers');
++const defaults = require('metro-config/src/defaults/defaults');
++async function getPrependedScripts(config, options, resolverOptions, bundler, deltaBundler) {
+   // Get all the polyfills from the relevant option params (the
+   // `getPolyfills()` method and the `polyfillModuleNames` variable).
+   const polyfillModuleNames = config.serializer
+     .getPolyfills({
+       platform: options.platform,
++      customResolverOptions: resolverOptions.customResolverOptions,
+     })
+     .concat(config.serializer.polyfillModuleNames);
+   const transformOptions = {
+     ...options,
+-    type: "script",
++    type: 'script',
+   };
+   const dependencies = await deltaBundler.getDependencies(
+     [defaults.moduleSystem, ...polyfillModuleNames],
+@@ -53,13 +48,11 @@ async function getPrependedScripts(
+         transformOptions,
+         resolverOptions
+       ),
+-      unstable_allowRequireContext:
+-        config.transformer.unstable_allowRequireContext,
++      unstable_allowRequireContext: config.transformer.unstable_allowRequireContext,
+       transformOptions,
+       onProgress: null,
+       lazy: false,
+-      unstable_enablePackageExports:
+-        config.resolver.unstable_enablePackageExports,
++      unstable_enablePackageExports: config.resolver.unstable_enablePackageExports,
+       shallow: false,
+     }
+   );
+@@ -78,7 +71,7 @@ function _getPrelude({ dev, globalPrefix, requireCycleIgnorePatterns }) {
+     globalPrefix,
+     requireCycleIgnorePatterns,
+   });
+-  const name = "__prelude__";
++  const name = '__prelude__';
+   return {
+     dependencies: new Map(),
+     getSource: () => Buffer.from(code),
+@@ -86,7 +79,7 @@ function _getPrelude({ dev, globalPrefix, requireCycleIgnorePatterns }) {
+     path: name,
+     output: [
+       {
+-        type: "js/script/virtual",
++        type: 'js/script/virtual',
+         data: {
+           code,
+           lineCount: countLines(code),
+diff --git a/node_modules/metro/src/lib/getPrependedScripts.js.flow b/node_modules/metro/src/lib/getPrependedScripts.js.flow
+index 3518dcb..8779519 100644
+--- a/node_modules/metro/src/lib/getPrependedScripts.js.flow
++++ b/node_modules/metro/src/lib/getPrependedScripts.js.flow
+@@ -12,10 +12,10 @@
+ 'use strict';
+ 
+ import type Bundler from '../Bundler';
+-import type DeltaBundler, {Module} from '../DeltaBundler';
+-import type {TransformInputOptions} from '../DeltaBundler/types.flow';
+-import type {ResolverInputOptions} from '../shared/types.flow';
+-import type {ConfigT} from 'metro-config/src/configTypes.flow';
++import type DeltaBundler, { Module } from '../DeltaBundler';
++import type { TransformInputOptions } from '../DeltaBundler/types.flow';
++import type { ResolverInputOptions } from '../shared/types.flow';
++import type { ConfigT } from 'metro-config/src/configTypes.flow';
+ 
+ import CountingSet from './CountingSet';
+ 
+@@ -28,17 +28,18 @@ async function getPrependedScripts(
+   config: ConfigT,
+   options: $Diff<
+     TransformInputOptions,
+-    {type: $PropertyType<TransformInputOptions, 'type'>, ...},
++    { type: $PropertyType<TransformInputOptions, 'type'>, ... },
+   >,
+   resolverOptions: ResolverInputOptions,
+   bundler: Bundler,
+-  deltaBundler: DeltaBundler<>,
++  deltaBundler: DeltaBundler<>
+ ): Promise<$ReadOnlyArray<Module<>>> {
+   // Get all the polyfills from the relevant option params (the
+   // `getPolyfills()` method and the `polyfillModuleNames` variable).
+   const polyfillModuleNames = config.serializer
+     .getPolyfills({
+       platform: options.platform,
++      customResolverOptions: resolverOptions.customResolverOptions,
+     })
+     .concat(config.serializer.polyfillModuleNames);
+ 
+@@ -53,7 +54,7 @@ async function getPrependedScripts(
+       resolve: await transformHelpers.getResolveDependencyFn(
+         bundler,
+         options.platform,
+-        resolverOptions,
++        resolverOptions
+       ),
+       transform: await transformHelpers.getTransformFn(
+         [defaults.moduleSystem, ...polyfillModuleNames],
+@@ -61,17 +62,15 @@ async function getPrependedScripts(
+         deltaBundler,
+         config,
+         transformOptions,
+-        resolverOptions,
++        resolverOptions
+       ),
+-      unstable_allowRequireContext:
+-        config.transformer.unstable_allowRequireContext,
++      unstable_allowRequireContext: config.transformer.unstable_allowRequireContext,
+       transformOptions,
+       onProgress: null,
+       lazy: false,
+-      unstable_enablePackageExports:
+-        config.resolver.unstable_enablePackageExports,
++      unstable_enablePackageExports: config.resolver.unstable_enablePackageExports,
+       shallow: false,
+-    },
++    }
+   );
+ 
+   return [

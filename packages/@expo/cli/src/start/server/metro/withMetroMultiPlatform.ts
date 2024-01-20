@@ -48,8 +48,16 @@ function withWebPolyfills(config: ConfigT): ConfigT {
     ? config.serializer.getPolyfills.bind(config.serializer)
     : () => [];
 
-  const getPolyfills = (ctx: { platform: string | null }): readonly string[] => {
-    if (ctx.platform === 'web') {
+  const getPolyfills = (ctx: {
+    platform: string | null;
+    // We add this in a patch because the upstream won't accept it.
+    customResolverOptions?: Record<string, any>;
+  }): readonly string[] => {
+    if (
+      ctx.platform === 'web' ||
+      // RSC runs on the server even in native mode.
+      ctx.customResolverOptions?.rsc
+    ) {
       return [
         // NOTE: We might need this for all platforms
         path.join(config.projectRoot, EXTERNAL_REQUIRE_POLYFILL),
@@ -249,10 +257,14 @@ export function withExtendedResolver(
 
     // Node.js externals support
     (context: ResolutionContext, moduleName: string, platform: string | null) => {
-      // This is a web-only feature, we may extend the shimming to native platforms in the future.
-      if (platform !== 'web') {
-        return null;
-      }
+      // const isReactServer = context.customResolverOptions?.rsc;
+
+      // if (
+      //   // React Server Components require Node.js support when bundling for native platforms.
+      //   !isReactServer
+      // ) {
+      //   return null;
+      // }
 
       const moduleId = isNodeExternal(moduleName);
       if (!moduleId) {
@@ -369,6 +381,8 @@ export function withExtendedResolver(
         preferNativePlatform: platform !== 'web',
       };
 
+      const isReactServer = context.customResolverOptions?.rsc;
+
       if (context.customResolverOptions?.environment === 'node') {
         // Adjust nodejs source extensions to sort mjs after js, including platform variants.
         if (nodejsSourceExtensions === null) {
@@ -384,7 +398,7 @@ export function withExtendedResolver(
         context.mainFields = ['main', 'module'];
 
         // Enable react-server import conditions.
-        if (context.customResolverOptions?.rsc) {
+        if (isReactServer) {
           context.unstable_conditionNames = ['node', 'require', 'react-server', 'server'];
         }
       } else {
