@@ -140,6 +140,7 @@ export async function renderToPipeableStream(
   const elements = React.createElement(Component, props);
   return renderToReadableStream(elements, bundlerConfig);
 
+
   // return rsc.pipe;
   // }
 
