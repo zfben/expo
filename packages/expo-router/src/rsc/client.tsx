@@ -12,6 +12,7 @@ import {
   useCallback,
   useState,
   startTransition,
+  Suspense,
 } from 'react';
 import type { ReactNode } from 'react';
 import RSDWClient from 'react-server-dom-webpack/client';
@@ -63,7 +64,7 @@ export const fetchRSC = cache(
         });
         const data = createFromFetch<Awaited<Elements>>(checkStatus(response), options);
         startTransition(() => {
-          console.log('update renderer:', data)
+          console.log('update renderer:', data);
           // FIXME this causes rerenders even if data is empty
           rerender((prev) => mergeElements(prev, data));
         });
@@ -112,7 +113,6 @@ export function ServerComponentHost(props) {
   return useServerComponent(props).readRoot();
 }
 
-
 export const Root = ({
   initialInput,
   initialSearchParamsString,
@@ -123,9 +123,11 @@ export const Root = ({
   children: ReactNode;
 }) => {
   const [getRerender, setRerender] = createRerender();
+
   const [elements, setElements] = useState(() =>
     fetchRSC(initialInput || '', initialSearchParamsString || '', getRerender())
   );
+
   setRerender(setElements);
   const refetch = useCallback(
     (input: string, searchParams?: URLSearchParams) => {
@@ -134,7 +136,7 @@ export const Root = ({
     },
     [getRerender]
   );
-  console.log('Render with elements,', elements)
+  console.log('Render with elements,', elements);
   return createElement(
     RefetchContext.Provider,
     { value: refetch },
@@ -156,18 +158,19 @@ export const Slot = ({
   children?: ReactNode;
   fallback?: ReactNode;
 }) => {
+  // const elementsPromise = ElementsContext;
   const elementsPromise = use(ElementsContext);
   if (!elementsPromise) {
     throw new Error('Missing Root component');
   }
+  // const elements = elementsPromise;
   const elements = use(elementsPromise);
   if (!(id in elements)) {
     if (fallback) {
       return fallback;
     }
-    console.log('Expected one of:', elements)
+    console.log('Expected one of:', elements);
     // throw new Error('Not found: ' + id);
-
   }
   // TODO: Fix this to support multiple children
   return createElement(ChildrenContextProvider, { value: children }, elements);
