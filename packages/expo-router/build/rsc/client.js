@@ -6,7 +6,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ServerRoot = exports.Children = exports.Slot = exports.useRefetch = exports.Root = exports.ServerComponentHost = exports.prefetchRSC = exports.fetchRSC = void 0;
+exports.ServerRoot = exports.Children = exports.Slot = exports.useRefetch = exports.Root = exports.prefetchRSC = exports.fetchRSC = void 0;
 const react_1 = require("react");
 const client_1 = __importDefault(require("react-server-dom-webpack/client"));
 const utils_1 = require("./renderers/utils");
@@ -34,6 +34,7 @@ exports.fetchRSC = (0, react_1.cache)((input, searchParamsString, rerender) => {
             const response = fetch(BASE_PATH + (0, utils_1.encodeInput)(encodeURIComponent(actionId)), {
                 method: 'POST',
                 body: await encodeReply(args),
+                reactNative: { textStreaming: true },
             });
             const data = createFromFetch(checkStatus(response), options);
             (0, react_1.startTransition)(() => {
@@ -46,7 +47,7 @@ exports.fetchRSC = (0, react_1.cache)((input, searchParamsString, rerender) => {
     };
     const prefetched = (globalThis.__WAKU_PREFETCHED__ ||= {});
     const url = BASE_PATH + (0, utils_1.encodeInput)(input) + (searchParamsString ? '?' + searchParamsString : '');
-    const response = prefetched[url] || fetch(url);
+    const response = prefetched[url] || fetch(url, { reactNative: { textStreaming: true } });
     delete prefetched[url];
     const data = createFromFetch(checkStatus(response), options);
     return data;
@@ -55,7 +56,7 @@ exports.prefetchRSC = (0, react_1.cache)((input, searchParamsString) => {
     const prefetched = (globalThis.__WAKU_PREFETCHED__ ||= {});
     const url = BASE_PATH + (0, utils_1.encodeInput)(input) + (searchParamsString ? '?' + searchParamsString : '');
     if (!(url in prefetched)) {
-        prefetched[url] = fetch(url);
+        prefetched[url] = fetch(url, { reactNative: { textStreaming: true } });
     }
 });
 const RefetchContext = (0, react_1.createContext)(() => {
@@ -74,10 +75,9 @@ const createRerender = (0, react_1.cache)(() => {
     };
     return [getRerender, setRerender];
 });
-function ServerComponentHost(props) {
-    return useServerComponent(props).readRoot();
-}
-exports.ServerComponentHost = ServerComponentHost;
+// export function ServerComponentHost(props) {
+//   return useServerComponent(props).readRoot();
+// }
 const Root = ({ initialInput, initialSearchParamsString, children, }) => {
     const [getRerender, setRerender] = createRerender();
     const [elements, setElements] = (0, react_1.useState)(() => (0, exports.fetchRSC)(initialInput || '', initialSearchParamsString || '', getRerender()));
@@ -95,13 +95,13 @@ exports.useRefetch = useRefetch;
 const ChildrenContext = (0, react_1.createContext)(undefined);
 const ChildrenContextProvider = (0, react_1.memo)(ChildrenContext.Provider);
 const Slot = ({ id, children, fallback, }) => {
-    const elementsPromise = ElementsContext;
-    // const elementsPromise = use(ElementsContext);
+    // const elementsPromise = ElementsContext;
+    const elementsPromise = (0, react_1.use)(ElementsContext);
     if (!elementsPromise) {
         throw new Error('Missing Root component');
     }
-    const elements = elementsPromise;
-    // const elements = use(elementsPromise);
+    // const elements = elementsPromise;
+    const elements = (0, react_1.use)(elementsPromise);
     if (!(id in elements)) {
         if (fallback) {
             return fallback;

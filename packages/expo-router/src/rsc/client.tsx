@@ -61,6 +61,7 @@ export const fetchRSC = cache(
         const response = fetch(BASE_PATH + encodeInput(encodeURIComponent(actionId)), {
           method: 'POST',
           body: await encodeReply(args),
+          reactNative: { textStreaming: true },
         });
         const data = createFromFetch<Awaited<Elements>>(checkStatus(response), options);
         startTransition(() => {
@@ -74,7 +75,7 @@ export const fetchRSC = cache(
     const prefetched = ((globalThis as any).__WAKU_PREFETCHED__ ||= {});
     const url =
       BASE_PATH + encodeInput(input) + (searchParamsString ? '?' + searchParamsString : '');
-    const response = prefetched[url] || fetch(url);
+    const response = prefetched[url] || fetch(url, { reactNative: { textStreaming: true } });
     delete prefetched[url];
     const data = createFromFetch<Awaited<Elements>>(checkStatus(response), options);
     return data;
@@ -85,7 +86,7 @@ export const prefetchRSC = cache((input: string, searchParamsString: string): vo
   const prefetched = ((globalThis as any).__WAKU_PREFETCHED__ ||= {});
   const url = BASE_PATH + encodeInput(input) + (searchParamsString ? '?' + searchParamsString : '');
   if (!(url in prefetched)) {
-    prefetched[url] = fetch(url);
+    prefetched[url] = fetch(url, { reactNative: { textStreaming: true } });
   }
 });
 
@@ -109,9 +110,9 @@ const createRerender = cache(() => {
   return [getRerender, setRerender] as const;
 });
 
-export function ServerComponentHost(props) {
-  return useServerComponent(props).readRoot();
-}
+// export function ServerComponentHost(props) {
+//   return useServerComponent(props).readRoot();
+// }
 
 export const Root = ({
   initialInput,
@@ -158,13 +159,13 @@ export const Slot = ({
   children?: ReactNode;
   fallback?: ReactNode;
 }) => {
-  const elementsPromise = ElementsContext;
-  // const elementsPromise = use(ElementsContext);
+  // const elementsPromise = ElementsContext;
+  const elementsPromise = use(ElementsContext);
   if (!elementsPromise) {
     throw new Error('Missing Root component');
   }
-  const elements = elementsPromise;
-  // const elements = use(elementsPromise);
+  // const elements = elementsPromise;
+  const elements = use(elementsPromise);
   if (!(id in elements)) {
     if (fallback) {
       return fallback;

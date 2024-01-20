@@ -53,17 +53,18 @@ export function renderRootComponent(Component: React.ComponentType<any>) {
   try {
     // This must be delayed so the user has a chance to call it first.
     setTimeout(() => {
-      // @ts-expect-error: This function is native-only and for internal-use only.
-      SplashScreen._internal_preventAutoHideAsync?.();
+      // SplashScreen._internal_preventAutoHideAsync?.();
     });
 
-    if (process.env.NODE_ENV !== 'production') {
-      const { withErrorOverlay } =
-        require('@expo/metro-runtime/error-overlay') as typeof import('@expo/metro-runtime/error-overlay');
-      registerRootComponent(withErrorOverlay(Component));
-    } else {
-      registerRootComponent(Component);
-    }
+    React.startTransition(() => {
+      if (process.env.NODE_ENV !== 'production') {
+        const { withErrorOverlay } =
+          require('@expo/metro-runtime/error-overlay') as typeof import('@expo/metro-runtime/error-overlay');
+        registerRootComponent(withErrorOverlay(Component));
+      } else {
+        registerRootComponent(Component);
+      }
+    });
   } catch (e) {
     // Hide the splash screen if there was an error so the user can see it.
     SplashScreen.hideAsync();

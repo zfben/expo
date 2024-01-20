@@ -7,7 +7,7 @@
 // a different file in a custom resolver for bundle splitting in Node.js.
 import { ctx } from 'expo-router/_ctx';
 import React from 'react';
-
+import { Text, View } from 'react-native';
 // import { ExpoRoot } from './ExpoRoot';
 import { Head } from './head';
 import { Slot, Root } from './rsc/client';
@@ -25,11 +25,18 @@ export function App() {
   // console.log('ctx', ctx.keys());
   // {/* <ExpoRoot context={ctx} /> */}
 
+  // return (
+  //   <View style={{ flex: 1 }}>
+  //     <Text>Hey</Text>
+  //   </View>
+  // );
   return (
-    <Head.Provider>
-      <Root initialSearchParamsString={searchParams}>
-        <Slot id="index" />
-      </Root>
-    </Head.Provider>
+    <React.Suspense fallback={null}>
+      <Head.Provider>
+        <Root initialSearchParamsString={searchParams}>
+          <Slot id="index" />
+        </Root>
+      </Head.Provider>
+    </React.Suspense>
   );
 }

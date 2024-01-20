@@ -22,11 +22,18 @@ const searchParams = introUrl ? new URL(introUrl).searchParams.toString() : '';
 function App() {
     // console.log('ctx', ctx.keys());
     // {/* <ExpoRoot context={ctx} /> */}
-    return (<head_1.Head.Provider>
-      <client_1.Root initialSearchParamsString={searchParams}>
-        <client_1.Slot id="index"/>
-      </client_1.Root>
-    </head_1.Head.Provider>);
+    // return (
+    //   <View style={{ flex: 1 }}>
+    //     <Text>Hey</Text>
+    //   </View>
+    // );
+    return (<react_1.default.Suspense fallback={null}>
+      <head_1.Head.Provider>
+        <client_1.Root initialSearchParamsString={searchParams}>
+          <client_1.Slot id="index"/>
+        </client_1.Root>
+      </head_1.Head.Provider>
+    </react_1.default.Suspense>);
 }
 exports.App = App;
 //# sourceMappingURL=qualified-entry.js.map
