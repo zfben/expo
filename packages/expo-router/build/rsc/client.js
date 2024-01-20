@@ -95,13 +95,13 @@ exports.useRefetch = useRefetch;
 const ChildrenContext = (0, react_1.createContext)(undefined);
 const ChildrenContextProvider = (0, react_1.memo)(ChildrenContext.Provider);
 const Slot = ({ id, children, fallback, }) => {
-    // const elementsPromise = ElementsContext;
-    const elementsPromise = (0, react_1.use)(ElementsContext);
+    const elementsPromise = ElementsContext;
+    // const elementsPromise = use(ElementsContext);
     if (!elementsPromise) {
         throw new Error('Missing Root component');
     }
-    // const elements = elementsPromise;
-    const elements = (0, react_1.use)(elementsPromise);
+    const elements = elementsPromise;
+    // const elements = use(elementsPromise);
     if (!(id in elements)) {
         if (fallback) {
             return fallback;

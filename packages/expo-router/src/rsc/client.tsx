@@ -158,13 +158,13 @@ export const Slot = ({
   children?: ReactNode;
   fallback?: ReactNode;
 }) => {
-  // const elementsPromise = ElementsContext;
-  const elementsPromise = use(ElementsContext);
+  const elementsPromise = ElementsContext;
+  // const elementsPromise = use(ElementsContext);
   if (!elementsPromise) {
     throw new Error('Missing Root component');
   }
-  // const elements = elementsPromise;
-  const elements = use(elementsPromise);
+  const elements = elementsPromise;
+  // const elements = use(elementsPromise);
   if (!(id in elements)) {
     if (fallback) {
       return fallback;

@@ -18,7 +18,7 @@ export declare const Slot: ({ id, children, fallback, }: {
     id: string;
     children?: ReactNode;
     fallback?: ReactNode;
-}) => string | number | true | import("react").ReactElement<any, string | import("react").JSXElementConstructor<any>> | import("react").ReactFragment | import("react").FunctionComponentElement<import("react").ProviderProps<ReactNode>>;
+}) => string | number | true | import("react").ReactElement<any, string | import("react").JSXElementConstructor<any>> | import("react").ReactFragment;
 export declare const Children: () => any;
 export declare const ServerRoot: ({ elements, children }: {
     elements: Elements;
