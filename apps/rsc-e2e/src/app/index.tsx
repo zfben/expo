@@ -6,7 +6,6 @@ import AsyncBuildData from '../components/AsyncBuildData';
 const App = ({ name }: { name: string }) => {
   return (
     <View style={{ flex: 1 }}>
-      <Text>Hey</Text>
       <div style={{ border: '3px red dashed', margin: '1em', padding: '1em' }}>
         <title>Expo x Metro RSC</title>
         {/* <h1>Hello {name}!!</h1> */}
@@ -19,6 +18,9 @@ const App = ({ name }: { name: string }) => {
             <Text>Nested static component child</Text>
           </div>
         </Counter>
+        <div style={{ border: '3px purple dashed', margin: '1em', padding: '1em' }}>
+          <Text>React Native Web client components</Text>
+        </div>
         <div>{new Date().toISOString()}</div>
       </div>
     </View>
