@@ -615,6 +615,11 @@ export class MetroBundlerDevServer extends BundlerDevServer {
               customImport: async (relativeDevServerUrl: string): Promise<any> => {
                 const url = new URL(relativeDevServerUrl, this.getDevServerUrl()!);
                 url.searchParams.set('runModule', 'true');
+                url.searchParams.set('runModule', 'true');
+                const rsc = true;
+                url.searchParams.set('transform.rsc', String(rsc));
+                url.searchParams.set('resolver.rsc', String(rsc));
+
                 const contents = await metroFetchAsync(url.toString());
                 // console.log('Server action:');
                 // console.log(contents);
