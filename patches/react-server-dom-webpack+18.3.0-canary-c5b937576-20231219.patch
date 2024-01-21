@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js
-index f2e4646..34fc4d4 100644
+index f2e4646..11ac612 100644
 --- a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js
 +++ b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js
 @@ -154,6 +154,7 @@ function preloadModule(metadata) {
@@ -24,7 +24,18 @@ index f2e4646..34fc4d4 100644
        triggerErrorOnChunk(chunk, error);
      }
    });
-@@ -1752,13 +1755,14 @@ function resolveModule(response, id, model) {
+@@ -1732,8 +1735,10 @@ function resolveModel(response, id, model) {
+   var chunk = chunks.get(id);
+ 
+   if (!chunk) {
++    console.log('| add chunk |:', id, model)
+     chunks.set(id, createResolvedModelChunk(response, model));
+   } else {
++    console.log('| resolve module chunk |:', id, model)
+     resolveModelChunk(chunk, model);
+   }
+ }
+@@ -1752,13 +1757,14 @@ function resolveModule(response, id, model) {
    var clientReference = resolveClientReference(response._bundlerConfig, clientReferenceMetadata);
    // For now we preload all modules as early as possible since it's likely
    // that we'll need them.
@@ -40,7 +51,7 @@ index f2e4646..34fc4d4 100644
        // Technically, we should just treat promise as the chunk in this
        // case. Because it'll just behave as any other promise.
        blockedChunk = createBlockedChunk(response);
-@@ -1771,14 +1775,17 @@ function resolveModule(response, id, model) {
+@@ -1771,14 +1777,17 @@ function resolveModule(response, id, model) {
      }
  
      promise.then(function () {
@@ -58,7 +69,7 @@ index f2e4646..34fc4d4 100644
        // This can't actually happen because we don't have any forward
        // references to modules.
        resolveModuleChunk(chunk, clientReference);
-@@ -1808,6 +1815,114 @@ function resolveHint(response, code, model) {
+@@ -1808,6 +1817,114 @@ function resolveHint(response, code, model) {
    dispatchHint(code, hintModel);
  }
  
@@ -173,33 +184,33 @@ index f2e4646..34fc4d4 100644
  function processFullRow(response, id, tag, buffer, chunk) {
  
    var stringDecoder = response._stringDecoder;
-@@ -1819,6 +1934,9 @@ function processFullRow(response, id, tag, buffer, chunk) {
+@@ -1819,6 +1936,9 @@ function processFullRow(response, id, tag, buffer, chunk) {
  
    row += readFinalStringChunk(stringDecoder, chunk);
  
 +  // 1, 73, [], [91, 34, ...], ["http://localhost:8081/node_modules/react-native-web/dist/exports/View/index.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=src%2Fapp&modulesOnly=true&runModule=false#-79164580",["http://localhost:8081/node_modules/react-native-web/dist/exports/View/index.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=src%2Fapp&modulesOnly=true&runModule=false#-79164580"],""]
-+  console.log('processFullRow', id, tag, buffer, chunk, row)
++  // console.log('processFullRow', id, tag, buffer, chunk, row)
 +
    switch (tag) {
      case 73
      /* "I" */
-@@ -1854,6 +1972,7 @@ function processFullRow(response, id, tag, buffer, chunk) {
+@@ -1854,6 +1974,7 @@ function processFullRow(response, id, tag, buffer, chunk) {
      /* "T" */
      :
        {
-+        console.log('resolveText', id, row)
++        // console.log('resolveText', id, row)
          resolveText(response, id, row);
          return;
        }
-@@ -2007,6 +2126,7 @@ function processBinaryChunk(response, chunk) {
+@@ -2007,6 +2128,7 @@ function processBinaryChunk(response, chunk) {
  }
  
  function parseModel(response, json) {
-+  console.log('parseModel', json)
++  // console.log('parseModel', json)
    return JSON.parse(json, response._fromJSON);
  }
  
-@@ -2039,7 +2159,87 @@ function createResponseFromOptions(options) {
+@@ -2039,7 +2161,87 @@ function createResponseFromOptions(options) {
    );
  }
  
@@ -216,7 +227,7 @@ index f2e4646..34fc4d4 100644
 +  // Hack: convert string to text and parse it as JSON.
 +
 +  const chunks = response._chunks;
-+  console.log('CHUNKS:', chunks)
++  // console.log('CHUNKS:', chunks)
 +  function progress(_ref) {
 +    console.log('progress:', _ref)
 +    // processBinaryChunk(response, convertStringToByteArray(_ref));
@@ -287,7 +298,7 @@ index f2e4646..34fc4d4 100644
    var reader = stream.getReader();
  
    function progress(_ref) {
-@@ -2072,7 +2272,15 @@ function createFromReadableStream(stream, options) {
+@@ -2072,7 +2274,15 @@ function createFromReadableStream(stream, options) {
  function createFromFetch(promiseForResponse, options) {
    var response = createResponseFromOptions(options);
    promiseForResponse.then(function (r) {
