@@ -5,10 +5,6 @@ import * as React from 'react';
 
 import { NativeLinearGradientProps } from './NativeLinearGradient.types';
 
-const INativeLinearGradient = requireNativeViewManager(
+export default requireNativeViewManager(
   'ExpoLinearGradient'
 ) as React.FC<NativeLinearGradientProps>;
-
-export default function NativeLinearGradient(props: NativeLinearGradientProps): React.ReactElement {
-  return <INativeLinearGradient {...props} />;
-}

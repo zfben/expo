@@ -1,1 +1,1 @@
-{"version":3,"file":"NativeLinearGradient.ios.d.ts","sourceRoot":"","sources":["../src/NativeLinearGradient.ios.tsx"],"names":[],"mappings":"AAGA,OAAO,KAAK,KAAK,MAAM,OAAO,CAAC;AAE/B,OAAO,EAAE,yBAAyB,EAAE,MAAM,8BAA8B,CAAC;AAMzE,MAAM,CAAC,OAAO,UAAU,oBAAoB,CAAC,KAAK,EAAE,yBAAyB,GAAG,KAAK,CAAC,YAAY,CAEjG"}
+{"version":3,"file":"NativeLinearGradient.ios.d.ts","sourceRoot":"","sources":["../src/NativeLinearGradient.ios.tsx"],"names":[],"mappings":"AAGA,OAAO,KAAK,KAAK,MAAM,OAAO,CAAC;AAE/B,OAAO,EAAE,yBAAyB,EAAE,MAAM,8BAA8B,CAAC;;AAEzE,wBAEyC"}

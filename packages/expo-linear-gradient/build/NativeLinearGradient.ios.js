@@ -1,8 +1,4 @@
 'use client';
 import { requireNativeViewManager } from 'expo-modules-core';
-import * as React from 'react';
-const INativeLinearGradient = requireNativeViewManager('ExpoLinearGradient');
-export default function NativeLinearGradient(props) {
-    return <INativeLinearGradient {...props}/>;
-}
+export default requireNativeViewManager('ExpoLinearGradient');
 //# sourceMappingURL=NativeLinearGradient.ios.js.map

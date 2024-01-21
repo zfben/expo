@@ -17,12 +17,6 @@ const Container = OS === 'web' ? (props) => <div {...props} /> : (props) => <Vie
 
 const App = () => {
   return (
-    <LinearGradient
-    colors={['#4c669f', '#3b5998', '#192f6a']}
-    style={{ padding: 15, alignItems: 'center', borderRadius: 5, width: 100, height: 100 }}
-  />
-  )
-  return (
     <View style={{ flex: 1, padding: 16, gap: 8, justifyContent: 'center', alignItems: 'stretch' }}>
       <View>
         <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
