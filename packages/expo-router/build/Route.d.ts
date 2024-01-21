@@ -42,6 +42,6 @@ export declare function useContextKey(): string;
 export declare function Route({ children, node }: {
     children: ReactNode;
     node: RouteNode;
-}): JSX.Element;
+}): React.JSX.Element;
 export { sortRoutesWithInitial, sortRoutes };
 //# sourceMappingURL=Route.d.ts.map

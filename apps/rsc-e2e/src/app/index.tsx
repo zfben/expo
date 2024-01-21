@@ -1,12 +1,12 @@
-import { Counter } from '../components/Counter';
-import { View, Text, LogBox } from 'react-native';
-import { Platform } from '../../platform';
-import DateStatic from '../components/Date-static';
-import AsyncBuildData from '../components/AsyncBuildData';
-import {ClientPlatformExt} from '../components/ClientPlatformExt';
-import ServerPlatformExt from '../components/ServerPlatformExt';
+import OS from 'expo-router/os';
+import { Text, View } from 'react-native';
 
-import OS from 'expo-router/os'
+import A03_Promises from '../03-promises/entry';
+import AsyncBuildData from '../components/AsyncBuildData';
+import { ClientPlatformExt } from '../components/ClientPlatformExt';
+import { Counter } from '../components/Counter';
+import DateStatic from '../components/Date-static';
+import ServerPlatformExt from '../components/ServerPlatformExt';
 
 const Container = OS === 'web' ? props => <div {...props} /> : props => <View {...props} />
   
@@ -22,6 +22,7 @@ const App = () => {
 
       <Text>A whole new world.</Text>
       </View>
+      <A03_Promises />
       <Container>
       <AsyncBuildData />
       </Container>

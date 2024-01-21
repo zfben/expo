@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactNode } from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
 import { RequireContext } from './types';
 export type ExpoRootProps = {
     context: RequireContext;
@@ -7,5 +7,5 @@ export type ExpoRootProps = {
         children: ReactNode;
     }>;
 };
-export declare function ExpoRoot({ wrapper: ParentWrapper, ...props }: ExpoRootProps): JSX.Element;
+export declare function ExpoRoot({ wrapper: ParentWrapper, ...props }: ExpoRootProps): React.JSX.Element;
 //# sourceMappingURL=ExpoRoot.d.ts.map
