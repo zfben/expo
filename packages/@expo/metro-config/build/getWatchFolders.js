@@ -95,3 +95,4 @@ exports.getWatchFolders = getWatchFolders;
 function uniqueItems(items) {
     return [...new Set(items)];
 }
+//# sourceMappingURL=getWatchFolders.js.map

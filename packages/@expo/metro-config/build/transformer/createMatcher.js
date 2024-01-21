@@ -45,3 +45,4 @@ const createKnownCommunityMatcher = ({ folders, moduleIds = [], } = {}) => creat
     ],
 });
 exports.createKnownCommunityMatcher = createKnownCommunityMatcher;
+//# sourceMappingURL=createMatcher.js.map

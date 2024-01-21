@@ -56,3 +56,4 @@ function parseWithHermes(src, babelConfig) {
 function parseWithBabel(src, babelConfig) {
     return babel.transformSync(src, babelConfig);
 }
+//# sourceMappingURL=transformSync.js.map

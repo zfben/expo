@@ -110,3 +110,4 @@ async function createHermesSourcemapAsync(sourcemap, hermesMapFile) {
     const hermesSourcemap = await fs_extra_1.default.readJSON(hermesMapFile);
     return JSON.stringify((0, metro_source_map_1.composeSourceMaps)([bundlerSourcemap, hermesSourcemap]));
 }
+//# sourceMappingURL=exportHermes.js.map

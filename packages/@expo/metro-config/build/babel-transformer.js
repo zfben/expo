@@ -67,6 +67,10 @@ function getBabelCaller({ filename, options }) {
         projectRoot: options.projectRoot,
         isNodeModule,
         isHMREnabled: options.hot,
+        // Used for React Server Components. The naming maps to the resolver property `--conditions=react-server`.
+        isReactServer: isCustomTruthy(options.customTransformOptions?.rsc),
+        // Provide the project root for accurately reading the Expo config.
+        serverRoot: options.serverRoot,
         // Set the standard Babel flag to disable ESM transformations.
         supportsStaticESM: options.experimentalImportSupport,
     };

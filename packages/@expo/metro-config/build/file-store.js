@@ -17,3 +17,4 @@ class FileStore extends FileStore_1.default {
     }
 }
 exports.FileStore = FileStore;
+//# sourceMappingURL=file-store.js.map

@@ -180,3 +180,4 @@ module.exports = {
     ...worker,
     transform,
 };
+//# sourceMappingURL=transform-worker.js.map

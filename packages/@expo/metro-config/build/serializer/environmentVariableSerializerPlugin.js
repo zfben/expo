@@ -106,3 +106,4 @@ function getEnvPrelude(contents) {
         ],
     };
 }
+//# sourceMappingURL=environmentVariableSerializerPlugin.js.map
