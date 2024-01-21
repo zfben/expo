@@ -39,10 +39,10 @@ const fileURLToFilePath = (fileURL) => {
     return decodeURI(fileURL.slice('file://'.length));
 };
 exports.fileURLToFilePath = fileURLToFilePath;
-async function renderToPipeableStream({ $$route: route, ...props }, { mode, url, serverRoot }
+async function renderToPipeableStream({ $$route: route, ...props }, { mode, url, serverRoot, method, input, body, contentType, customImport, }
 // moduleMap: WebpackManifest
 ) {
-    const { renderToReadableStream } = require('react-server-dom-webpack/server.edge');
+    const { renderToReadableStream, decodeReply } = require('react-server-dom-webpack/server.edge');
     if (!_ctx_1.ctx.keys().includes(route)) {
         throw new Error('Failed to find route: ' + route + '. Expected one of: ' + _ctx_1.ctx.keys().join(', '));
     }
@@ -110,6 +110,59 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, url,
             return { id, chunks: [id], name, async: true };
         },
     });
+    if (method === 'POST') {
+        const rsfId = decodeURIComponent(decodeInput(input));
+        let args = [];
+        let bodyStr = '';
+        if (body) {
+            bodyStr = await streamToString(body);
+        }
+        if (typeof contentType === 'string' && contentType.startsWith('multipart/form-data')) {
+            // XXX This doesn't support streaming unlike busboy
+            const formData = parseFormData(bodyStr, contentType);
+            args = await decodeReply(formData);
+        }
+        else if (bodyStr) {
+            args = await decodeReply(bodyStr);
+        }
+        const [fileId, name] = rsfId.split('#');
+        let mod;
+        if (isDev) {
+            console.log('Loading module:', fileId, name);
+            mod = await customImport(resolveClientEntry(fileId));
+            console.log('Loaded module:', mod);
+        }
+        else {
+            // if (!fileId.startsWith('@id/')) {
+            //   throw new Error('Unexpected server entry in PRD');
+            // }
+            // mod = await loadModule!(fileId.slice('@id/'.length));
+        }
+        const fn = mod[name] || mod;
+        console.log('Target function:', fn);
+        let elements = Promise.resolve({});
+        let rendered = false;
+        // TODO: Define context
+        const context = {};
+        const rerender = (input, searchParams = new URLSearchParams()) => {
+            if (rendered) {
+                throw new Error('already rendered');
+            }
+            const renderContext = { rerender, context };
+            throw new Error('TODO: Rerender');
+            // elements = Promise.all([elements, render(renderContext, input, searchParams)]).then(
+            //   ([oldElements, newElements]) => ({
+            //     ...oldElements,
+            //     ...newElements,
+            //   })
+            // );
+        };
+        const renderContext = { rerender, context };
+        const data = await fn.apply(renderContext, args);
+        const resolvedElements = await elements;
+        rendered = true;
+        return renderToReadableStream({ ...resolvedElements, _value: data }, bundlerConfig);
+    }
     //   moduleMap
     const elements = react_1.default.createElement(Component, props);
     return renderToReadableStream(elements, bundlerConfig);
@@ -142,4 +195,64 @@ async function pipeTo(pipe) {
     const res = await rscStream.getReader().read();
     return res.value.toString().trim();
 }
+const streamToString = async (stream) => {
+    const decoder = new TextDecoder();
+    const reader = stream.getReader();
+    const outs = [];
+    let result;
+    do {
+        result = await reader.read();
+        if (result.value) {
+            if (!(result.value instanceof Uint8Array)) {
+                throw new Error('Unexepected buffer type');
+            }
+            outs.push(decoder.decode(result.value, { stream: true }));
+        }
+    } while (!result.done);
+    outs.push(decoder.decode());
+    return outs.join('');
+};
+// TODO is this correct? better to use a library?
+const parseFormData = (body, contentType) => {
+    const boundary = contentType.split('boundary=')[1];
+    const parts = body.split(`--${boundary}`);
+    const formData = new FormData();
+    for (const part of parts) {
+        if (part.trim() === '' || part === '--')
+            continue;
+        const [rawHeaders, content] = part.split('\r\n\r\n', 2);
+        const headers = rawHeaders.split('\r\n').reduce((acc, currentHeader) => {
+            const [key, value] = currentHeader.split(': ');
+            acc[key.toLowerCase()] = value;
+            return acc;
+        }, {});
+        const contentDisposition = headers['content-disposition'];
+        const nameMatch = /name="([^"]+)"/.exec(contentDisposition);
+        const filenameMatch = /filename="([^"]+)"/.exec(contentDisposition);
+        if (nameMatch) {
+            const name = nameMatch[1];
+            if (filenameMatch) {
+                const filename = filenameMatch[1];
+                const type = headers['content-type'] || 'application/octet-stream';
+                const blob = new Blob([content], { type });
+                formData.append(name, blob, filename);
+            }
+            else {
+                formData.append(name, content.trim());
+            }
+        }
+    }
+    return formData;
+};
+const decodeInput = (encodedInput) => {
+    if (encodedInput === 'index.txt') {
+        return '';
+    }
+    if (encodedInput?.endsWith('.txt')) {
+        return encodedInput.slice(0, -'.txt'.length);
+    }
+    const err = new Error('Invalid encoded input');
+    err.statusCode = 400;
+    throw err;
+};
 //# sourceMappingURL=renderToPipeableStream.js.map

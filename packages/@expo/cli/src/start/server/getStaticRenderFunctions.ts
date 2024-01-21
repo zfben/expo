@@ -179,6 +179,10 @@ export async function requireFileContentsWithMetro(
 ): Promise<string> {
   const url = await createMetroEndpointAsync(projectRoot, devServerUrl, absoluteFilePath, props);
 
+  return metroFetchAsync(url);
+}
+
+export async function metroFetchAsync(url: string): Promise<string> {
   const res = await fetch(url);
 
   // TODO: Improve error handling
@@ -229,7 +233,7 @@ export async function getStaticRenderFunctionsForEntry(
   return evalMetroAndWrapFunctions(projectRoot, scriptContents);
 }
 
-function evalMetroAndWrapFunctions<T = Record<string, (...args: any[]) => Promise<any>>>(
+export function evalMetroAndWrapFunctions<T = Record<string, (...args: any[]) => Promise<any>>>(
   projectRoot: string,
   script: string
 ): Promise<T> {
@@ -256,6 +260,6 @@ function evalMetroAndWrapFunctions<T = Record<string, (...args: any[]) => Promis
   }, {} as any);
 }
 
-function evalMetro(src: string) {
+export function evalMetro(src: string) {
   return profile(requireString, 'eval-metro-bundle')(src);
 }

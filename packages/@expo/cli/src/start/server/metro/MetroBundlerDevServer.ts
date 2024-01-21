@@ -36,8 +36,11 @@ import { CommandError } from '../../../utils/errors';
 import { getFreePortAsync } from '../../../utils/port';
 import { BundlerDevServer, BundlerStartOptions, DevServerInstance } from '../BundlerDevServer';
 import {
+  evalMetro,
+  evalMetroAndWrapFunctions,
   getStaticRenderFunctions,
   getStaticRenderFunctionsForEntry,
+  metroFetchAsync,
 } from '../getStaticRenderFunctions';
 import { ContextModuleSourceMapsMiddleware } from '../middleware/ContextModuleSourceMapsMiddleware';
 import { CreateFileMiddleware } from '../middleware/CreateFileMiddleware';
@@ -529,38 +532,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
       //
 
-      const renderRsc = async (location: any, { url }: { url: URL }) => {
-        console.log('Get RSC Renderer:', location, url);
-        const mode = options.mode ?? 'development';
-        // TODO: Extract CSS Modules / Assets from the bundler process
-        const { renderToPipeableStream } = await this.getReactServerFunctionAsync({
-          mode,
-          platform: url.searchParams.get('platform') ?? 'web',
-          minify: options.minify,
-          baseUrl,
-          isReactServer: true,
-          routerRoot,
-          // TODO: Pass platform somehow haha
-        });
-
-        console.log('Render RSC:', renderToPipeableStream);
-        try {
-          const pipe = await renderToPipeableStream(
-            { ...location },
-            {
-              mode,
-              serverRoot,
-              url,
-            }
-          );
-
-          return pipe;
-        } catch (error: any) {
-          await logMetroError(this.projectRoot, { error });
-
-          throw error;
-        }
-      };
+      const renderRsc = async (location: any, { url, method }: { url: URL; method: string }) => {};
 
       // const mockManifest = {
       //   'file:///Users/evanbacon/Documents/GitHub/expo/apps/rsc-e2e/src/components/Counter.tsx': {
@@ -613,84 +585,50 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       ) => {
         const url = new URL(req.url!, this.getDevServerUrl()!);
         const route = url.pathname.replace(/^\/rsc\//, '');
-        // const inputManifest = url.searchParams.get('manifest')!;
-        // const clientReferenceManifest = JSON.parse(inputManifest);
 
-        console.log('Render route:', route);
+        console.log('Render route:', route, url);
 
-        // NOTE: test case
-        renderRsc(
-          // Props / location
-          { $$route: './index.tsx' },
-          { url }
-          // Manifest
-          // mockManifest
-          // clientReferenceManifest
-        )
-          .then((data) => {
-            console.log('data', data);
-            // Stream RSC data response
+        const mode = options.mode ?? 'development';
+        // TODO: Extract CSS Modules / Assets from the bundler process
+        const { renderToPipeableStream } = await this.getReactServerFunctionAsync({
+          mode,
+          platform: url.searchParams.get('platform') ?? 'web',
+          minify: options.minify,
+          baseUrl,
+          isReactServer: true,
+          routerRoot,
+          // TODO: Pass platform somehow haha
+        });
 
-            // res.statusCode = 200;
-            // res.setHeader('Content-Type', 'application/json');
-            // res.end(data);
+        console.log('Render RSC:', renderToPipeableStream);
+        try {
+          const pipe = await renderToPipeableStream(
+            { $$route: './index.tsx' },
+            {
+              mode,
+              serverRoot,
+              url,
+              method: req.method!,
+              input: route,
+              body: req.body,
+              customImport: async (relativeDevServerUrl: string): Promise<any> => {
+                const url = new URL(relativeDevServerUrl, this.getDevServerUrl()!);
+                url.searchParams.set('runModule', 'true');
+                const contents = await metroFetchAsync(url.toString());
+                // console.log('Server action:');
+                // console.log(contents);
+                return evalMetro(contents);
+              },
+            }
+          );
 
-            respond(res, new ExpoResponse(data));
-          })
-          .catch((error) => {
-            Log.log('Error rendering rsc');
-            Log.error(error);
-          });
-
-        // const query = new URL(req.url!, 'http://e').searchParams;
-
-        // const loc = query.get('props');
-        // const manifest = query.get('manifest');
-        // // const platform = query.get('platform') ?? 'web';
-
-        // if (!loc || !manifest) {
-        //   res.statusCode = 400;
-        //   res.setHeader('Content-Type', 'application/json');
-        //   res.end(
-        //     JSON.stringify({
-        //       error: 'No props provided to server component request.',
-        //     })
-        //   );
-        //   return;
-        // }
-
-        // const clientReferenceManifest = JSON.parse(manifest);
-        // const location = JSON.parse(loc);
-        // if (redirectToId) {
-        //   location.selectedId = redirectToId;
-        // }
-
-        // res.setHeader('X-Location', JSON.stringify(location));
-
-        // try {
-        //   const pipe = await renderRsc(location, clientReferenceManifest);
-
-        //   pipe(res);
-        // } catch (error: any) {
-        //   console.error(error);
-
-        //   res.statusCode = 500;
-        //   res.setHeader('Content-Type', 'application/json');
-        //   if (error.message.includes('__fbBatchedBridgeConfig is not set')) {
-        //     res.end(
-        //       JSON.stringify({
-        //         error: 'The server component contains react-native code.',
-        //       })
-        //     );
-        //     return;
-        //   }
-
-        //   res.end(
-        //     JSON.stringify({
-        //       error: error.message,
-        //     })
-        //   );
-        // }
+          // return pipe;
+          respond(res, new ExpoResponse(pipe));
+        } catch (error: any) {
+          await logMetroError(this.projectRoot, { error });
+          res.statusCode = 500;
+          res.end();
+        }
       };
 
       // Server components

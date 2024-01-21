@@ -32,7 +32,8 @@ exports.fetchRSC = (0, react_1.cache)((input, searchParamsString, rerender) => {
     const options = {
         async callServer(actionId, args) {
             console.log('call server action', actionId, args);
-            const response = fetch(BASE_PATH + (0, utils_1.encodeInput)(encodeURIComponent(actionId)), {
+            const searchParams = new URLSearchParams(searchParamsString);
+            const response = fetch(BASE_PATH + (0, utils_1.encodeInput)(encodeURIComponent(actionId)) + '?' + searchParams.toString(), {
                 method: 'POST',
                 body: await encodeReply(args),
                 // reactNative: { textStreaming: true },
@@ -49,9 +50,10 @@ exports.fetchRSC = (0, react_1.cache)((input, searchParamsString, rerender) => {
     const prefetched = (globalThis.__WAKU_PREFETCHED__ ||= {});
     const url = BASE_PATH + (0, utils_1.encodeInput)(input) + (searchParamsString ? '?' + searchParamsString : '');
     console.log('fetchRSC', url);
-    const response = prefetched[url] || fetch(url, {
-    // reactNative: { textStreaming: true } 
-    });
+    const response = prefetched[url] ||
+        fetch(url, {
+        // reactNative: { textStreaming: true }
+        });
     delete prefetched[url];
     const data = createFromFetch(checkStatus(response), options);
     return data;
@@ -62,7 +64,7 @@ exports.prefetchRSC = (0, react_1.cache)((input, searchParamsString) => {
     if (!(url in prefetched)) {
         console.log('prefetchRSC', url);
         prefetched[url] = fetch(url, {
-        // reactNative: { textStreaming: true } 
+        // reactNative: { textStreaming: true }
         });
     }
 });

@@ -59,11 +59,16 @@ export const fetchRSC = cache(
     const options = {
       async callServer(actionId: string, args: unknown[]) {
         console.log('call server action', actionId, args);
-        const response = fetch(BASE_PATH + encodeInput(encodeURIComponent(actionId)), {
-          method: 'POST',
-          body: await encodeReply(args),
-          // reactNative: { textStreaming: true },
-        });
+        const searchParams = new URLSearchParams(searchParamsString);
+
+        const response = fetch(
+          BASE_PATH + encodeInput(encodeURIComponent(actionId)) + '?' + searchParams.toString(),
+          {
+            method: 'POST',
+            body: await encodeReply(args),
+            // reactNative: { textStreaming: true },
+          }
+        );
         const data = createFromFetch<Awaited<Elements>>(checkStatus(response), options);
         startTransition(() => {
           console.log('update renderer:', data);
@@ -77,9 +82,11 @@ export const fetchRSC = cache(
     const url =
       BASE_PATH + encodeInput(input) + (searchParamsString ? '?' + searchParamsString : '');
     console.log('fetchRSC', url);
-    const response = prefetched[url] || fetch(url, { 
-      // reactNative: { textStreaming: true } 
-    });
+    const response =
+      prefetched[url] ||
+      fetch(url, {
+        // reactNative: { textStreaming: true }
+      });
     delete prefetched[url];
     const data = createFromFetch<Awaited<Elements>>(checkStatus(response), options);
     return data;
@@ -91,8 +98,8 @@ export const prefetchRSC = cache((input: string, searchParamsString: string): vo
   const url = BASE_PATH + encodeInput(input) + (searchParamsString ? '?' + searchParamsString : '');
   if (!(url in prefetched)) {
     console.log('prefetchRSC', url);
-    prefetched[url] = fetch(url, { 
-      // reactNative: { textStreaming: true } 
+    prefetched[url] = fetch(url, {
+      // reactNative: { textStreaming: true }
     });
   }
 });
