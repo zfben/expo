@@ -76,3 +76,4 @@ function getFileName(module) {
     return path_1.default.basename(module).replace(/\.[^.]+$/, '');
 }
 exports.getFileName = getFileName;
+//# sourceMappingURL=getCssDeps.js.map

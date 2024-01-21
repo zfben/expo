@@ -38,3 +38,4 @@ function getServerRoot(projectRoot) {
         : projectRoot;
 }
 exports.getServerRoot = getServerRoot;
+//# sourceMappingURL=getModulesPaths.js.map

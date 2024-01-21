@@ -9,3 +9,4 @@ function hashString(str) {
     return crypto_1.default.createHash('md5').update(str).digest('hex');
 }
 exports.hashString = hashString;
+//# sourceMappingURL=hash.js.map

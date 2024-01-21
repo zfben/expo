@@ -42,3 +42,4 @@ exports.loadBabelConfig = (function () {
         return babelRC;
     };
 })();
+//# sourceMappingURL=loadBabelConfig.js.map

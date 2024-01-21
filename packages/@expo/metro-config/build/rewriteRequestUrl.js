@@ -95,3 +95,4 @@ function getRewriteRequestUrl(projectRoot) {
     return rewriteExpoRequestUrl;
 }
 exports.getRewriteRequestUrl = getRewriteRequestUrl;
+//# sourceMappingURL=rewriteRequestUrl.js.map

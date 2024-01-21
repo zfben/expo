@@ -24,3 +24,4 @@ function getExportPathForDependencyWithOptions(dependencyPath, { platform, src, 
     return `_expo/static/js/${platform}/${name}.js`;
 }
 exports.getExportPathForDependencyWithOptions = getExportPathForDependencyWithOptions;
+//# sourceMappingURL=exportPath.js.map

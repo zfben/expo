@@ -46,3 +46,4 @@ async function getAssets(dependencies, options) {
     return await Promise.all(promises);
 }
 exports.default = getAssets;
+//# sourceMappingURL=getAssets.js.map

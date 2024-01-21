@@ -227,7 +227,7 @@ That's it! Errors for your updates will now be properly symbolicated in Sentry.
 
 You can chain the commands together with `&&` to publish an update and upload the sourcemaps in one step:
 
-<Terminal cmd={['$ eas update --channel <channel> && npx sentry-expo-upload-sourcemaps dist']} />
+<Terminal cmd={['$ eas update --branch <branch> && npx sentry-expo-upload-sourcemaps dist']} />
 
 </Collapsible>
 
@@ -242,7 +242,7 @@ import * as Updates from 'expo-updates';
 
 const manifest = Updates.manifest;
 const metadata = 'metadata' in manifest ? manifest.metadata : undefined;
-const extra = 'metadata' in manifest ? manifest.extra : undefined;
+const extra = 'extra' in manifest ? manifest.extra : undefined;
 const updateGroup = metadata && 'updateGroup' in metadata ? metadata.updateGroup : undefined;
 
 Sentry.init({

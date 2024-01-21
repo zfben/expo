@@ -5,3 +5,4 @@ exports.transformSync = exports.transformFromAstSync = void 0;
 var core_1 = require("@babel/core");
 Object.defineProperty(exports, "transformFromAstSync", { enumerable: true, get: function () { return core_1.transformFromAstSync; } });
 Object.defineProperty(exports, "transformSync", { enumerable: true, get: function () { return core_1.transformSync; } });
+//# sourceMappingURL=babel-core.js.map

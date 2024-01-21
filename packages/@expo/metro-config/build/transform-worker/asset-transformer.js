@@ -31,3 +31,4 @@ async function transform({ filename, options }, assetRegistryPath, assetDataPlug
     };
 }
 exports.transform = transform;
+//# sourceMappingURL=asset-transformer.js.map

@@ -272,7 +272,6 @@ async function transformJS(file, { config, options, projectRoot }) {
                 code,
                 lineCount: (0, countLines_1.default)(code),
                 map,
-                clientReferences: file.clientReferences,
                 functionMap: file.functionMap,
             },
             type: file.type,
@@ -293,7 +292,6 @@ async function transformAsset(file, context) {
         type: 'js/module/asset',
         ast: result.ast,
         functionMap: null,
-        clientReferences: null,
     };
     return transformJS(jsFile, context);
 }
@@ -310,7 +308,6 @@ async function transformJSWithBabel(file, context) {
     const jsFile = {
         ...file,
         ast: transformResult.ast,
-        clientReferences: transformResult.metadata?.clientReferences ?? null,
         functionMap: transformResult.metadata?.metro?.functionMap ??
             // Fallback to deprecated explicitly-generated `functionMap`
             transformResult.functionMap ??
@@ -342,7 +339,7 @@ async function transformJSON(file, { options, config, projectRoot }) {
     }
     const output = [
         {
-            data: { code, lineCount: (0, countLines_1.default)(code), map, functionMap: null, clientReferences: null, },
+            data: { code, lineCount: (0, countLines_1.default)(code), map, functionMap: null },
             type: jsType,
         },
     ];
@@ -409,7 +406,6 @@ async function transform(config, projectRoot, filename, data, options) {
         inputFileSize: data.length,
         code: sourceCode,
         type: options.type === 'script' ? 'js/script' : 'js/module',
-        clientReferences: null,
         functionMap: null,
     };
     return transformJSWithBabel(file, context);
@@ -434,3 +430,4 @@ function getCacheKey(config) {
     ].join('$');
 }
 exports.getCacheKey = getCacheKey;
+//# sourceMappingURL=metro-transform-worker.js.map

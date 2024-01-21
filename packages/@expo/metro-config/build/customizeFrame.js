@@ -86,3 +86,4 @@ function getDefaultCustomizeFrame() {
     };
 }
 exports.getDefaultCustomizeFrame = getDefaultCustomizeFrame;
+//# sourceMappingURL=customizeFrame.js.map

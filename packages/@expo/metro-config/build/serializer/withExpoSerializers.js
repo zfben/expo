@@ -24,7 +24,6 @@ function withExpoSerializers(config, options = {}) {
     if (!env_1.env.EXPO_NO_CLIENT_ENV_VARS) {
         processors.push(environmentVariableSerializerPlugin_1.environmentVariableSerializerPlugin);
     }
-    // processors.push(clientManifestSerializerPlugin);
     return withSerializerPlugins(config, processors, options);
 }
 exports.withExpoSerializers = withExpoSerializers;
@@ -156,36 +155,7 @@ function getDefaultSerializer(config, fallbackSerializer, configOptions = {}) {
             return null;
         })();
         if (serializerOptions?.outputMode !== 'static') {
-            const res = await defaultSerializer(...props);
-            //  console.log('>>', res, props);
-            // if (typeof res === 'string')  {}
-            // if (options.runModule) {
-            //   const paths = [...options.runBeforeMainModule, entryPoint];
-            //   for (const path of paths) {
-            //     if (modules.some((module: Module<>) => module.path === path)) {
-            //       const code = options.getRunModuleStatement(
-            //         options.createModuleId(path),
-            //       );
-            //       output.push({
-            //         path: `require-${path}`,
-            //         dependencies: new Map(),
-            //         getSource: (): Buffer => Buffer.from(''),
-            //         inverseDependencies: new CountingSet(),
-            //         output: [
-            //           {
-            //             type: 'js/script/virtual',
-            //             data: {
-            //               code,
-            //               lineCount: countLines(code),
-            //               map: [],
-            //             },
-            //           },
-            //         ],
-            //       });
-            //     }
-            //   }
-            // }
-            return res;
+            return defaultSerializer(...props);
         }
         // Mutate the serializer options with the parsed options.
         options.serializerOptions = {
@@ -216,3 +186,4 @@ function createSerializerFromSerialProcessors(config, processors, originalSerial
     };
 }
 exports.createSerializerFromSerialProcessors = createSerializerFromSerialProcessors;
+//# sourceMappingURL=withExpoSerializers.js.map

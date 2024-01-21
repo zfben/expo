@@ -15,3 +15,4 @@ function importMetroConfig(projectRoot) {
     return require(modulePath);
 }
 exports.importMetroConfig = importMetroConfig;
+//# sourceMappingURL=metro-config.js.map

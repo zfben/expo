@@ -21,3 +21,4 @@ function generateFunctionMap(...props) {
     return require('metro-source-map').generateFunctionMap(...props);
 }
 exports.generateFunctionMap = generateFunctionMap;
+//# sourceMappingURL=generateFunctionMap.js.map

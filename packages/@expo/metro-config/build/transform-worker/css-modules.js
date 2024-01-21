@@ -65,3 +65,4 @@ function matchCssModule(filePath) {
     return !!/\.module(\.(native|ios|android|web))?\.(css|s[ac]ss)$/.test(filePath);
 }
 exports.matchCssModule = matchCssModule;
+//# sourceMappingURL=css-modules.js.map

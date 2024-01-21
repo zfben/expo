@@ -115,3 +115,4 @@ function getBabelConfig(filename, options, plugins = []) {
     return { ...babelRC, ...config };
 }
 exports.getBabelConfig = getBabelConfig;
+//# sourceMappingURL=getBabelConfig.js.map

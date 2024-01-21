@@ -11,3 +11,4 @@ function isTransformOptionTruthy(option) {
     return option === true || option === 'true' || option === '1';
 }
 exports.isTransformOptionTruthy = isTransformOptionTruthy;
+//# sourceMappingURL=jsOutput.js.map

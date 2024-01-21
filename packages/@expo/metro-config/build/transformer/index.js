@@ -10,3 +10,4 @@ Object.defineProperty(exports, "loaders", { enumerable: true, get: function () {
 Object.defineProperty(exports, "createMultiRuleTransformer", { enumerable: true, get: function () { return createMultiRuleTransformer_1.createMultiRuleTransformer; } });
 var createMatcher_1 = require("./createMatcher");
 Object.defineProperty(exports, "createModuleMatcher", { enumerable: true, get: function () { return createMatcher_1.createModuleMatcher; } });
+//# sourceMappingURL=index.js.map
