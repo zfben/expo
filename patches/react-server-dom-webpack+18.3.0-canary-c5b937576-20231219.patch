@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js
-index f2e4646..0227885 100644
+index f2e4646..d69976d 100644
 --- a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js
 +++ b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js
 @@ -154,6 +154,7 @@ function preloadModule(metadata) {
@@ -41,7 +41,7 @@ index f2e4646..0227885 100644
    // that we'll need them.
 -
    var promise = preloadModule(clientReference);
-   
+ 
 +  console.log('| resolveModule |:', id, clientReference, promise)
    if (promise) {
      var blockedChunk;
@@ -161,50 +161,33 @@ index f2e4646..0227885 100644
    return JSON.parse(json, response._fromJSON);
  }
  
-@@ -2039,7 +2112,87 @@ function createResponseFromOptions(options) {
+@@ -2039,7 +2112,70 @@ function createResponseFromOptions(options) {
    );
  }
  
-+function convertStringToByteArray(str) {                                                                                                                                      
-+  var bytes = [];                                                                                                                                                             
-+  for (var i = 0; i < str.length; ++i) {                                                                                                                                      
-+    bytes.push(str.charCodeAt(i));                                                                                                                                            
-+  }                                                                                                                                                                           
-+  return bytes                                                                                                                                                                
-+}
-+
-+
 +function startReadingFromText(response, stream) {
 +  // Hack: convert string to text and parse it as JSON.
 +
-+  const chunks = response._chunks;
-+  // console.log('CHUNKS:', chunks)
 +  function progress(_ref) {
 +    console.log('progress:', _ref)
-+    // processBinaryChunk(response, convertStringToByteArray(_ref));
 +    _ref.split('\n').filter(Boolean).forEach((buffer, index) => {
-+      // processBinaryChunk(response, convertStringToByteArray(buffer));
 +
-+      let mtch = buffer.match(/\d:(.)\[/)
-+      let rowID = mtch ? mtch[1] : 0
-+      if (rowID) {
++      const line = buffer.match(/^([\d:A-Z]+)(.*)/)
++
++      const prefix = line[1];
++      const [, typeCode = 0] = prefix.split(':')
++      const cleanChunk = line[2];
++
++      let rowID = 0;
++      if (typeCode) {
 +        // Convert char like "I" to 73
-+        rowID = rowID.charCodeAt(0)
++        rowID = typeCode.charCodeAt(0)
 +      }
 +      const rowTag = Number(buffer[0]);
 +
-+      const cleanChunk = buffer.replace(/^[\d:A-Z]+/, '')
-+      console.log('>>>LINE:', rowID, rowTag, cleanChunk)
++      console.log('>>>LINE:', prefix, rowID, rowTag, cleanChunk)
 +      // BACONHACK
 +      processFullRowFromString(response, rowTag, rowID, cleanChunk)
-+
-+      
-+      // if (buffer) {
-+        // processFullRow(response, row)
-+        
-+        // resolveText(response, rowID, buffer);
-+        // processFullRow(response, rowID, rowTag, buffer, lastChunk); // Reset state machine for a new row
-+      // }
 +    })
 +
 +    close(response);
@@ -249,7 +232,7 @@ index f2e4646..0227885 100644
    var reader = stream.getReader();
  
    function progress(_ref) {
-@@ -2072,7 +2225,15 @@ function createFromReadableStream(stream, options) {
+@@ -2072,7 +2208,15 @@ function createFromReadableStream(stream, options) {
  function createFromFetch(promiseForResponse, options) {
    var response = createResponseFromOptions(options);
    promiseForResponse.then(function (r) {
