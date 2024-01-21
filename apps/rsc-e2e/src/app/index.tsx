@@ -8,6 +8,7 @@ import A05_ClientPlatformExtensions from '../05-client-platform-extensions/entry
 import A06_RSCChildren from '../06-rsc-children/entry';
 import A07_AsyncServerComponent from '../07-async-server-component/entry';
 import A08_NodeBuiltins from '../08-node-builtins/entry';
+import A09_CSSModules from '../09-css-modules/entry';
 
 const Container = OS === 'web' ? (props) => <div {...props} /> : (props) => <View {...props} />;
 
@@ -26,11 +27,13 @@ const App = () => {
       <A04_ServerPlatformExtensions />
       <A05_ClientPlatformExtensions />
       <A06_RSCChildren />
+
       <Container>
         {/* @ts-expect-error */}
         <A07_AsyncServerComponent />
       </Container>
       <A08_NodeBuiltins />
+      <A09_CSSModules />
     </View>
   );
 };
