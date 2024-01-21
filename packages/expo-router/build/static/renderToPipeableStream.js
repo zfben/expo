@@ -81,6 +81,8 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, url,
             url.pathname = relativeFilePath + '.bundle';
             // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
             url.hash = String(metroOpaqueId);
+            let relativeUrl = url.pathname + url.search + url.hash;
+            return relativeUrl;
         }
         else {
             if (!file.startsWith('@id/')) {
