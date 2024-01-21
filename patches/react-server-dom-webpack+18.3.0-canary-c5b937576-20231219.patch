@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js
-index f2e4646..137b35e 100644
+index f2e4646..34fc4d4 100644
 --- a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js
 +++ b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js
 @@ -154,6 +154,7 @@ function preloadModule(metadata) {
@@ -10,6 +10,300 @@ index f2e4646..137b35e 100644
  
    if (isAsyncImport(metadata)) {
      if (typeof moduleExports.then !== 'function') ; else if (moduleExports.status === 'fulfilled') {
+@@ -1368,11 +1369,13 @@ function initializeModuleChunk(chunk) {
+ 
+ 
+ function reportGlobalError(response, error) {
++  
+   response._chunks.forEach(function (chunk) {
+     // If this chunk was already resolved or errored, it won't
+     // trigger an error but if it wasn't then we need to
+     // because we won't be getting any new data to resolve it.
+     if (chunk.status === PENDING) {
++      console.log('ERROR>ON>CHUNK:', chunk)
+       triggerErrorOnChunk(chunk, error);
+     }
+   });
+@@ -1752,13 +1755,14 @@ function resolveModule(response, id, model) {
+   var clientReference = resolveClientReference(response._bundlerConfig, clientReferenceMetadata);
+   // For now we preload all modules as early as possible since it's likely
+   // that we'll need them.
+-
+   var promise = preloadModule(clientReference);
+   
++  console.log('| resolveModule |:', id, clientReference, promise)
+   if (promise) {
+     var blockedChunk;
+ 
+     if (!chunk) {
++      console.log('| add chunk |:', id, clientReference)
+       // Technically, we should just treat promise as the chunk in this
+       // case. Because it'll just behave as any other promise.
+       blockedChunk = createBlockedChunk(response);
+@@ -1771,14 +1775,17 @@ function resolveModule(response, id, model) {
+     }
+ 
+     promise.then(function () {
++      console.log('>> RESOLVED MODULE', clientReference)
+       return resolveModuleChunk(blockedChunk, clientReference);
+     }, function (error) {
++      console.log('|> ERROR | Resolving client ref |:', clientReference, error)
+       return triggerErrorOnChunk(blockedChunk, error);
+     });
+   } else {
+     if (!chunk) {
+       chunks.set(id, createResolvedModuleChunk(response, clientReference));
+     } else {
++      console.log('IMPOSSIBLE HAPPENED!', chunk, clientReference);
+       // This can't actually happen because we don't have any forward
+       // references to modules.
+       resolveModuleChunk(chunk, clientReference);
+@@ -1808,6 +1815,114 @@ function resolveHint(response, code, model) {
+   dispatchHint(code, hintModel);
+ }
+ 
++
++// function processFullRowString(response, row) {
++//   if (row === '') {
++//     return;
++//   }
++
++//   var tag = row[0]; // When tags that are not text are added, check them here before
++//   // parsing the row as text.
++//   // switch (tag) {
++//   // }
++
++//   var colon = row.indexOf(':', 1);
++//   var id = parseInt(row.substring(1, colon), 16);
++//   var text = row.substring(colon + 1);
++
++//   switch (tag) {
++//     case 'J':
++//       {
++//         resolveModel(response, id, text);
++//         return;
++//       }
++
++//     case 'M':
++//       {
++//         resolveModule(response, id, text);
++//         return;
++//       }
++
++//     case 'S':
++//       {
++//         resolveSymbol(response, id, JSON.parse(text));
++//         return;
++//       }
++
++//     case 'E':
++//       {
++//         var errorInfo = JSON.parse(text);
++//         resolveError(response, id, errorInfo.message, errorInfo.stack);
++//         return;
++//       }
++
++//     default:
++//       {
++//         throw new Error("Error parsing the data. It's probably an error code or network corruption.");
++//       }
++//   }
++// }
++
++function processFullRowFromString(response, id, tag, chunk) {
++
++  var row = chunk;
++
++  console.log('processFullRowFromString', id, tag, row)
++
++  switch (tag) {
++    case 73
++    /* "I" */
++    :
++      {
++        resolveModule(response, id, row);
++        return;
++      }
++
++    case 72
++    /* "H" */
++    :
++      {
++        var code = row[0];
++        resolveHint(response, code, row.slice(1));
++        return;
++      }
++
++    case 69
++    /* "E" */
++    :
++      {
++        var errorInfo = JSON.parse(row);
++
++        {
++          resolveErrorDev(response, id, errorInfo.digest, errorInfo.message, errorInfo.stack);
++        }
++
++        return;
++      }
++
++    case 84
++    /* "T" */
++    :
++      {
++        resolveText(response, id, row);
++        return;
++      }
++
++    case 80
++    /* "P" */
++    :
++    // Fallthrough
++
++    default:
++      /* """ "{" "[" "t" "f" "n" "0" - "9" */
++      {
++        // We assume anything else is JSON.
++        resolveModel(response, id, row);
++        return;
++      }
++  }
++}
++
+ function processFullRow(response, id, tag, buffer, chunk) {
+ 
+   var stringDecoder = response._stringDecoder;
+@@ -1819,6 +1934,9 @@ function processFullRow(response, id, tag, buffer, chunk) {
+ 
+   row += readFinalStringChunk(stringDecoder, chunk);
+ 
++  // 1, 73, [], [91, 34, ...], ["http://localhost:8081/node_modules/react-native-web/dist/exports/View/index.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=src%2Fapp&modulesOnly=true&runModule=false#-79164580",["http://localhost:8081/node_modules/react-native-web/dist/exports/View/index.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=src%2Fapp&modulesOnly=true&runModule=false#-79164580"],""]
++  console.log('processFullRow', id, tag, buffer, chunk, row)
++
+   switch (tag) {
+     case 73
+     /* "I" */
+@@ -1854,6 +1972,7 @@ function processFullRow(response, id, tag, buffer, chunk) {
+     /* "T" */
+     :
+       {
++        console.log('resolveText', id, row)
+         resolveText(response, id, row);
+         return;
+       }
+@@ -2007,6 +2126,7 @@ function processBinaryChunk(response, chunk) {
+ }
+ 
+ function parseModel(response, json) {
++  console.log('parseModel', json)
+   return JSON.parse(json, response._fromJSON);
+ }
+ 
+@@ -2039,7 +2159,87 @@ function createResponseFromOptions(options) {
+   );
+ }
+ 
++function convertStringToByteArray(str) {                                                                                                                                      
++  var bytes = [];                                                                                                                                                             
++  for (var i = 0; i < str.length; ++i) {                                                                                                                                      
++    bytes.push(str.charCodeAt(i));                                                                                                                                            
++  }                                                                                                                                                                           
++  return bytes                                                                                                                                                                
++}
++
++
++function startReadingFromText(response, stream) {
++  // Hack: convert string to text and parse it as JSON.
++
++  const chunks = response._chunks;
++  console.log('CHUNKS:', chunks)
++  function progress(_ref) {
++    console.log('progress:', _ref)
++    // processBinaryChunk(response, convertStringToByteArray(_ref));
++    _ref.split('\n').filter(Boolean).forEach((buffer, index) => {
++      // processBinaryChunk(response, convertStringToByteArray(buffer));
++
++      let mtch = buffer.match(/\d:(.)\[/)
++      let rowID = mtch ? mtch[1] : 0
++      if (rowID) {
++        // Convert char like "I" to 73
++        rowID = rowID.charCodeAt(0)
++      }
++      const rowTag = Number(buffer[0]);
++
++      const cleanChunk = buffer.replace(/^[\d:A-Z]+/, '')
++      console.log('>>>LINE:', rowID, rowTag, cleanChunk)
++      // BACONHACK
++      processFullRowFromString(response, rowTag, rowID, cleanChunk)
++
++      
++      // if (buffer) {
++        // processFullRow(response, row)
++        
++        // resolveText(response, rowID, buffer);
++        // processFullRow(response, rowID, rowTag, buffer, lastChunk); // Reset state machine for a new row
++      // }
++    })
++
++    close(response);
++  }
++
++  function error(e) {
++    reportGlobalError(response, e);
++  }
++
++  stream.text().then(progress).catch(error);
++
++
++  // var reader = stream.getReader();
++
++  // function progress(_ref) {
++  //   var done = _ref.done,
++  //       value = _ref.value;
++
++  //   if (done) {
++  //     close(response);
++  //     return;
++  //   }
++
++  //   var buffer = value;
++  //   processBinaryChunk(response, buffer);
++  //   return reader.read().then(progress).catch(error);
++  // }
++
++  // function error(e) {
++  //   reportGlobalError(response, e);
++  // }
++
++  // reader.read().then(progress).catch(error);
++}
++
+ function startReadingFromStream(response, stream) {
++  // Hack: convert string to text and parse it as JSON.
++  console.log('startReadingFromStream', response, stream)
++  // var text = stream.read();
++// 
++
+   var reader = stream.getReader();
+ 
+   function progress(_ref) {
+@@ -2072,7 +2272,15 @@ function createFromReadableStream(stream, options) {
+ function createFromFetch(promiseForResponse, options) {
+   var response = createResponseFromOptions(options);
+   promiseForResponse.then(function (r) {
+-    startReadingFromStream(response, r.body);
++    console.log(">>promiseForResponse:", !!r.body)
++    if (r.body) {
++
++      startReadingFromStream(response, r.body);
++    } else {
++    
++      startReadingFromText(response, r);
++
++    }
+   }, function (e) {
+     reportGlobalError(response, e);
+   });
 diff --git a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-server.node.unbundled.development.js b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-server.node.unbundled.development.js
 index 5d78b6a..a63e228 100644
 --- a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-server.node.unbundled.development.js
