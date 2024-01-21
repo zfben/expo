@@ -1,6 +1,8 @@
 import * as React from 'react';
-import { Platform, processColor, ViewProps } from 'react-native';
+import { ViewProps } from 'react-native';
+import { Platform } from 'expo-modules-core';
 
+import processColor from './processColor'
 import NativeLinearGradient from './NativeLinearGradient';
 import { NativeLinearGradientPoint } from './NativeLinearGradient.types';
 
@@ -63,28 +65,25 @@ export type LinearGradientProps = ViewProps & {
 /**
  * Renders a native view that transitions between multiple colors in a linear direction.
  */
-export class LinearGradient extends React.Component<LinearGradientProps> {
-  render() {
-    const { colors, locations, start, end, ...props } = this.props;
-    let resolvedLocations = locations;
-    if (locations && colors.length !== locations.length) {
-      console.warn('LinearGradient colors and locations props should be arrays of the same length');
-      resolvedLocations = locations.slice(0, colors.length);
-    }
-
-    return (
-      <NativeLinearGradient
-        {...props}
-        colors={Platform.select({
-          web: colors as any,
-          default: colors.map(processColor),
-        })}
-        locations={resolvedLocations}
-        startPoint={_normalizePoint(start)}
-        endPoint={_normalizePoint(end)}
-      />
-    );
+export function LinearGradient({ colors, locations, start, end, ...props }: LinearGradientProps) {
+  let resolvedLocations = locations;
+  if (locations && colors.length !== locations.length) {
+    console.warn('LinearGradient colors and locations props should be arrays of the same length');
+    resolvedLocations = locations.slice(0, colors.length);
   }
+
+  return (
+    <NativeLinearGradient
+      {...props}
+      colors={Platform.select({
+        web: colors as any,
+        default: colors.map(processColor),
+      })}
+      locations={resolvedLocations}
+      startPoint={_normalizePoint(start)}
+      endPoint={_normalizePoint(end)}
+    />
+  );
 }
 
 function _normalizePoint(

@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { findNodeHandle, NativeModules, requireNativeComponent, HostComponent } from 'react-native';
 

@@ -11,9 +11,17 @@ import A08_NodeBuiltins from '../08-node-builtins/entry';
 import A09_CSSModules from '../09-css-modules/entry';
 import A10_ServerActions from '../10-server-actions/entry';
 
+import { LinearGradient } from 'expo-linear-gradient';
+
 const Container = OS === 'web' ? (props) => <div {...props} /> : (props) => <View {...props} />;
 
 const App = () => {
+  return (
+    <LinearGradient
+    colors={['#4c669f', '#3b5998', '#192f6a']}
+    style={{ padding: 15, alignItems: 'center', borderRadius: 5, width: 100, height: 100 }}
+  />
+  )
   return (
     <View style={{ flex: 1, padding: 16, gap: 8, justifyContent: 'center', alignItems: 'stretch' }}>
       <View>
@@ -23,6 +31,11 @@ const App = () => {
 
         <Text>A whole new world.</Text>
       </View>
+
+      <LinearGradient
+        colors={['#4c669f', '#3b5998', '#192f6a']}
+        style={{ padding: 15, alignItems: 'center', borderRadius: 5, width: 100, height: 100 }}
+      />
 
       <A10_ServerActions />
     </View>

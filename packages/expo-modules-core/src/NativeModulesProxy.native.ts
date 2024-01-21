@@ -1,3 +1,5 @@
+'use client';
+
 import { NativeModules } from 'react-native';
 
 import { ProxyNativeModule } from './NativeModulesProxy.types';

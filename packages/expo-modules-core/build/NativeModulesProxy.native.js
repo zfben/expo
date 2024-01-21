@@ -1,3 +1,4 @@
+'use client';
 import { NativeModules } from 'react-native';
 const LegacyNativeProxy = NativeModules.NativeUnimoduleProxy;
 // Fixes `cannot find name 'global'.` in tests
