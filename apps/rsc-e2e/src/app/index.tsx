@@ -1,9 +1,14 @@
 import { Counter } from '../components/Counter';
-import { View, Text, LogBox } from 'react-native';
+import { View, Text, Platform, LogBox } from 'react-native';
 import DateStatic from '../components/Date-static';
 import AsyncBuildData from '../components/AsyncBuildData';
 import {ClientPlatformExt} from '../components/ClientPlatformExt';
+import ServerPlatformExt from '../components/ServerPlatformExt';
 
+const Container = Platform.select({
+  web: props => <div {...props} />,
+  default: View,
+})
 
 const App = () => {
   return (
@@ -16,12 +21,13 @@ const App = () => {
 
       <Text>A whole new world.</Text>
       </View>
-      {/* <div>
+      <Container>
       <AsyncBuildData />
-      </div> */}
+      </Container>
       <ClientPlatformExt>
         <Text>Child</Text>
       </ClientPlatformExt>
+      <ServerPlatformExt />
       <DateStatic />
       <Counter>
         <View
@@ -29,7 +35,6 @@ const App = () => {
             borderWidth: 3,
             borderColor: 'dodgerblue',
             borderStyle: 'dashed',
-            margin: 8,
             padding: 8,
           }}>
           <Text>Nested static component child</Text>

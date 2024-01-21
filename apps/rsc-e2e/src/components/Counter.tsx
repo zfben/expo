@@ -13,6 +13,7 @@ export const Counter = ({ children }) => {
         borderColor: 'aquamarine',
         borderStyle: 'dashed',
         padding: 8,
+        gap: 8,
       }}>
       <Text style={{ fontWeight: 'bold' }}>Client Component</Text>
 
