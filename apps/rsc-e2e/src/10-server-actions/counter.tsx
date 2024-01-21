@@ -9,24 +9,31 @@ export const Counter = ({ greet }: { greet: (name: string) => Promise<string> })
   const [isPending, startTransition] = useTransition();
   const handleClick = () => {
     startTransition(() => {
-      setText(greet('BACON+c=' + count));
+      setText(greet('c=' + count));
     });
   };
   return (
     <View
       style={{
         borderWidth: 3,
-        borderColor: 'orange',
+        borderColor: 'darkcyan',
         borderStyle: 'dashed',
         padding: 8,
       }}>
-      <Text>Count: {count}</Text>
-      <Text onPress={() => setCount((c) => c + 1)}>Increment</Text>
+      <Text>(client component)</Text>
+      <Text
+        selectable={false}
+        style={{ padding: 8, fontWeight: 'bold' }}
+        onPress={() => setCount((c) => c + 1)}>
+        Increment++
+      </Text>
+
       <Text>
-        <Text onPress={handleClick}>greet(&quot;c=&quot; + count) = {text as string}</Text>{' '}
+        <Text selectable={false} style={{ fontFamily: 'monospace' }} onPress={handleClick}>
+          greet(&quot;c=&quot; + {count}) → {text as string}
+        </Text>{' '}
         {isPending ? 'Pending...' : ''}
       </Text>
-      <Text>This is a client component.</Text>
     </View>
   );
 };

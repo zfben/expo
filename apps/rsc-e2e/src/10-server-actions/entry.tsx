@@ -15,11 +15,12 @@ export default function ServerActionTest() {
         borderColor: 'green',
         borderStyle: 'dashed',
         padding: 8,
+        gap: 8,
       }}>
       <Text style={{ fontWeight: 'bold' }}>10) Server Action (Server Component)</Text>
 
       <Counter greet={greet as unknown as ServerFunction<typeof greet>} />
-      <Text>{new Date().toISOString()}</Text>
+      <Text>Date rendered: {new Date().toISOString()}</Text>
     </View>
   );
 }
