@@ -220,7 +220,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     baseUrl,
     isReactServer,
     routerRoot,
-    platform
+    platform,
   }: {
     mode: 'development' | 'production';
     minify?: boolean;
@@ -532,6 +532,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       const renderRsc = async (location: any, { url }: { url: URL }) => {
         console.log('Get RSC Renderer:', location, url);
         const mode = options.mode ?? 'development';
+        // TODO: Extract CSS Modules / Assets from the bundler process
         const { renderToPipeableStream } = await this.getReactServerFunctionAsync({
           mode,
           platform: url.searchParams.get('platform') ?? 'web',
