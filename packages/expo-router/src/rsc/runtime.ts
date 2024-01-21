@@ -17,15 +17,17 @@ globalThis.__webpack_chunk_load__ = (id) => {
   const numericMetroId = parseInt(url.hash.slice(1));
   console.log('__webpack_chunk_load__', id, numericMetroId);
   const loadBundleAsync = global[`${__METRO_GLOBAL_PREFIX__}__loadBundleAsync`];
-  return loadBundleAsync(id).then(() => {
-    const m = __r(numericMetroId);
-    rscClientModuleCache.set(id, m);
-    console.log('loaded module.2:', id, m);
-    return m;
-  }).catch(e => {
-    console.error('error loading RSC module:', id, e);
-    throw e;
-  })
+  return loadBundleAsync(id)
+    .then(() => {
+      const m = __r(numericMetroId);
+      rscClientModuleCache.set(id, m);
+      console.log('loaded module.2:', id);
+      return m;
+    })
+    .catch((e) => {
+      console.error('error loading RSC module:', id, e);
+      throw e;
+    });
 };
 
 globalThis.__webpack_require__ = (id) => rscClientModuleCache.get(id);

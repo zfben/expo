@@ -29,7 +29,7 @@ export const Counter = ({ greet }: { greet: (name: string) => Promise<string> })
       </Text>
 
       <Text>
-        <Text selectable={false} style={{ fontFamily: 'monospace' }} onPress={handleClick}>
+        <Text selectable={false} style={{}} onPress={handleClick}>
           greet(&quot;c=&quot; + {count}) → {text as string}
         </Text>{' '}
         {isPending ? 'Pending...' : ''}
