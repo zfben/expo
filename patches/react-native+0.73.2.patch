@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native/Libraries/Renderer/implementations/ReactNativeRenderer-dev.js b/node_modules/react-native/Libraries/Renderer/implementations/ReactNativeRenderer-dev.js
-index 1680f6c..8306d00 100644
+index 1680f6c..33b1bf9 100644
 --- a/node_modules/react-native/Libraries/Renderer/implementations/ReactNativeRenderer-dev.js
 +++ b/node_modules/react-native/Libraries/Renderer/implementations/ReactNativeRenderer-dev.js
 @@ -1,5 +1,5 @@
@@ -49708,7 +49708,7 @@ index 1680f6c..8306d00 100644
 -) {
 -  __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(new Error());
 -}
- 
+         
 +    exports.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = Internals;
 +    exports.createPortal = createPortal;
 +    exports.dispatchCommand = dispatchCommand;
@@ -49732,3 +49732,403 @@ index 1680f6c..8306d00 100644
 +    }
    })();
  }
+diff --git a/node_modules/react-native/index.js b/node_modules/react-native/index.js
+index 7149c64..8e50cab 100644
+--- a/node_modules/react-native/index.js
++++ b/node_modules/react-native/index.js
+@@ -7,7 +7,7 @@
+  * @format
+  * @flow
+  */
+-
++'use client';
+ 'use strict';
+ 
+ // Components
+@@ -83,16 +83,16 @@ import typeof Vibration from './Libraries/Vibration/Vibration';
+ import typeof YellowBox from './Libraries/YellowBox/YellowBoxDeprecated';
+ 
+ // Plugins
+-import typeof {DynamicColorIOS} from './Libraries/StyleSheet/PlatformColorValueTypesIOS';
++import typeof { DynamicColorIOS } from './Libraries/StyleSheet/PlatformColorValueTypesIOS';
+ import typeof NativeModules from './Libraries/BatchedBridge/NativeModules';
+ import typeof Platform from './Libraries/Utilities/Platform';
+-import typeof {PlatformColor} from './Libraries/StyleSheet/PlatformColorValueTypes';
++import typeof { PlatformColor } from './Libraries/StyleSheet/PlatformColorValueTypes';
+ import typeof processColor from './Libraries/StyleSheet/processColor';
+ import typeof RCTDeviceEventEmitter from './Libraries/EventEmitter/RCTDeviceEventEmitter';
+ import typeof RCTNativeAppEventEmitter from './Libraries/EventEmitter/RCTNativeAppEventEmitter';
+-import typeof {RootTagContext} from './Libraries/ReactNative/RootTag';
++import typeof { RootTagContext } from './Libraries/ReactNative/RootTag';
+ 
+-import type {HostComponent as _HostComponentInternal} from './Libraries/Renderer/shims/ReactNativeTypes';
++import type { HostComponent as _HostComponentInternal } from './Libraries/Renderer/shims/ReactNativeTypes';
+ 
+ export type HostComponent<T> = _HostComponentInternal<T>;
+ 
+@@ -102,12 +102,10 @@ const warnOnce = require('./Libraries/Utilities/warnOnce');
+ module.exports = {
+   // Components
+   get AccessibilityInfo(): AccessibilityInfo {
+-    return require('./Libraries/Components/AccessibilityInfo/AccessibilityInfo')
+-      .default;
++    return require('./Libraries/Components/AccessibilityInfo/AccessibilityInfo').default;
+   },
+   get ActivityIndicator(): ActivityIndicator {
+-    return require('./Libraries/Components/ActivityIndicator/ActivityIndicator')
+-      .default;
++    return require('./Libraries/Components/ActivityIndicator/ActivityIndicator').default;
+   },
+   get Button(): Button {
+     return require('./Libraries/Components/Button');
+@@ -129,8 +127,7 @@ module.exports = {
+     return require('./Libraries/Components/TextInput/InputAccessoryView');
+   },
+   get KeyboardAvoidingView(): KeyboardAvoidingView {
+-    return require('./Libraries/Components/Keyboard/KeyboardAvoidingView')
+-      .default;
++    return require('./Libraries/Components/Keyboard/KeyboardAvoidingView').default;
+   },
+   get Modal(): Modal {
+     return require('./Libraries/Modal/Modal');
+@@ -144,7 +141,7 @@ module.exports = {
+       'progress-bar-android-moved',
+       'ProgressBarAndroid has been extracted from react-native core and will be removed in a future release. ' +
+         "It can now be installed and imported from '@react-native-community/progress-bar-android' instead of 'react-native'. " +
+-        'See https://github.com/react-native-progress-view/progress-bar-android',
++        'See https://github.com/react-native-progress-view/progress-bar-android'
+     );
+     return require('./Libraries/Components/ProgressBarAndroid/ProgressBarAndroid');
+   },
+@@ -206,7 +203,7 @@ module.exports = {
+   },
+   // Include any types exported in the Animated module together with its default export, so
+   // you can references types such as Animated.Numeric
+-  get Animated(): {...$Diff<AnimatedModule, {default: any}>, ...Animated} {
++  get Animated(): { ...$Diff<AnimatedModule, { default: any }>, ...Animated } {
+     // $FlowExpectedError[prop-missing]: we only return the default export, all other exports are types
+     return require('./Libraries/Animated/Animated').default;
+   },
+@@ -227,7 +224,7 @@ module.exports = {
+       'clipboard-moved',
+       'Clipboard has been extracted from react-native core and will be removed in a future release. ' +
+         "It can now be installed and imported from '@react-native-clipboard/clipboard' instead of 'react-native'. " +
+-        'See https://github.com/react-native-clipboard/clipboard',
++        'See https://github.com/react-native-clipboard/clipboard'
+     );
+     return require('./Libraries/Components/Clipboard/Clipboard');
+   },
+@@ -265,8 +262,7 @@ module.exports = {
+     return require('./Libraries/LogBox/LogBox').default;
+   },
+   get NativeDialogManagerAndroid(): NativeDialogManagerAndroid {
+-    return require('./Libraries/NativeModules/specs/NativeDialogManagerAndroid')
+-      .default;
++    return require('./Libraries/NativeModules/specs/NativeDialogManagerAndroid').default;
+   },
+   get NativeEventEmitter(): NativeEventEmitter {
+     return require('./Libraries/EventEmitter/NativeEventEmitter').default;
+@@ -288,7 +284,7 @@ module.exports = {
+       'pushNotificationIOS-moved',
+       'PushNotificationIOS has been extracted from react-native core and will be removed in a future release. ' +
+         "It can now be installed and imported from '@react-native-community/push-notification-ios' instead of 'react-native'. " +
+-        'See https://github.com/react-native-push-notification-ios/push-notification-ios',
++        'See https://github.com/react-native-push-notification-ios/push-notification-ios'
+     );
+     return require('./Libraries/PushNotificationIOS/PushNotificationIOS');
+   },
+@@ -314,12 +310,8 @@ module.exports = {
+   get UIManager(): UIManager {
+     return require('./Libraries/ReactNative/UIManager');
+   },
+-  get unstable_batchedUpdates(): $PropertyType<
+-    ReactNative,
+-    'unstable_batchedUpdates',
+-  > {
+-    return require('./Libraries/ReactNative/RendererProxy')
+-      .unstable_batchedUpdates;
++  get unstable_batchedUpdates(): $PropertyType<ReactNative, 'unstable_batchedUpdates'> {
++    return require('./Libraries/ReactNative/RendererProxy').unstable_batchedUpdates;
+   },
+   get useAnimatedValue(): useAnimatedValue {
+     return require('./Libraries/Animated/useAnimatedValue').default;
+@@ -345,8 +337,7 @@ module.exports = {
+     return require('./Libraries/EventEmitter/RCTDeviceEventEmitter').default;
+   },
+   get DynamicColorIOS(): DynamicColorIOS {
+-    return require('./Libraries/StyleSheet/PlatformColorValueTypesIOS')
+-      .DynamicColorIOS;
++    return require('./Libraries/StyleSheet/PlatformColorValueTypesIOS').DynamicColorIOS;
+   },
+   get NativeAppEventEmitter(): RCTNativeAppEventEmitter {
+     return require('./Libraries/EventEmitter/RCTNativeAppEventEmitter');
+@@ -358,15 +349,12 @@ module.exports = {
+     return require('./Libraries/Utilities/Platform');
+   },
+   get PlatformColor(): PlatformColor {
+-    return require('./Libraries/StyleSheet/PlatformColorValueTypes')
+-      .PlatformColor;
++    return require('./Libraries/StyleSheet/PlatformColorValueTypes').PlatformColor;
+   },
+   get processColor(): processColor {
+     return require('./Libraries/StyleSheet/processColor').default;
+   },
+-  get requireNativeComponent(): <T>(
+-    uiViewClassName: string,
+-  ) => HostComponent<T> {
++  get requireNativeComponent(): <T>(uiViewClassName: string) => HostComponent<T> {
+     return require('./Libraries/ReactNative/requireNativeComponent').default;
+   },
+   get RootTagContext(): RootTagContext {
+@@ -375,7 +363,7 @@ module.exports = {
+   get unstable_enableLogBox(): () => void {
+     return () =>
+       console.warn(
+-        'LogBox is enabled by default so there is no need to call unstable_enableLogBox() anymore. This is a no op and will be removed in the next version.',
++        'LogBox is enabled by default so there is no need to call unstable_enableLogBox() anymore. This is a no op and will be removed in the next version.'
+       );
+   },
+   // Deprecated Prop Types
+@@ -385,7 +373,7 @@ module.exports = {
+         'other PropTypes. We recommend that you migrate away from PropTypes ' +
+         'and switch to a type system like TypeScript. If you need to ' +
+         'continue using ColorPropType, migrate to the ' +
+-        "'deprecated-react-native-prop-types' package.",
++        "'deprecated-react-native-prop-types' package."
+     );
+     return require('deprecated-react-native-prop-types').ColorPropType;
+   },
+@@ -395,7 +383,7 @@ module.exports = {
+         'other PropTypes. We recommend that you migrate away from PropTypes ' +
+         'and switch to a type system like TypeScript. If you need to ' +
+         'continue using EdgeInsetsPropType, migrate to the ' +
+-        "'deprecated-react-native-prop-types' package.",
++        "'deprecated-react-native-prop-types' package."
+     );
+     return require('deprecated-react-native-prop-types').EdgeInsetsPropType;
+   },
+@@ -405,7 +393,7 @@ module.exports = {
+         'other PropTypes. We recommend that you migrate away from PropTypes ' +
+         'and switch to a type system like TypeScript. If you need to ' +
+         'continue using PointPropType, migrate to the ' +
+-        "'deprecated-react-native-prop-types' package.",
++        "'deprecated-react-native-prop-types' package."
+     );
+     return require('deprecated-react-native-prop-types').PointPropType;
+   },
+@@ -415,7 +403,7 @@ module.exports = {
+         'other PropTypes. We recommend that you migrate away from PropTypes ' +
+         'and switch to a type system like TypeScript. If you need to ' +
+         'continue using ViewPropTypes, migrate to the ' +
+-        "'deprecated-react-native-prop-types' package.",
++        "'deprecated-react-native-prop-types' package."
+     );
+     return require('deprecated-react-native-prop-types').ViewPropTypes;
+   },
+@@ -433,7 +421,7 @@ if (__DEV__) {
+         false,
+         'ART has been removed from React Native. ' +
+           "It can now be installed and imported from '@react-native-community/art' instead of 'react-native'. " +
+-          'See https://github.com/react-native-art/art',
++          'See https://github.com/react-native-art/art'
+       );
+     },
+   });
+@@ -449,7 +437,7 @@ if (__DEV__) {
+         false,
+         'ListView has been removed from React Native. ' +
+           'See https://fb.me/nolistview for more information or use ' +
+-          '`deprecated-react-native-listview`.',
++          '`deprecated-react-native-listview`.'
+       );
+     },
+   });
+@@ -465,7 +453,7 @@ if (__DEV__) {
+         false,
+         'SwipeableListView has been removed from React Native. ' +
+           'See https://fb.me/nolistview for more information or use ' +
+-          '`deprecated-react-native-swipeable-listview`.',
++          '`deprecated-react-native-swipeable-listview`.'
+       );
+     },
+   });
+@@ -481,7 +469,7 @@ if (__DEV__) {
+         false,
+         'WebView has been removed from React Native. ' +
+           "It can now be installed and imported from 'react-native-webview' instead of 'react-native'. " +
+-          'See https://github.com/react-native-webview/react-native-webview',
++          'See https://github.com/react-native-webview/react-native-webview'
+       );
+     },
+   });
+@@ -497,7 +485,7 @@ if (__DEV__) {
+         false,
+         'NetInfo has been removed from React Native. ' +
+           "It can now be installed and imported from '@react-native-community/netinfo' instead of 'react-native'. " +
+-          'See https://github.com/react-native-netinfo/react-native-netinfo',
++          'See https://github.com/react-native-netinfo/react-native-netinfo'
+       );
+     },
+   });
+@@ -513,7 +501,7 @@ if (__DEV__) {
+         false,
+         'CameraRoll has been removed from React Native. ' +
+           "It can now be installed and imported from '@react-native-community/cameraroll' instead of 'react-native'. " +
+-          'See https://github.com/react-native-cameraroll/react-native-cameraroll',
++          'See https://github.com/react-native-cameraroll/react-native-cameraroll'
+       );
+     },
+   });
+@@ -530,7 +518,7 @@ if (__DEV__) {
+         'ImageStore has been removed from React Native. ' +
+           'To get a base64-encoded string from a local image use either of the following third-party libraries:' +
+           "* expo-file-system: `readAsStringAsync(filepath, 'base64')`" +
+-          "* react-native-fs: `readFile(filepath, 'base64')`",
++          "* react-native-fs: `readFile(filepath, 'base64')`"
+       );
+     },
+   });
+@@ -546,7 +534,7 @@ if (__DEV__) {
+         false,
+         'ImageEditor has been removed from React Native. ' +
+           "It can now be installed and imported from '@react-native-community/image-editor' instead of 'react-native'. " +
+-          'See https://github.com/callstack/react-native-image-editor',
++          'See https://github.com/callstack/react-native-image-editor'
+       );
+     },
+   });
+@@ -562,7 +550,7 @@ if (__DEV__) {
+         false,
+         'TimePickerAndroid has been removed from React Native. ' +
+           "It can now be installed and imported from '@react-native-community/datetimepicker' instead of 'react-native'. " +
+-          'See https://github.com/react-native-datetimepicker/datetimepicker',
++          'See https://github.com/react-native-datetimepicker/datetimepicker'
+       );
+     },
+   });
+@@ -578,7 +566,7 @@ if (__DEV__) {
+         false,
+         'ToolbarAndroid has been removed from React Native. ' +
+           "It can now be installed and imported from '@react-native-community/toolbar-android' instead of 'react-native'. " +
+-          'See https://github.com/react-native-toolbar-android/toolbar-android',
++          'See https://github.com/react-native-toolbar-android/toolbar-android'
+       );
+     },
+   });
+@@ -594,7 +582,7 @@ if (__DEV__) {
+         false,
+         'ViewPagerAndroid has been removed from React Native. ' +
+           "It can now be installed and imported from 'react-native-pager-view' instead of 'react-native'. " +
+-          'See https://github.com/callstack/react-native-pager-view',
++          'See https://github.com/callstack/react-native-pager-view'
+       );
+     },
+   });
+@@ -610,7 +598,7 @@ if (__DEV__) {
+         false,
+         'CheckBox has been removed from React Native. ' +
+           "It can now be installed and imported from '@react-native-community/checkbox' instead of 'react-native'. " +
+-          'See https://github.com/react-native-checkbox/react-native-checkbox',
++          'See https://github.com/react-native-checkbox/react-native-checkbox'
+       );
+     },
+   });
+@@ -626,7 +614,7 @@ if (__DEV__) {
+         false,
+         'SegmentedControlIOS has been removed from React Native. ' +
+           "It can now be installed and imported from '@react-native-community/segmented-checkbox' instead of 'react-native'." +
+-          'See https://github.com/react-native-segmented-control/segmented-control',
++          'See https://github.com/react-native-segmented-control/segmented-control'
+       );
+     },
+   });
+@@ -642,7 +630,7 @@ if (__DEV__) {
+         false,
+         'StatusBarIOS has been removed from React Native. ' +
+           'Has been merged with StatusBar. ' +
+-          'See https://reactnative.dev/docs/statusbar',
++          'See https://reactnative.dev/docs/statusbar'
+       );
+     },
+   });
+@@ -658,7 +646,7 @@ if (__DEV__) {
+         false,
+         'PickerIOS has been removed from React Native. ' +
+           "It can now be installed and imported from '@react-native-picker/picker' instead of 'react-native'. " +
+-          'See https://github.com/react-native-picker/picker',
++          'See https://github.com/react-native-picker/picker'
+       );
+     },
+   });
+@@ -674,7 +662,7 @@ if (__DEV__) {
+         false,
+         'Picker has been removed from React Native. ' +
+           "It can now be installed and imported from '@react-native-picker/picker' instead of 'react-native'. " +
+-          'See https://github.com/react-native-picker/picker',
++          'See https://github.com/react-native-picker/picker'
+       );
+     },
+   });
+@@ -689,7 +677,7 @@ if (__DEV__) {
+         false,
+         'DatePickerAndroid has been removed from React Native. ' +
+           "It can now be installed and imported from '@react-native-community/datetimepicker' instead of 'react-native'. " +
+-          'See https://github.com/react-native-datetimepicker/datetimepicker',
++          'See https://github.com/react-native-datetimepicker/datetimepicker'
+       );
+     },
+   });
+@@ -704,7 +692,7 @@ if (__DEV__) {
+         false,
+         'MaskedViewIOS has been removed from React Native. ' +
+           "It can now be installed and imported from '@react-native-community/react-native-masked-view' instead of 'react-native'. " +
+-          'See https://github.com/react-native-masked-view/masked-view',
++          'See https://github.com/react-native-masked-view/masked-view'
+       );
+     },
+   });
+@@ -719,7 +707,7 @@ if (__DEV__) {
+         false,
+         'AsyncStorage has been removed from react-native core. ' +
+           "It can now be installed and imported from '@react-native-async-storage/async-storage' instead of 'react-native'. " +
+-          'See https://github.com/react-native-async-storage/async-storage',
++          'See https://github.com/react-native-async-storage/async-storage'
+       );
+     },
+   });
+@@ -735,7 +723,7 @@ if (__DEV__) {
+         'ImagePickerIOS has been removed from React Native. ' +
+           "Please upgrade to use either '@react-native-community/react-native-image-picker' or 'expo-image-picker'. " +
+           "If you cannot upgrade to a different library, please install the deprecated '@react-native-community/image-picker-ios' package. " +
+-          'See https://github.com/rnc-archive/react-native-image-picker-ios',
++          'See https://github.com/rnc-archive/react-native-image-picker-ios'
+       );
+     },
+   });
+@@ -750,7 +738,7 @@ if (__DEV__) {
+         false,
+         'ProgressViewIOS has been removed from react-native core. ' +
+           "It can now be installed and imported from '@react-native-community/progress-view' instead of 'react-native'. " +
+-          'See https://github.com/react-native-progress-view/progress-view',
++          'See https://github.com/react-native-progress-view/progress-view'
+       );
+     },
+   });
+@@ -765,7 +753,7 @@ if (__DEV__) {
+         false,
+         'DatePickerIOS has been removed from react-native core. ' +
+           "It can now be installed and imported from '@react-native-community/datetimepicker' instead of 'react-native'. " +
+-          'See https://github.com/react-native-datetimepicker/datetimepicker',
++          'See https://github.com/react-native-datetimepicker/datetimepicker'
+       );
+     },
+   });
+@@ -780,7 +768,7 @@ if (__DEV__) {
+         false,
+         'Slider has been removed from react-native core. ' +
+           "It can now be installed and imported from '@react-native-community/slider' instead of 'react-native'. " +
+-          'See https://github.com/callstack/react-native-slider',
++          'See https://github.com/callstack/react-native-slider'
+       );
+     },
+   });

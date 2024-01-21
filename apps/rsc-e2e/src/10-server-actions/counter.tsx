@@ -1,8 +1,7 @@
 'use client';
 
+import { View, Text } from 'react-native';
 import { useState, useTransition } from 'react';
-
-import { TextBox } from './text-input';
 
 export const Counter = ({ greet }: { greet: (name: string) => Promise<string> }) => {
   const [count, setCount] = useState(0);
@@ -14,15 +13,20 @@ export const Counter = ({ greet }: { greet: (name: string) => Promise<string> })
     });
   };
   return (
-    <div style={{ border: '3px blue dashed', margin: '1em', padding: '1em' }}>
-      <p>Count: {count}</p>
-      <button onClick={() => setCount((c) => c + 1)}>Increment</button>
-      <p>
-        <button onClick={handleClick}>greet(&quot;c=&quot; + count) = {text as string}</button>{' '}
+    <View
+      style={{
+        borderWidth: 3,
+        borderColor: 'orange',
+        borderStyle: 'dashed',
+        padding: 8,
+      }}>
+      <Text>Count: {count}</Text>
+      <Text onPress={() => setCount((c) => c + 1)}>Increment</Text>
+      <Text>
+        <Text onPress={handleClick}>greet(&quot;c=&quot; + count) = {text as string}</Text>{' '}
         {isPending ? 'Pending...' : ''}
-      </p>
-      <h3>This is a client component.</h3>
-      <TextBox />
-    </div>
+      </Text>
+      <Text>This is a client component.</Text>
+    </View>
   );
 };
