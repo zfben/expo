@@ -1,6 +1,7 @@
 import OS from 'expo-router/os';
 import { Text, View } from 'react-native';
 
+import A02_Suspense from '../02-suspense/entry';
 import A03_Promises from '../03-promises/entry';
 import AsyncBuildData from '../components/AsyncBuildData';
 import { ClientPlatformExt } from '../components/ClientPlatformExt';
@@ -8,23 +9,22 @@ import { Counter } from '../components/Counter';
 import DateStatic from '../components/Date-static';
 import ServerPlatformExt from '../components/ServerPlatformExt';
 
-const Container = OS === 'web' ? props => <div {...props} /> : props => <View {...props} />
-  
+const Container = OS === 'web' ? (props) => <div {...props} /> : (props) => <View {...props} />;
 
 const App = () => {
   return (
     <View style={{ flex: 1, padding: 16, gap: 8, justifyContent: 'center', alignItems: 'stretch' }}>
-
       <View>
-      <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
-        Universal React Server Components with Expo Router
-      </Text>
+        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+          Universal React Server Components with Expo Router
+        </Text>
 
-      <Text>A whole new world.</Text>
+        <Text>A whole new world.</Text>
       </View>
+      <A02_Suspense />
       <A03_Promises />
       <Container>
-      <AsyncBuildData />
+        <AsyncBuildData />
       </Container>
       <ClientPlatformExt>
         <Text>Child</Text>

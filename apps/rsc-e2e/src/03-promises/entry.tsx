@@ -17,7 +17,6 @@ const App = () => {
       }}>
       <Text>3) Promises + use hook (Server Component)</Text>
       <Counter delayedMessage={delayedMessage} />
-      
     </View>
   );
 };
