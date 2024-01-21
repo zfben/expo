@@ -2,6 +2,7 @@ import { Counter } from '../components/Counter';
 import { View, Text, LogBox } from 'react-native';
 import DateStatic from '../components/Date-static';
 import AsyncBuildData from '../components/AsyncBuildData';
+import {ClientPlatformExt} from '../components/ClientPlatformExt';
 
 
 const App = () => {
@@ -15,7 +16,12 @@ const App = () => {
 
       <Text>A whole new world.</Text>
       </View>
+      {/* <div>
       <AsyncBuildData />
+      </div> */}
+      <ClientPlatformExt>
+        <Text>Child</Text>
+      </ClientPlatformExt>
       <DateStatic />
       <Counter>
         <View

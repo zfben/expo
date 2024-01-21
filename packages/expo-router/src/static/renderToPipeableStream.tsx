@@ -102,9 +102,8 @@ export async function renderToPipeableStream(
       // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
       url.hash = String(metroOpaqueId);
 
-      let relativeUrl = url.pathname + url.search + url.hash;
-      
-      return relativeUrl;
+      // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
+      return url.pathname + url.search + url.hash;
 
     } else {
       if (!file.startsWith('@id/')) {
