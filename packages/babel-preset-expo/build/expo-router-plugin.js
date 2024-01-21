@@ -90,41 +90,6 @@ function expoRouterServerComponentClientReferencesPlugin(api) {
     return {
         name: 'expo-rsc-client-references',
         visitor: {
-            // Fast cheap react optimizer
-            // IfStatement(path, state) {
-            //   const test = path.node.test;
-            //   if (!state.file.opts.filename?.includes('react')) {
-            //     return;
-            //   }
-            //   // Check if the test is a strict equality comparison involving process.env.NODE_ENV
-            //   if (
-            //     t.isBinaryExpression(test) &&
-            //     test.operator === '===' &&
-            //     t.isMemberExpression(test.left) &&
-            //     t.isIdentifier(test.left.object, { name: 'process' }) &&
-            //     t.isIdentifier(test.left.property, { name: 'env' }) &&
-            //     t.isMemberExpression(test.left.object) &&
-            //     t.isIdentifier(test.left.object.property, { name: 'NODE_ENV' }) &&
-            //     t.isStringLiteral(test.right)
-            //   ) {
-            //     const envValue = test.right.value;
-            //     // If the environment matches the input transform environment, replace the if statement
-            //     if (envValue === mode) {
-            //       if (isDev) {
-            //         if (path.node.alternate) {
-            //           path.replaceWith(path.node.alternate);
-            //         } else {
-            //           path.remove();
-            //         }
-            //       } else {
-            //         path.replaceWith(path.node.consequent);
-            //       }
-            //     } else {
-            //       // If it's the other condition, remove the if statement
-            //       path.remove();
-            //     }
-            //   }
-            // },
             Program(path, state) {
                 const isUseClient = path.node.directives.some((directive) => directive.value.value === 'use client');
                 // File starts with "use client" directive.
@@ -172,13 +137,18 @@ function expoRouterServerComponentClientReferencesPlugin(api) {
                     if (isUseClient) {
                         // Inject the following:
                         // console.log('Loaded client module proxy for', outputKey, require('react-server-dom-webpack/server'))
-                        path.pushContainer('body', t.expressionStatement(t.callExpression(t.identifier('console.log'), [
-                            t.stringLiteral('Loaded client module proxy for'),
-                            t.stringLiteral(outputKey),
-                            t.callExpression(t.identifier('require'), [
-                                t.stringLiteral('react-server-dom-webpack/server'),
-                            ]),
-                        ])));
+                        // path.pushContainer(
+                        //   'body',
+                        //   t.expressionStatement(
+                        //     t.callExpression(t.identifier('console.log'), [
+                        //       t.stringLiteral('Loaded client module proxy for'),
+                        //       t.stringLiteral(outputKey),
+                        //       t.callExpression(t.identifier('require'), [
+                        //         t.stringLiteral('react-server-dom-webpack/server'),
+                        //       ]),
+                        //     ])
+                        //   )
+                        // );
                         // Inject the following:
                         //
                         // module.exports = require('react-server-dom-webpack/server').createClientModuleProxy(`${outputKey}#${require.resolveWeak(filePath)}`)
