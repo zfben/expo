@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js
-index f2e4646..11ac612 100644
+index f2e4646..0227885 100644
 --- a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js
 +++ b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js
 @@ -154,6 +154,7 @@ function preloadModule(metadata) {
@@ -69,61 +69,12 @@ index f2e4646..11ac612 100644
        // This can't actually happen because we don't have any forward
        // references to modules.
        resolveModuleChunk(chunk, clientReference);
-@@ -1808,6 +1817,114 @@ function resolveHint(response, code, model) {
+@@ -1808,6 +1817,65 @@ function resolveHint(response, code, model) {
    dispatchHint(code, hintModel);
  }
  
-+
-+// function processFullRowString(response, row) {
-+//   if (row === '') {
-+//     return;
-+//   }
-+
-+//   var tag = row[0]; // When tags that are not text are added, check them here before
-+//   // parsing the row as text.
-+//   // switch (tag) {
-+//   // }
-+
-+//   var colon = row.indexOf(':', 1);
-+//   var id = parseInt(row.substring(1, colon), 16);
-+//   var text = row.substring(colon + 1);
-+
-+//   switch (tag) {
-+//     case 'J':
-+//       {
-+//         resolveModel(response, id, text);
-+//         return;
-+//       }
-+
-+//     case 'M':
-+//       {
-+//         resolveModule(response, id, text);
-+//         return;
-+//       }
-+
-+//     case 'S':
-+//       {
-+//         resolveSymbol(response, id, JSON.parse(text));
-+//         return;
-+//       }
-+
-+//     case 'E':
-+//       {
-+//         var errorInfo = JSON.parse(text);
-+//         resolveError(response, id, errorInfo.message, errorInfo.stack);
-+//         return;
-+//       }
-+
-+//     default:
-+//       {
-+//         throw new Error("Error parsing the data. It's probably an error code or network corruption.");
-+//       }
-+//   }
-+// }
-+
 +function processFullRowFromString(response, id, tag, chunk) {
-+
-+  var row = chunk;
++  const row = chunk;
 +
 +  console.log('processFullRowFromString', id, tag, row)
 +
@@ -184,7 +135,7 @@ index f2e4646..11ac612 100644
  function processFullRow(response, id, tag, buffer, chunk) {
  
    var stringDecoder = response._stringDecoder;
-@@ -1819,6 +1936,9 @@ function processFullRow(response, id, tag, buffer, chunk) {
+@@ -1819,6 +1887,9 @@ function processFullRow(response, id, tag, buffer, chunk) {
  
    row += readFinalStringChunk(stringDecoder, chunk);
  
@@ -194,7 +145,7 @@ index f2e4646..11ac612 100644
    switch (tag) {
      case 73
      /* "I" */
-@@ -1854,6 +1974,7 @@ function processFullRow(response, id, tag, buffer, chunk) {
+@@ -1854,6 +1925,7 @@ function processFullRow(response, id, tag, buffer, chunk) {
      /* "T" */
      :
        {
@@ -202,7 +153,7 @@ index f2e4646..11ac612 100644
          resolveText(response, id, row);
          return;
        }
-@@ -2007,6 +2128,7 @@ function processBinaryChunk(response, chunk) {
+@@ -2007,6 +2079,7 @@ function processBinaryChunk(response, chunk) {
  }
  
  function parseModel(response, json) {
@@ -210,7 +161,7 @@ index f2e4646..11ac612 100644
    return JSON.parse(json, response._fromJSON);
  }
  
-@@ -2039,7 +2161,87 @@ function createResponseFromOptions(options) {
+@@ -2039,7 +2112,87 @@ function createResponseFromOptions(options) {
    );
  }
  
@@ -298,7 +249,7 @@ index f2e4646..11ac612 100644
    var reader = stream.getReader();
  
    function progress(_ref) {
-@@ -2072,7 +2274,15 @@ function createFromReadableStream(stream, options) {
+@@ -2072,7 +2225,15 @@ function createFromReadableStream(stream, options) {
  function createFromFetch(promiseForResponse, options) {
    var response = createResponseFromOptions(options);
    promiseForResponse.then(function (r) {
