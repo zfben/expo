@@ -12,7 +12,8 @@ globalThis.__webpack_chunk_load__ = (id) => {
   // ID is a URL with the opaque Metro require ID as the hash.
   // http://localhost:8081/node_modules/react-native-web/dist/exports/Text/index.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=src%2Fapp&modulesOnly=true&runModule=false#798513620
   // This is generated in a proxy in the server.
-  const url = new URL(id);
+  const url = new URL(id, id.startsWith('/') ? 'http://e' : undefined);
+
   const numericMetroId = parseInt(url.hash.slice(1));
   console.log('__webpack_chunk_load__', id, numericMetroId);
   const loadBundleAsync = global[`${__METRO_GLOBAL_PREFIX__}__loadBundleAsync`];
