@@ -21,7 +21,10 @@ globalThis.__webpack_chunk_load__ = (id) => {
     rscClientModuleCache.set(id, m);
     console.log('loaded module.2:', id, m);
     return m;
-  });
+  }).catch(e => {
+    console.error('error loading RSC module:', id, e);
+    throw e;
+  })
 };
 
 globalThis.__webpack_require__ = (id) => rscClientModuleCache.get(id);

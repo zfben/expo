@@ -233,7 +233,7 @@ function evalMetroAndWrapFunctions<T = Record<string, (...args: any[]) => Promis
   projectRoot: string,
   script: string
 ): Promise<T> {
-  console.log(script);
+  // console.log(script);
   const contents = evalMetro(script);
 
   // wrap each function with a try/catch that uses Metro's error formatter
