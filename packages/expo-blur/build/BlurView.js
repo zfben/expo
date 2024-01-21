@@ -1,7 +1,6 @@
-import { requireNativeViewManager } from 'expo-modules-core';
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-const NativeBlurView = requireNativeViewManager('ExpoBlurView');
+import { StyleSheet, View } from 'react-native';
+import NativeBlurView from './NativeExpoBlurView';
 export default class BlurView extends React.Component {
     blurViewRef = React.createRef();
     /**

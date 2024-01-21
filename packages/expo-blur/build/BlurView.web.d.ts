@@ -8,6 +8,6 @@ export default class BlurView extends React.Component<BlurViewProps> {
      * which create the blur based on the intensity and current tint.
      */
     setNativeProps(nativeProps: any): void;
-    render(): JSX.Element;
+    render(): React.JSX.Element;
 }
 //# sourceMappingURL=BlurView.web.d.ts.map
