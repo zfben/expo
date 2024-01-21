@@ -1,14 +1,15 @@
 import { Counter } from '../components/Counter';
-import { View, Text, Platform, LogBox } from 'react-native';
+import { View, Text, LogBox } from 'react-native';
+import { Platform } from '../../platform';
 import DateStatic from '../components/Date-static';
 import AsyncBuildData from '../components/AsyncBuildData';
 import {ClientPlatformExt} from '../components/ClientPlatformExt';
 import ServerPlatformExt from '../components/ServerPlatformExt';
 
-const Container = Platform.select({
-  web: props => <div {...props} />,
-  default: View,
-})
+import OS from 'expo-router/os'
+
+const Container = OS === 'web' ? props => <div {...props} /> : props => <View {...props} />
+  
 
 const App = () => {
   return (

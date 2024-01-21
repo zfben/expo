@@ -12,6 +12,7 @@
   "files": [
     "assets",
     "build",
+    "os",
     "ios",
     "node",
     "plugin",
