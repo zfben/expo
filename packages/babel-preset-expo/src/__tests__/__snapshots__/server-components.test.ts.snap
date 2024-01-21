@@ -16,3 +16,20 @@ export default {
   name: "default"
 };"
 `;
+
+exports[`replaces server action exports with React server references 1`] = `
+"'use server';
+
+export var greet = function greet(name) {
+  return \`Hello \${name} from server!\`;
+};
+(function () {
+  if (typeof module.exports === "function") {
+    require("react-server-dom-webpack/server").registerServerReference(module.exports, "file:///unknown", null);
+  } else {
+    for (var key in module.exports) {
+      if (typeof module.exports[key] === "function") require("react-server-dom-webpack/server").registerServerReference(module.exports[key], "file:///unknown", key);
+    }
+  }
+})();"
+`;

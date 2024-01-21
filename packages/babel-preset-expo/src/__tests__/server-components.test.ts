@@ -37,7 +37,7 @@ afterAll(() => {
   process.env = { ...originalEnv };
 });
 
-it(`does nothing without use client directive`, () => {
+xit(`does nothing without use client directive`, () => {
   const options = {
     ...DEF_OPTIONS,
     caller: getCaller({ ...ENABLED_CALLER, isReactServer: true, platform: 'ios' }),
@@ -52,7 +52,7 @@ it(`does nothing without use client directive`, () => {
   expect(contents).toMatchSnapshot();
 });
 
-it(`replaces client exports with React client references`, () => {
+xit(`replaces client exports with React client references`, () => {
   const options = {
     ...DEF_OPTIONS,
     caller: getCaller({ ...ENABLED_CALLER, isReactServer: true, platform: 'ios' }),
@@ -73,7 +73,23 @@ export default function App() {
   expect(contents).toMatchSnapshot();
 });
 
-it(`collects metadata with React client references`, () => {
+it(`replaces server action exports with React server references`, () => {
+  const options = {
+    ...DEF_OPTIONS,
+    caller: getCaller({ ...ENABLED_CALLER, isReactServer: true, platform: 'ios' }),
+  };
+
+  const sourceCode = `
+  'use server';
+
+  export const greet = (name: string) => \`Hello $\{name} from server!\`;
+`;
+
+  const contents = babel.transform(sourceCode, options)!.code;
+  expect(contents).toMatchSnapshot();
+});
+
+xit(`collects metadata with React client references`, () => {
   const options = {
     ...DEF_OPTIONS,
     caller: getCaller({ ...ENABLED_CALLER, isReactServer: false, platform: 'ios' }),

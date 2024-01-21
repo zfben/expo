@@ -104,7 +104,6 @@ export async function renderToPipeableStream(
 
       // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
       return url.pathname + url.search + url.hash;
-
     } else {
       if (!file.startsWith('@id/')) {
         throw new Error('Unexpected client entry in PRD');
@@ -143,7 +142,6 @@ export async function renderToPipeableStream(
 
   const elements = React.createElement(Component, props);
   return renderToReadableStream(elements, bundlerConfig);
-
 
   // return rsc.pipe;
   // }

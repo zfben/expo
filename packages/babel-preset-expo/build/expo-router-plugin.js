@@ -92,13 +92,20 @@ function expoRouterServerComponentClientReferencesPlugin(api) {
         visitor: {
             Program(path, state) {
                 const isUseClient = path.node.directives.some((directive) => directive.value.value === 'use client');
-                // File starts with "use client" directive.
-                if (!isUseClient) {
-                    // Do nothing for code that isn't marked as a client component.
-                    return;
+                // TODO: use server can be added to scopes inside of the file. https://github.com/facebook/react/blob/29fbf6f62625c4262035f931681c7b7822ca9843/packages/react-server-dom-webpack/src/ReactFlightWebpackNodeRegister.js#L55
+                const isUseServer = path.node.directives.some((directive) => directive.value.value === 'use server');
+                if (isUseClient && isUseServer) {
+                    throw new Error('Cannot use both "use client" and "use server" directives in the same file: ' +
+                        state.file.opts.filename);
                 }
                 const filePath = state.file.opts.filename; //nodePath.relative(serverRoot, state.file.opts.filename);
                 const outputKey = url_1.default.pathToFileURL(filePath).href;
+                // File starts with "use client" directive.
+                if (!isUseClient && !isUseServer) {
+                    // Do nothing for code that isn't marked as a client component.
+                    return;
+                }
+                // NOTE: This is unused but may be used for production manifests in the future
                 // Collect a list of all the exports in the file.
                 const exports = [];
                 path.traverse({
@@ -132,9 +139,9 @@ function expoRouterServerComponentClientReferencesPlugin(api) {
                 };
                 if (isServer) {
                     // Clear the body
-                    path.node.body = [];
-                    path.node.directives = [];
                     if (isUseClient) {
+                        path.node.body = [];
+                        path.node.directives = [];
                         // Inject the following:
                         // console.log('Loaded client module proxy for', outputKey, require('react-server-dom-webpack/server'))
                         // path.pushContainer(
@@ -176,53 +183,52 @@ function expoRouterServerComponentClientReferencesPlugin(api) {
                         ]))));
                     }
                     else {
-                        // Now we'll replace all the code in the file with client references, e.g.
-                        // export default { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#default", name: "default" }
-                        // const registerServerReference = require('react-server-dom-webpack/server').registerServerReference;
-                        // const createClientModuleProxy = require('react-server-dom-webpack/server').createClientModuleProxy;
-                        // for (const exp of exports) {
-                        //   if (exp === 'default') {
-                        //     // export default { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#default", name: "default" }
-                        //     path.pushContainer(
-                        //       'body',
-                        //       t.exportDefaultDeclaration(
-                        //         t.objectExpression([
-                        //           t.objectProperty(
-                        //             t.identifier('$$typeof'),
-                        //             t.stringLiteral('react.client.reference')
-                        //           ),
-                        //           t.objectProperty(t.identifier('$$async'), t.booleanLiteral(false)),
-                        //           t.objectProperty(t.identifier('$$id'), t.stringLiteral(`${outputKey}#default`)),
-                        //           t.objectProperty(t.identifier('name'), t.stringLiteral('default')),
-                        //         ])
-                        //       )
-                        //     );
-                        //   } else {
-                        //     // export const ${exp} = { $$typeof: Symbol.for("react.client.reference"), $$async: false, $$id: "${outputKey}#${exp}", name: "${exp}" }
-                        //     path.pushContainer(
-                        //       'body',
-                        //       t.exportNamedDeclaration(
-                        //         t.variableDeclaration('const', [
-                        //           t.variableDeclarator(
-                        //             t.identifier(exp),
-                        //             t.objectExpression([
-                        //               t.objectProperty(
-                        //                 t.identifier('$$typeof'),
-                        //                 t.stringLiteral('react.client.reference')
-                        //               ),
-                        //               t.objectProperty(t.identifier('$$async'), t.booleanLiteral(false)),
-                        //               t.objectProperty(
-                        //                 t.identifier('$$id'),
-                        //                 t.stringLiteral(`${outputKey}#${exp}`)
-                        //               ),
-                        //               t.objectProperty(t.identifier('name'), t.stringLiteral(exp)),
-                        //             ])
-                        //           ),
-                        //         ])
-                        //       )
-                        //     );
+                        // Inject the following:
+                        // ;(() => {
+                        //  const { registerServerReference } = require('react-server-dom-webpack/server');
+                        //  if (typeof module.exports === 'function') registerServerReference(module.exports, moduleId, null);
+                        //  else {
+                        //    for (const key in module.exports) {
+                        //      if (typeof module.exports[key] === 'function') {
+                        //        registerServerReference(module.exports[key], moduleId, key);
+                        //       }
+                        //     }
                         //   }
-                        // }
+                        // })()
+                        const mmexp = t.memberExpression(t.callExpression(t.identifier('require'), [
+                            t.stringLiteral('react-server-dom-webpack/server'),
+                        ]), t.identifier('registerServerReference'));
+                        // Create the loop body
+                        const loopBody = t.blockStatement([
+                            t.ifStatement(t.binaryExpression('===', t.unaryExpression('typeof', t.memberExpression(t.memberExpression(t.identifier('module'), t.identifier('exports')), t.identifier('key'), true)), t.stringLiteral('function')), t.expressionStatement(t.callExpression(mmexp, [
+                                t.memberExpression(t.memberExpression(t.identifier('module'), t.identifier('exports')), t.identifier('key'), true),
+                                t.stringLiteral(outputKey),
+                                t.identifier('key'),
+                            ]))),
+                        ]);
+                        // Create the for-in loop
+                        const forInStatement = t.forInStatement(t.variableDeclaration('const', [t.variableDeclarator(t.identifier('key'))]), t.memberExpression(t.identifier('module'), t.identifier('exports')), loopBody);
+                        path.pushContainer('body', t.expressionStatement(t.callExpression(t.arrowFunctionExpression([], t.blockStatement([
+                            t.ifStatement(t.binaryExpression('===', t.unaryExpression('typeof', t.memberExpression(t.identifier('module'), t.identifier('exports'))), t.stringLiteral('function')), 
+                            // registerServerReference(module.exports, moduleId, null);
+                            t.blockStatement([
+                                t.expressionStatement(t.callExpression(mmexp, [
+                                    t.memberExpression(t.identifier('module'), t.identifier('exports')),
+                                    t.stringLiteral(outputKey),
+                                    t.nullLiteral(),
+                                ])),
+                            ]), 
+                            // Else
+                            t.blockStatement([
+                                // for (const key in module.exports) {
+                                //   if (typeof module.exports[key] === 'function') {
+                                //     registerServerReference(module.exports[key], moduleId, key);
+                                //   }
+                                // }
+                                forInStatement,
+                            ])),
+                        ])), [])));
+                        //
                     }
                 }
             },
