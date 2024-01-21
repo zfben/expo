@@ -1,6 +1,9 @@
 'use server';
 
-export const greet = (name: string) => `Hello ${name} from server!`;
+export const greet = (name: string) => {
+  console.log('IN_SERVER_ACTION:', name, arguments);
+  return `Hello ${name} from server!`;
+};
 
 // console.log('bafoo:', module.exports);
 

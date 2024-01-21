@@ -9,7 +9,7 @@ export const Counter = ({ greet }: { greet: (name: string) => Promise<string> })
   const [isPending, startTransition] = useTransition();
   const handleClick = () => {
     startTransition(() => {
-      setText(greet('c=' + count));
+      setText(greet('BACON+c=' + count));
     });
   };
   return (

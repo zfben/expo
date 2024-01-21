@@ -9,7 +9,7 @@ import React from 'react';
 import path from 'path';
 import { ctx } from '../../_ctx';
 import type { ReactNode } from 'react';
-
+import { readableStreamToString } from '@remix-run/node';
 export interface RenderContext<T = unknown> {
   rerender: (input: string, searchParams?: URLSearchParams) => void;
   context: T;
@@ -167,7 +167,13 @@ export async function renderToPipeableStream(
     let args: unknown[] = [];
     let bodyStr = '';
     if (body) {
-      bodyStr = await streamToString(body);
+      if (body instanceof ReadableStream) {
+        bodyStr = await readableStreamToString(body);
+      } else if (typeof body === 'string') {
+        bodyStr = body;
+      } else {
+        throw new Error('Unexpected body type: ' + body);
+      }
     }
     if (typeof contentType === 'string' && contentType.startsWith('multipart/form-data')) {
       // XXX This doesn't support streaming unlike busboy

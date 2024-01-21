@@ -9,6 +9,7 @@ import * as runtimeEnv from '@expo/env';
 import { SerialAsset } from '@expo/metro-config/build/serializer/serializerAssets';
 import { ExpoResponse } from '@expo/server';
 import { respond } from '@expo/server/build/vendor/http';
+import { createReadableStreamFromReadable } from '@remix-run/node';
 import chalk from 'chalk';
 import { AssetData } from 'metro';
 import fetch from 'node-fetch';
@@ -610,7 +611,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
               url,
               method: req.method!,
               input: route,
-              body: req.body,
+              body: req.method === 'POST' ? createReadableStreamFromReadable(req) : null,
               customImport: async (relativeDevServerUrl: string): Promise<any> => {
                 const url = new URL(relativeDevServerUrl, this.getDevServerUrl()!);
                 url.searchParams.set('runModule', 'true');
@@ -627,6 +628,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         } catch (error: any) {
           await logMetroError(this.projectRoot, { error });
           res.statusCode = 500;
+          res.statusMessage = `Metro Bundler encountered an error: ${error.message}`;
           res.end();
         }
       };
