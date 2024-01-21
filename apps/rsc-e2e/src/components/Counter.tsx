@@ -2,14 +2,23 @@
 
 import { useState } from 'react';
 
+import { Text, Button, View } from 'react-native';
+
 export const Counter = ({ children }) => {
   const [count, setCount] = useState(0);
   return (
-    <div style={{ border: '3px blue dashed', margin: '1em', padding: '1em' }}>
-      <h3>!!!Client component</h3>
-      <p>Count: {count}</p>
-      <button onClick={() => setCount((c) => c + 1)}>Increment</button>
+    <View
+      style={{
+        borderWidth: 3,
+        borderColor: 'aquamarine',
+        borderStyle: 'dashed',
+        padding: 8,
+      }}>
+      <Text style={{ fontWeight: 'bold' }}>Client Component</Text>
+
+      <Text>Count: {count}</Text>
+      <Button onPress={() => setCount((c) => c + 1)} title="Increment" />
       {children}
-    </div>
+    </View>
   );
 };

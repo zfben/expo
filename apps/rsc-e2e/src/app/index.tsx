@@ -1,12 +1,34 @@
-// import { Counter } from '../components/Counter';
-import { View, Text } from 'react-native';
-// import DateStatic from '../components/Date-static';
-// import AsyncBuildData from '../components/AsyncBuildData';
+import { Counter } from '../components/Counter';
+import { View, Text, LogBox } from 'react-native';
+import DateStatic from '../components/Date-static';
+import AsyncBuildData from '../components/AsyncBuildData';
+
 
 const App = () => {
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={{ flex: 1, padding: 16, gap: 8, justifyContent: 'center', alignItems: 'stretch' }}>
+
+      <View>
+      <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+        Universal React Server Components with Expo Router
+      </Text>
+
       <Text>A whole new world.</Text>
+      </View>
+      <AsyncBuildData />
+      <DateStatic />
+      <Counter>
+        <View
+          style={{
+            borderWidth: 3,
+            borderColor: 'dodgerblue',
+            borderStyle: 'dashed',
+            margin: 8,
+            padding: 8,
+          }}>
+          <Text>Nested static component child</Text>
+        </View>
+      </Counter>
     </View>
   );
 };
