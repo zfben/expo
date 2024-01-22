@@ -11,6 +11,7 @@ import terminalLink from 'terminal-link';
 
 import { Log } from '../../../log';
 import { createMetroEndpointAsync } from '../getStaticRenderFunctions';
+import { CommandError, SilentError } from '../../../utils/errors';
 // import type { CodeFrame, MetroStackFrame } from '@expo/metro-runtime/symbolicate';
 
 type CodeFrame = {
@@ -142,6 +143,10 @@ export async function logMetroErrorWithStack(
 }
 
 export async function logMetroError(projectRoot: string, { error }: { error: Error }) {
+  if (error instanceof SilentError) {
+    return;
+  }
+
   const { LogBoxLog, parseErrorStack } = require(
     resolveFrom(projectRoot, '@expo/metro-runtime/symbolicate')
   );

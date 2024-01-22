@@ -36,14 +36,19 @@ export async function bundleApiRoute(
     try {
       debug('Bundle API route:', options.routerRoot, filepath);
 
-      const middleware = await requireFileContentsWithMetro(projectRoot, devServerUrl, filepath, {
-        minify: options.mode === 'production',
-        dev: options.mode !== 'production',
-        // Ensure Node.js
-        environment: 'node',
-        baseUrl: options.baseUrl,
-        routerRoot: options.routerRoot,
-      });
+      const { src: middleware } = await requireFileContentsWithMetro(
+        projectRoot,
+        devServerUrl,
+        filepath,
+        {
+          minify: options.mode === 'production',
+          dev: options.mode !== 'production',
+          // Ensure Node.js
+          environment: 'node',
+          baseUrl: options.baseUrl,
+          routerRoot: options.routerRoot,
+        }
+      );
 
       return middleware;
     } catch (error: any) {

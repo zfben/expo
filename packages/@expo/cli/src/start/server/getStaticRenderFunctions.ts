@@ -82,7 +82,7 @@ async function getStaticRenderFunctionsContentAsync(
     platform,
   }: StaticRenderOptions,
   entry?: string
-): Promise<string> {
+): Promise<{ src: string; filename: string }> {
   const root = getMetroServerRoot(projectRoot);
   const requiredModuleId = getRenderModuleId(root, entry);
   let moduleId = requiredModuleId;
@@ -176,10 +176,10 @@ export async function requireFileContentsWithMetro(
   devServerUrl: string,
   absoluteFilePath: string,
   props: StaticRenderOptions
-): Promise<string> {
+): Promise<{ src: string; filename: string }> {
   const url = await createMetroEndpointAsync(projectRoot, devServerUrl, absoluteFilePath, props);
 
-  return metroFetchAsync(url);
+  return { src: await metroFetchAsync(url), filename: url };
 }
 
 export async function metroFetchAsync(url: string): Promise<string> {
@@ -223,22 +223,23 @@ export async function getStaticRenderFunctionsForEntry(
   options: StaticRenderOptions,
   entry: string
 ): Promise<Record<string, (...args: any[]) => Promise<any>>> {
-  const scriptContents = await getStaticRenderFunctionsContentAsync(
+  const { src: scriptContents, filename } = await getStaticRenderFunctionsContentAsync(
     projectRoot,
     devServerUrl,
     options,
     entry
   );
 
-  return evalMetroAndWrapFunctions(projectRoot, scriptContents);
+  return evalMetroAndWrapFunctions(projectRoot, scriptContents, filename);
 }
 
-export function evalMetroAndWrapFunctions<T = Record<string, (...args: any[]) => Promise<any>>>(
+function evalMetroAndWrapFunctions<T = Record<string, (...args: any[]) => Promise<any>>>(
   projectRoot: string,
-  script: string
+  script: string,
+  filename: string
 ): Promise<T> {
   // console.log(script);
-  const contents = evalMetro(script);
+  const contents = evalMetro(script, filename);
 
   // wrap each function with a try/catch that uses Metro's error formatter
   return Object.keys(contents).reduce((acc, key) => {
@@ -260,6 +261,6 @@ export function evalMetroAndWrapFunctions<T = Record<string, (...args: any[]) =>
   }, {} as any);
 }
 
-export function evalMetro(src: string) {
-  return profile(requireString, 'eval-metro-bundle')(src);
+export function evalMetro(src: string, filename: string) {
+  return profile(requireString, 'eval-metro-bundle')(src, filename);
 }

@@ -38,7 +38,6 @@ import { getFreePortAsync } from '../../../utils/port';
 import { BundlerDevServer, BundlerStartOptions, DevServerInstance } from '../BundlerDevServer';
 import {
   evalMetro,
-  evalMetroAndWrapFunctions,
   getStaticRenderFunctions,
   getStaticRenderFunctionsForEntry,
   metroFetchAsync,
@@ -531,10 +530,6 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       const baseUrl = getBaseUrlFromExpoConfig(exp);
       const routerRoot = getRouterDirectoryModuleIdWithManifest(this.projectRoot, exp);
 
-      //
-
-      const renderRsc = async (location: any, { url, method }: { url: URL; method: string }) => {};
-
       // const mockManifest = {
       //   'file:///Users/evanbacon/Documents/GitHub/expo/apps/rsc-e2e/src/components/Counter.tsx': {
       //     // '/apps/sandbox/app/index.tsx#default': {
@@ -579,11 +574,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       //       Log.error(error);
       //     });
       // }, 10);
-      const sendResponse = async (
-        req: ServerRequest,
-        res: ServerResponse,
-        redirectToId: string | null
-      ) => {
+      const sendResponse = async (req: ServerRequest, res: ServerResponse) => {
         const url = new URL(req.url!, this.getDevServerUrl()!);
         const route = url.pathname.replace(/^\/rsc\//, '');
 
@@ -612,7 +603,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
               method: req.method!,
               input: route,
               body: req.method === 'POST' ? createReadableStreamFromReadable(req) : null,
-              customImport: async (relativeDevServerUrl: string): Promise<any> => {
+              async customImport(relativeDevServerUrl: string): Promise<any> {
                 const url = new URL(relativeDevServerUrl, this.getDevServerUrl()!);
                 url.searchParams.set('runModule', 'true');
                 url.searchParams.set('runModule', 'true');
@@ -620,15 +611,14 @@ export class MetroBundlerDevServer extends BundlerDevServer {
                 url.searchParams.set('transform.rsc', String(rsc));
                 url.searchParams.set('resolver.rsc', String(rsc));
 
-                const contents = await metroFetchAsync(url.toString());
+                const urlString = url.toString();
+                const contents = await metroFetchAsync(urlString);
                 // console.log('Server action:');
                 // console.log(contents);
-                return evalMetro(contents);
+                return evalMetro(contents, urlString);
               },
             }
           );
-
-          // return pipe;
           respond(res, new ExpoResponse(pipe));
         } catch (error: any) {
           await logMetroError(this.projectRoot, { error });
@@ -643,7 +633,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         if (!req?.url || !req.url.startsWith('/rsc/')) {
           return next();
         }
-        return sendResponse(req, res, null);
+        return sendResponse(req, res);
       });
 
       if (useServerRendering) {
