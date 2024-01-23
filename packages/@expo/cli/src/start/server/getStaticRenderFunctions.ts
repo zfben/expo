@@ -10,7 +10,7 @@ import path from 'path';
 import requireString from 'require-from-string';
 import resolveFrom from 'resolve-from';
 
-import { logMetroError } from './metro/metroErrorInterface';
+import { logMetroError, logMetroErrorAsync } from './metro/metroErrorInterface';
 import { getMetroServerRoot } from './middleware/ManifestMiddleware';
 import { createBundleUrlPath } from './middleware/metroOptions';
 import { stripAnsi } from '../../utils/ansi';
@@ -19,7 +19,40 @@ import { SilentError } from '../../utils/errors';
 import { memoize } from '../../utils/fn';
 import { profile } from '../../utils/profile';
 
+type StaticRenderOptions = {
+  // Ensure the style format is `css-xxxx` (prod) instead of `css-view-xxxx` (dev)
+  dev?: boolean;
+  minify?: boolean;
+  platform?: string;
+  environment?: 'node';
+  engine?: 'hermes';
+  baseUrl: string;
+  isReactServer?: boolean;
+  routerRoot: string;
+};
+
+class MetroNodeError extends Error {
+  constructor(
+    message: string,
+    public rawObject: any
+  ) {
+    super(message);
+  }
+}
+
 const debug = require('debug')('expo:start:server:node-renderer') as typeof console.log;
+
+const cachedSourceMaps: Map<string, { url: string; map: string }> = new Map();
+
+// Support unhandled rejections
+require('source-map-support').install({
+  retrieveSourceMap(source: string) {
+    if (cachedSourceMaps.has(source)) {
+      return cachedSourceMaps.get(source);
+    }
+    return null;
+  },
+});
 
 function wrapBundle(str: string) {
   // Skip the metro runtime so debugging is a bit easier.
@@ -41,18 +74,6 @@ const getRenderModuleId = (
   }
 
   return moduleId;
-};
-
-type StaticRenderOptions = {
-  // Ensure the style format is `css-xxxx` (prod) instead of `css-view-xxxx` (dev)
-  dev?: boolean;
-  minify?: boolean;
-  platform?: string;
-  environment?: 'node';
-  engine?: 'hermes';
-  baseUrl: string;
-  isReactServer?: boolean;
-  routerRoot: string;
 };
 
 const moveStaticRenderFunction = memoize(async (projectRoot: string, requiredModuleId: string) => {
@@ -155,20 +176,17 @@ export async function createMetroEndpointAsync(
     rsc: isReactServer,
     asyncRoutes: false,
     routerRoot,
+    inlineSourceMap: false,
   });
 
-  const url = new URL(urlFragment.replace(/^\//, ''), devServerUrl).toString();
+  let url: string;
+  if (devServerUrl) {
+    url = new URL(urlFragment.replace(/^\//, ''), devServerUrl).toString();
+  } else {
+    url = '/' + urlFragment.replace(/^\/+/, '');
+  }
   debug('fetching from Metro:', root, serverPath, url);
   return url;
-}
-
-class MetroNodeError extends Error {
-  constructor(
-    message: string,
-    public rawObject: any
-  ) {
-    super(message);
-  }
 }
 
 export async function requireFileContentsWithMetro(
@@ -178,11 +196,10 @@ export async function requireFileContentsWithMetro(
   props: StaticRenderOptions
 ): Promise<{ src: string; filename: string }> {
   const url = await createMetroEndpointAsync(projectRoot, devServerUrl, absoluteFilePath, props);
-
-  return { src: await metroFetchAsync(url), filename: url };
+  return await metroFetchAsync(url);
 }
 
-export async function metroFetchAsync(url: string): Promise<string> {
+export async function metroFetchAsync(url: string): Promise<{ src: string; filename: string }> {
   const res = await fetch(url);
 
   // TODO: Improve error handling
@@ -202,7 +219,10 @@ export async function metroFetchAsync(url: string): Promise<string> {
 
   const content = await res.text();
 
-  return wrapBundle(content);
+  const map = await fetch(url.replace('.bundle?', '.map?')).then((r) => r.json());
+  cachedSourceMaps.set(url, { url: '/', map });
+
+  return { src: wrapBundle(content), filename: url };
 }
 
 export async function getStaticRenderFunctions(
@@ -238,8 +258,7 @@ function evalMetroAndWrapFunctions<T = Record<string, (...args: any[]) => Promis
   script: string,
   filename: string
 ): Promise<T> {
-  // console.log(script);
-  const contents = evalMetro(script, filename);
+  const contents = evalMetro(projectRoot, script, filename);
 
   // wrap each function with a try/catch that uses Metro's error formatter
   return Object.keys(contents).reduce((acc, key) => {
@@ -261,6 +280,28 @@ function evalMetroAndWrapFunctions<T = Record<string, (...args: any[]) => Promis
   }, {} as any);
 }
 
-export function evalMetro(src: string, filename: string) {
-  return profile(requireString, 'eval-metro-bundle')(src, filename);
+export function evalMetro(projectRoot: string, src: string, filename: string) {
+  const originalConsole = {
+    log: console.log,
+    warn: console.warn,
+    error: console.error,
+  };
+  try {
+    return profile(requireString, 'eval-metro-bundle')(src, filename);
+  } catch (error: any) {
+    // Format any errors that were thrown in the global scope of the evaluation.
+    if (error instanceof Error) {
+      logMetroErrorAsync({ projectRoot, error }).catch((internalError) => {
+        debug('Failed to log metro error:', internalError);
+        throw error;
+      });
+    } else {
+      throw error;
+    }
+  } finally {
+    // Restore the original console in case it was modified.
+    console.log = originalConsole.log;
+    console.warn = originalConsole.warn;
+    console.error = originalConsole.error;
+  }
 }

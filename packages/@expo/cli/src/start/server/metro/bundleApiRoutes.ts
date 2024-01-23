@@ -10,7 +10,7 @@ import { requireFileContentsWithMetro } from '../getStaticRenderFunctions';
 
 const debug = require('debug')('expo:api-routes') as typeof console.log;
 
-const pendingRouteOperations = new Map<string, Promise<string | null>>();
+const pendingRouteOperations = new Map<string, Promise<{ src: string; filename: string } | null>>();
 
 export type ApiRouteOptions = {
   mode?: string;
@@ -25,7 +25,7 @@ export async function bundleApiRoute(
   projectRoot: string,
   filepath: string,
   options: ApiRouteOptions
-): Promise<string | null | undefined> {
+): Promise<{ src: string; filename: string } | null | undefined> {
   if (pendingRouteOperations.has(filepath)) {
     return pendingRouteOperations.get(filepath);
   }
@@ -36,21 +36,14 @@ export async function bundleApiRoute(
     try {
       debug('Bundle API route:', options.routerRoot, filepath);
 
-      const { src: middleware } = await requireFileContentsWithMetro(
-        projectRoot,
-        devServerUrl,
-        filepath,
-        {
-          minify: options.mode === 'production',
-          dev: options.mode !== 'production',
-          // Ensure Node.js
-          environment: 'node',
-          baseUrl: options.baseUrl,
-          routerRoot: options.routerRoot,
-        }
-      );
-
-      return middleware;
+      return await requireFileContentsWithMetro(projectRoot, devServerUrl, filepath, {
+        minify: options.mode === 'production',
+        dev: options.mode !== 'production',
+        // Ensure Node.js
+        environment: 'node',
+        baseUrl: options.baseUrl,
+        routerRoot: options.routerRoot,
+      });
     } catch (error: any) {
       if (error instanceof Error) {
         await logMetroErrorAsync({ error, projectRoot });

@@ -8,8 +8,8 @@ import React from 'react';
 /**
  * Root style-reset for full-screen React Native web apps with a root `<ScrollView />` should use the following styles to ensure native parity. [Learn more](https://necolas.github.io/react-native-web/docs/setup/#root-element).
  */
-export declare function ScrollViewStyleReset(): React.JSX.Element;
+export declare function ScrollViewStyleReset(): JSX.Element;
 export declare function Html({ children }: {
     children: React.ReactNode;
-}): React.JSX.Element;
+}): JSX.Element;
 //# sourceMappingURL=html.d.ts.map

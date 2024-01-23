@@ -142,7 +142,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       );
       if (contents) {
         files.set(artifactFilename, {
-          contents,
+          contents: contents.src,
           targetDomain: 'server',
         });
       }
@@ -603,7 +603,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
               method: req.method!,
               input: route,
               body: req.method === 'POST' ? createReadableStreamFromReadable(req) : null,
-              async customImport(relativeDevServerUrl: string): Promise<any> {
+              customImport: async (relativeDevServerUrl: string): Promise<any> => {
                 const url = new URL(relativeDevServerUrl, this.getDevServerUrl()!);
                 url.searchParams.set('runModule', 'true');
                 url.searchParams.set('runModule', 'true');
@@ -615,7 +615,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
                 const contents = await metroFetchAsync(urlString);
                 // console.log('Server action:');
                 // console.log(contents);
-                return evalMetro(contents, urlString);
+                return evalMetro(this.projectRoot, contents.src, contents.filename);
               },
             }
           );
