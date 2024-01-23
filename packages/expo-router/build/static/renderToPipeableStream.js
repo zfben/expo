@@ -49,23 +49,6 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, url,
     }
     const { default: Component } = await (0, _ctx_1.ctx)(route);
     console.log('Initial component', Component, route);
-    // const node = getNodeFinder()(route);
-    // if (node?._route) {
-    // const { default: Component } = node._route.loadRoute();
-    // const rsc = renderToPipeableStream(
-    //   // TODO: Does this support async?
-    //   // <Component {...props} />,
-    //   React.createElement(Component, props),
-    //   moduleMap
-    // );
-    // return await pipeTo(rsc.pipe);
-    // method === 'GET'
-    // const renderContext: RenderContext = {
-    //   rerender: () => {
-    //     throw new Error('Cannot rerender');
-    //   },
-    //   context,
-    // };
     const isDev = mode === 'development';
     if (isDev) {
         url.searchParams.set('modulesOnly', 'true');
@@ -180,47 +163,6 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, url,
     // throw new Error('Failed to render server component at: ' + route);
 }
 exports.renderToPipeableStream = renderToPipeableStream;
-const stream_1 = require("stream");
-async function pipeTo(pipe) {
-    const rscStream = new ReadableStream({
-        start(controller) {
-            pipe(new stream_1.Writable({
-                write(chunk, encoding, callback) {
-                    controller.enqueue(chunk);
-                    callback();
-                },
-                destroy(error, callback) {
-                    if (error) {
-                        controller.error(error);
-                    }
-                    else {
-                        controller.close();
-                    }
-                    callback(error);
-                },
-            }));
-        },
-    });
-    const res = await rscStream.getReader().read();
-    return res.value.toString().trim();
-}
-const streamToString = async (stream) => {
-    const decoder = new TextDecoder();
-    const reader = stream.getReader();
-    const outs = [];
-    let result;
-    do {
-        result = await reader.read();
-        if (result.value) {
-            if (!(result.value instanceof Uint8Array)) {
-                throw new Error('Unexepected buffer type');
-            }
-            outs.push(decoder.decode(result.value, { stream: true }));
-        }
-    } while (!result.done);
-    outs.push(decoder.decode());
-    return outs.join('');
-};
 // TODO is this correct? better to use a library?
 const parseFormData = (body, contentType) => {
     const boundary = contentType.split('boundary=')[1];

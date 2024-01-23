@@ -14,6 +14,8 @@ import { Slot, Root } from './rsc/client';
 
 // MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
 import getDevServer from '@expo/metro-runtime/build/getDevServer';
+import { Try } from './views/Try';
+import { ErrorBoundary } from './exports';
 
 const introUrl = getDevServer().fullBundleUrl;
 // TODO: This is buggy and doesn't work well, maybe inject the query params in babel.
@@ -33,9 +35,11 @@ export function App() {
   return (
     <React.Suspense fallback={null}>
       <Head.Provider>
-        <Root initialSearchParamsString={searchParams}>
-          <Slot id="index" />
-        </Root>
+        <Try catch={ErrorBoundary}>
+          <Root initialSearchParamsString={searchParams}>
+            <Slot id="index" />
+          </Root>
+        </Try>
       </Head.Provider>
     </React.Suspense>
   );

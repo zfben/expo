@@ -82,10 +82,22 @@ if (process.env.NODE_ENV === 'development') {
   };
 }
 
-export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
-  const logBoxLog = useMetroSymbolication(error);
+function useWrapper() {
+  if (Platform.OS === 'web') {
+    return View;
+  }
   const inTabBar = React.useContext(BottomTabBarHeightContext);
   const Wrapper = inTabBar ? View : SafeAreaView;
+
+  return Wrapper;
+}
+
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  // TODO: Add digest support for RSC errors
+  // https://github.com/vercel/next.js/blob/f82445b01c885c2dce65c99043666f4a3efdbd9d/packages/next/src/client/components/error-boundary.tsx#L132-L151
+  // console.log('E>', error, { digest: error?.digest });
+  const logBoxLog = useMetroSymbolication(error);
+  const Wrapper = useWrapper();
 
   return (
     <View style={styles.container}>

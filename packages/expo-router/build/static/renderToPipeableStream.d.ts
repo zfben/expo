@@ -20,5 +20,5 @@ export declare function renderToPipeableStream({ $$route: route, ...props }: {
     body?: ReadableStream | undefined;
     contentType?: string | undefined;
     customImport: (file: string) => Promise<any>;
-}): Promise<any>;
+}): Promise<ReadableStream>;
 //# sourceMappingURL=renderToPipeableStream.d.ts.map

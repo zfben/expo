@@ -231,15 +231,11 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     isReactServer?: boolean;
     routerRoot: string;
     platform?: string;
-  }) {
+  }): Promise<{ renderToPipeableStream: (...props: any[]) => Promise<ReadableStream> }> {
     const url = this.getDevServerUrl()!;
 
-    const {
-      // getStaticContent,
-      renderToPipeableStream,
-      // getManifest,
-      // getBuildTimeServerManifestAsync,
-    } = await getStaticRenderFunctionsForEntry(
+    console.log('>>A');
+    const { renderToPipeableStream } = await getStaticRenderFunctionsForEntry(
       this.projectRoot,
       url,
       {
@@ -256,6 +252,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       'expo-router/node/rsc.js'
     );
 
+    console.log('>>B');
     return {
       renderToPipeableStream,
     };
@@ -581,19 +578,18 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         console.log('Render route:', route, url);
 
         const mode = options.mode ?? 'development';
-        // TODO: Extract CSS Modules / Assets from the bundler process
-        const { renderToPipeableStream } = await this.getReactServerFunctionAsync({
-          mode,
-          platform: url.searchParams.get('platform') ?? 'web',
-          minify: options.minify,
-          baseUrl,
-          isReactServer: true,
-          routerRoot,
-          // TODO: Pass platform somehow haha
-        });
-
-        console.log('Render RSC:', renderToPipeableStream);
         try {
+          // TODO: Extract CSS Modules / Assets from the bundler process
+          const { renderToPipeableStream } = await this.getReactServerFunctionAsync({
+            mode,
+            platform: url.searchParams.get('platform') ?? 'web',
+            minify: options.minify,
+            baseUrl,
+            isReactServer: true,
+            routerRoot,
+          });
+
+          console.log('Render RSC:', renderToPipeableStream);
           const pipe = await renderToPipeableStream(
             { $$route: './index.tsx' },
             {
@@ -619,8 +615,11 @@ export class MetroBundlerDevServer extends BundlerDevServer {
               },
             }
           );
+
+          // wrap the response and intercept errors during stream
           respond(res, new ExpoResponse(pipe));
         } catch (error: any) {
+          console.log('Error rendering RSC:', error);
           await logMetroError(this.projectRoot, { error });
           res.statusCode = 500;
           res.statusMessage = `Metro Bundler encountered an error: ${error.message}`;

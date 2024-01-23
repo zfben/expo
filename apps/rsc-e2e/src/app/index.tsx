@@ -13,9 +13,19 @@ import A09_CSSModules from '../09-css-modules/entry';
 import A10_ServerActions from '../10-server-actions/entry';
 import A11_ExpoViewsTest from '../11-expo-views/entry';
 
+import { LinearGradient } from 'expo-linear-gradient';
+
 const Container = OS === 'web' ? (props) => <div {...props} /> : (props) => <View {...props} />;
 
 const App = () => {
+  // return (
+  //   <View>
+  //     <LinearGradient
+  //       colors={['#4c669f', '#3b5998', '#192f6a']}
+  //       style={{ padding: 15, alignItems: 'center', borderRadius: 5, width: 100, height: 100 }}
+  //     />
+  //   </View>
+  // );
   return (
     <ScrollView
       style={{ flex: 1, padding: 16, gap: 8 }}

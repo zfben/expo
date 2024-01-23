@@ -70,10 +70,20 @@ else {
         return <react_native_1.View style={{ flex: 1 }}/>;
     };
 }
-function ErrorBoundary({ error, retry }) {
-    const logBoxLog = useMetroSymbolication(error);
+function useWrapper() {
+    if (react_native_1.Platform.OS === 'web') {
+        return react_native_1.View;
+    }
     const inTabBar = react_1.default.useContext(bottom_tabs_1.BottomTabBarHeightContext);
     const Wrapper = inTabBar ? react_native_1.View : react_native_safe_area_context_1.SafeAreaView;
+    return Wrapper;
+}
+function ErrorBoundary({ error, retry }) {
+    // TODO: Add digest support for RSC errors
+    // https://github.com/vercel/next.js/blob/f82445b01c885c2dce65c99043666f4a3efdbd9d/packages/next/src/client/components/error-boundary.tsx#L132-L151
+    // console.log('E>', error, { digest: error?.digest });
+    const logBoxLog = useMetroSymbolication(error);
+    const Wrapper = useWrapper();
     return (<react_native_1.View style={styles.container}>
       <Wrapper style={{ flex: 1, gap: 8, maxWidth: 720, marginHorizontal: 'auto' }}>
         <react_native_1.View style={{
