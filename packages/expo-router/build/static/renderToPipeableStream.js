@@ -13,7 +13,8 @@ exports.renderToPipeableStream = exports.fileURLToFilePath = void 0;
 const react_1 = __importDefault(require("react"));
 const path_1 = __importDefault(require("path"));
 const _ctx_1 = require("../../_ctx");
-const node_1 = require("@remix-run/node");
+// Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
+const stream_1 = require("@remix-run/node/dist/stream");
 // type WebpackManifest = {
 //   // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/index.client.js"
 //   [filepath: string]: {
@@ -100,7 +101,7 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, url,
         let bodyStr = '';
         if (body) {
             if (body instanceof ReadableStream) {
-                bodyStr = await (0, node_1.readableStreamToString)(body);
+                bodyStr = await (0, stream_1.readableStreamToString)(body);
             }
             else if (typeof body === 'string') {
                 bodyStr = body;

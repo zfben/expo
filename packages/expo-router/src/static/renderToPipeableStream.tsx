@@ -9,7 +9,11 @@ import React from 'react';
 import path from 'path';
 import { ctx } from '../../_ctx';
 import type { ReactNode } from 'react';
-import { readableStreamToString } from '@remix-run/node';
+
+// Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
+import { readableStreamToString } from '@remix-run/node/dist/stream';
+
+
 export interface RenderContext<T = unknown> {
   rerender: (input: string, searchParams?: URLSearchParams) => void;
   context: T;
