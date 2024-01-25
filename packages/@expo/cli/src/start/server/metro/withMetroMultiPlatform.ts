@@ -263,10 +263,22 @@ export function withExtendedResolver(
   }[] = [
     {
       match: (context: ResolutionContext, moduleName: string, platform: string | null) => {
+        if (
+          // Disable internal externals when exporting for production.
+          context.customResolverOptions.exporting ||
+          // These externals are only for Node.js environments.
+          context.customResolverOptions?.environment !== 'node'
+        ) {
+          return false;
+        }
+
+        if (context.customResolverOptions?.rsc) {
+          // Ensure these non-react-server modules are excluded when bundling for React Server Components in development.
+          return /^(source-map-support(\/.*)?|@babel\/runtime\/.+|debug)$/.test(moduleName);
+        }
+
         return (
-          context.customResolverOptions?.environment === 'node' &&
-          // Include everything when exporting
-          !context.customResolverOptions.exporting &&
+          // Extern these modules in standard Node.js environments.
           /^(source-map-support(\/.*)?|react|react-helmet-async|@radix-ui\/.+|@babel\/runtime\/.+|react-dom(\/.+)?|debug)$/.test(
             moduleName
           )
