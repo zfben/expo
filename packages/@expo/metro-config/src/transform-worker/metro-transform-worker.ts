@@ -170,24 +170,24 @@ class InvalidRequireCallError extends Error {
   }
 }
 
-function getIgnoredModules(serializedValue: any): string[] {
-  if (!serializedValue) {
-    return [];
-  }
-  if (Array.isArray(serializedValue)) {
-    return serializedValue;
-  }
-  if (typeof serializedValue === 'string') {
-    try {
-      return getIgnoredModules(JSON.parse(serializedValue));
-    } catch {
-      throw new Error(
-        'Invalid `ignoredModules` value. Expected an array or a JSON-encoded array of strings.'
-      );
-    }
-  }
-  return [];
-}
+// function getIgnoredModules(serializedValue: any): string[] {
+//   if (!serializedValue) {
+//     return [];
+//   }
+//   if (Array.isArray(serializedValue)) {
+//     return serializedValue;
+//   }
+//   if (typeof serializedValue === 'string') {
+//     try {
+//       return getIgnoredModules(JSON.parse(serializedValue));
+//     } catch {
+//       throw new Error(
+//         'Invalid `ignoredModules` value. Expected an array or a JSON-encoded array of strings.'
+//       );
+//     }
+//   }
+//   return [];
+// }
 
 async function transformJS(
   file: JSFile,
@@ -299,16 +299,16 @@ async function transformJS(
     dependencies = [];
     wrappedAst = JsFileWrapping.wrapPolyfill(ast);
   } else {
-    const ignoredModules: (string | RegExp)[] = getIgnoredModules(
-      options.customTransformOptions?.ignoredModules
-    );
+    // const ignoredModules: (string | RegExp)[] = getIgnoredModules(
+    //   options.customTransformOptions?.ignoredModules
+    // );
 
-    const isServer = options.customTransformOptions?.environment === 'node';
+    // const isServer = options.customTransformOptions?.environment === 'node';
 
-    // Automatically ignore node built-in modules in server environments.
-    if (isServer) {
-      ignoredModules.push(/node:.+/);
-    }
+    // // Automatically ignore node built-in modules in server environments.
+    // if (isServer) {
+    //   ignoredModules.push(/node:.+/);
+    // }
 
     try {
       const opts = {
@@ -323,7 +323,7 @@ async function transformJS(
         allowOptionalDependencies: config.allowOptionalDependencies,
         dependencyMapName: config.unstable_dependencyMapReservedName,
         unstable_allowRequireContext: config.unstable_allowRequireContext,
-        ignoredModules,
+        // ignoredModules,
       };
 
       ({ ast, dependencies, dependencyMapName } = collectDependencies(ast, opts));

@@ -42,7 +42,7 @@ export type ExpoMetroOptions = {
   inlineSourceMap?: boolean;
 
   /** List of module imports to ignore when collecting dependencies. This can be used to create externals that are left in place. */
-  ignoredModules?: string[];
+  // ignoredModules?: string[];
 };
 
 export type SerializerOptions = {
@@ -123,7 +123,7 @@ export function getMetroDirectBundleOptions(
     routerRoot,
     isExporting,
     inlineSourceMap,
-    ignoredModules,
+    // ignoredModules,
   } = withDefaults(options);
 
   const dev = mode !== 'production';
@@ -169,7 +169,7 @@ export function getMetroDirectBundleOptions(
       environment,
       baseUrl,
       routerRoot,
-      ignoredModules,
+      // ignoredModules,
     },
     customResolverOptions: {
       __proto__: null,
@@ -220,7 +220,7 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
     routerRoot,
     inlineSourceMap,
     isExporting,
-    ignoredModules,
+    // ignoredModules,
   } = withDefaults(options);
 
   const dev = String(mode !== 'production');
@@ -258,9 +258,9 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
   if (preserveEnvVars) {
     queryParams.append('transform.preserveEnvVars', String(preserveEnvVars));
   }
-  if (ignoredModules) {
-    queryParams.append('transform.ignoredModules', JSON.stringify(ignoredModules));
-  }
+  // if (ignoredModules) {
+  //   queryParams.append('transform.ignoredModules', JSON.stringify(ignoredModules));
+  // }
   if (baseUrl) {
     queryParams.append('transform.baseUrl', baseUrl);
   }

@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import OS from 'expo-router/os';
-import { Text, View, ScrollView } from 'react-native';
+// import { Text, View, ScrollView } from 'react-native';
 
 import A02_Suspense from '../02-suspense/entry';
 import A03_Promises from '../03-promises/entry';
@@ -13,6 +13,78 @@ import A09_CSSModules from '../09-css-modules/entry';
 import A10_ServerActions from '../10-server-actions/entry';
 import A11_ExpoViewsTest from '../11-expo-views/entry';
 
+import { 
+  AccessibilityInfo,
+  ActivityIndicator,
+  Alert,
+  Animated,
+  AppRegistry,
+  AppState,
+  Appearance,
+  BackHandler,
+  Button,
+  CheckBox,
+  Clipboard,
+  DeviceEventEmitter,
+  DeviceInfo,
+  Dimensions,
+  DrawerLayoutAndroid,
+  Easing,
+  FlatList,
+  I18nManager,
+  Image,
+  ImageBackground,
+  InputAccessoryView,
+  InteractionManager,
+  Keyboard,
+  KeyboardAvoidingView,
+  LayoutAnimation,
+  Linking,
+  LogBox,
+  Modal,
+  NativeEventEmitter,
+  NativeModules,
+  PanResponder,
+  PermissionsAndroid,
+  Picker,
+  PixelRatio,
+  Platform,
+  Pressable,
+  ProgressBar,
+  RefreshControl,
+  SafeAreaView,
+  ScrollView,
+  SectionList,
+  Settings,
+  Share,
+  StatusBar,
+  StyleSheet,
+  Switch,
+  Systrace,
+  TVEventHandler,
+  Text,
+  TextInput,
+  ToastAndroid,
+  Touchable,
+  TouchableHighlight,
+  TouchableNativeFeedback,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  UIManager,
+  Vibration,
+  View,
+  VirtualizedList,
+  YellowBox,
+  createElement,
+  findNodeHandle,
+  processColor,
+  render,
+  unmountComponentAtNode,
+  useColorScheme,
+  useLocaleContext,
+  useWindowDimensions,
+} from 'react-native';
+
 import { LinearGradient } from 'expo-linear-gradient';
 
 const Container = OS === 'web' ? (props) => <div {...props} /> : (props) => <View {...props} />;
@@ -22,6 +94,38 @@ const App = () => {
     <ScrollView
       style={{ flex: 1, padding: 16 }}
       contentContainerStyle={{ gap: 8, justifyContent: 'center', alignItems: 'stretch' }}>
+
+
+
+{/* <ActivityIndicator  />
+<Button  />
+<CheckBox  />
+<Image  />
+<ImageBackground  />
+<InputAccessoryView  />
+<KeyboardAvoidingView  />
+<Modal  />
+<Picker  />
+<Pressable  />
+<ProgressBar  />
+<RefreshControl  />
+<SafeAreaView  />
+<ScrollView  />
+<StatusBar  />
+<Switch  />
+<Text  />
+<TextInput  /> */}
+{/* <FlatList  /> */}
+{/* <SectionList  /> */}
+
+{/* <Touchable  /> */}
+<TouchableHighlight><View /></TouchableHighlight>
+<TouchableNativeFeedback><View /></TouchableNativeFeedback>
+<TouchableOpacity><View /></TouchableOpacity>
+<TouchableWithoutFeedback><View /></TouchableWithoutFeedback>
+{/* <VirtualizedList  /> */}
+<View  />
+
       <View>
         <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
           Universal React Server Components with Expo Router

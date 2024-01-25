@@ -116,23 +116,24 @@ class InvalidRequireCallError extends Error {
         this.filename = filename;
     }
 }
-function getIgnoredModules(serializedValue) {
-    if (!serializedValue) {
-        return [];
-    }
-    if (Array.isArray(serializedValue)) {
-        return serializedValue;
-    }
-    if (typeof serializedValue === 'string') {
-        try {
-            return getIgnoredModules(JSON.parse(serializedValue));
-        }
-        catch {
-            throw new Error('Invalid `ignoredModules` value. Expected an array or a JSON-encoded array of strings.');
-        }
-    }
-    return [];
-}
+// function getIgnoredModules(serializedValue: any): string[] {
+//   if (!serializedValue) {
+//     return [];
+//   }
+//   if (Array.isArray(serializedValue)) {
+//     return serializedValue;
+//   }
+//   if (typeof serializedValue === 'string') {
+//     try {
+//       return getIgnoredModules(JSON.parse(serializedValue));
+//     } catch {
+//       throw new Error(
+//         'Invalid `ignoredModules` value. Expected an array or a JSON-encoded array of strings.'
+//       );
+//     }
+//   }
+//   return [];
+// }
 async function transformJS(file, { config, options, projectRoot }) {
     // Transformers can output null ASTs (if they ignore the file). In that case
     // we need to parse the module source code to get their AST.
@@ -225,12 +226,14 @@ async function transformJS(file, { config, options, projectRoot }) {
         wrappedAst = JsFileWrapping_1.default.wrapPolyfill(ast);
     }
     else {
-        const ignoredModules = getIgnoredModules(options.customTransformOptions?.ignoredModules);
-        const isServer = options.customTransformOptions?.environment === 'node';
-        // Automatically ignore node built-in modules in server environments.
-        if (isServer) {
-            ignoredModules.push(/node:.+/);
-        }
+        // const ignoredModules: (string | RegExp)[] = getIgnoredModules(
+        //   options.customTransformOptions?.ignoredModules
+        // );
+        // const isServer = options.customTransformOptions?.environment === 'node';
+        // // Automatically ignore node built-in modules in server environments.
+        // if (isServer) {
+        //   ignoredModules.push(/node:.+/);
+        // }
         try {
             const opts = {
                 asyncRequireModulePath: config.asyncRequireModulePath,
@@ -243,7 +246,7 @@ async function transformJS(file, { config, options, projectRoot }) {
                 allowOptionalDependencies: config.allowOptionalDependencies,
                 dependencyMapName: config.unstable_dependencyMapReservedName,
                 unstable_allowRequireContext: config.unstable_allowRequireContext,
-                ignoredModules,
+                // ignoredModules,
             };
             ({ ast, dependencies, dependencyMapName } = (0, collectDependencies_1.default)(ast, opts));
         }

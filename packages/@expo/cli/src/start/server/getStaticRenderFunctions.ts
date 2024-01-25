@@ -181,13 +181,13 @@ export async function createMetroEndpointAsync(
     asyncRoutes: false,
     routerRoot,
     inlineSourceMap: false,
-    ignoredModules: [
-      '@expo/server',
-      'source-map-support',
-      '@remix-run/node',
-      'react-native',
-      'react-native-web',
-    ],
+    // ignoredModules: [
+    //   '@expo/server',
+    //   'source-map-support',
+    //   '@remix-run/node',
+    //   'react-native',
+    //   'react-native-web',
+    // ],
   });
 
   let url: string;

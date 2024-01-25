@@ -64,6 +64,7 @@ import {
 import { prependMiddleware } from '../middleware/mutations';
 import { ServerNext, ServerRequest, ServerResponse } from '../middleware/server.types';
 import { startTypescriptTypeGenerationAsync } from '../type-generation/startTypescriptTypeGeneration';
+import { stripAnsi } from '../../../utils/ansi';
 
 export type ExpoRouterRuntimeManifest = Awaited<
   ReturnType<typeof import('expo-router/build/static/renderStaticContent').getManifest>
@@ -293,15 +294,15 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       baseUrl,
       isExporting,
       routerRoot,
-      ignoredModules: isExporting
-        ? []
-        : [
-            '@expo/server',
-            'source-map-support',
-            '@remix-run/node',
-            'react-native',
-            'react-native-web',
-          ],
+      // ignoredModules: isExporting
+      //   ? []
+      //   : [
+      //       '@expo/server',
+      //       'source-map-support',
+      //       '@remix-run/node',
+      //       'react-native',
+      //       'react-native-web',
+      //     ],
     });
 
     const bundleUrl = new URL(devBundleUrlPathname, this.getDevServerUrl()!);
@@ -391,15 +392,15 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       isExporting,
       asyncRoutes,
       routerRoot,
-      ignoredModules: isExporting
-        ? []
-        : [
-            '@expo/server',
-            'source-map-support',
-            '@remix-run/node',
-            'react-native',
-            'react-native-web',
-          ],
+      // ignoredModules: isExporting
+      //   ? []
+      //   : [
+      //       '@expo/server',
+      //       'source-map-support',
+      //       '@remix-run/node',
+      //       'react-native',
+      //       'react-native-web',
+      //     ],
     });
 
     const bundleStaticHtml = async (): Promise<string> => {
@@ -640,10 +641,12 @@ export class MetroBundlerDevServer extends BundlerDevServer {
           // wrap the response and intercept errors during stream
           respond(res, new ExpoResponse(pipe));
         } catch (error: any) {
-          console.log('Error rendering RSC:', error);
           await logMetroError(this.projectRoot, { error });
           res.statusCode = 500;
-          res.statusMessage = `Metro Bundler encountered an error: ${error.message}`;
+          res.statusMessage = `Metro Bundler encountered an error`;
+
+          const sanitizedServerMessage = stripAnsi(error.message)
+          res.write(`Metro Bundler encountered an error: ` + sanitizedServerMessage);
           res.end();
         }
       };
