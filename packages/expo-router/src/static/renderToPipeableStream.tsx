@@ -13,6 +13,7 @@ import type { ReactNode } from 'react';
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
 import { readableStreamToString } from '@remix-run/node/dist/stream';
 
+const debug = require('debug')('expo:rsc');
 
 export interface RenderContext<T = unknown> {
   rerender: (input: string, searchParams?: URLSearchParams) => void;
@@ -86,7 +87,6 @@ export async function renderToPipeableStream(
   }
 
   const { default: Component } = await ctx(route);
-  console.log('Initial component', Component, route);
 
   const isDev = mode === 'development';
 
@@ -124,7 +124,7 @@ export async function renderToPipeableStream(
     {},
     {
       get(_target, encodedId: string) {
-        console.log('Get manifest entry:', encodedId);
+        debug('Get manifest entry:', encodedId);
         // const [file, name] = encodedId.split('#') as [string, string];
         // return moduleMap[encodedId];
 
@@ -138,7 +138,7 @@ export async function renderToPipeableStream(
         // We'll augment the file path with the incoming RSC request which will forward the metro props required to make a cache hit, e.g. platform=web&...
         // This is similar to how we handle lazy bundling.
         const id = resolveClientEntry(file);
-        console.log('Returning server module:', id, 'for', encodedId);
+        debug('Returning server module:', id, 'for', encodedId);
         // moduleIdCallback?.(id);
         return { id, chunks: [id], name, async: true };
       },
@@ -168,9 +168,9 @@ export async function renderToPipeableStream(
     const [fileId, name] = rsfId.split('#') as [string, string];
     let mod: any;
     if (isDev) {
-      console.log('Loading module:', fileId, name);
+      // console.log('Loading module:', fileId, name);
       mod = await customImport(resolveClientEntry(fileId));
-      console.log('Loaded module:', mod);
+      // console.log('Loaded module:', mod);
     } else {
       // if (!fileId.startsWith('@id/')) {
       //   throw new Error('Unexpected server entry in PRD');
@@ -178,7 +178,7 @@ export async function renderToPipeableStream(
       // mod = await loadModule!(fileId.slice('@id/'.length));
     }
     const fn = mod[name] || mod;
-    console.log('Target function:', fn);
+    // console.log('Target function:', fn);
 
     let elements: Promise<Record<string, ReactNode>> = Promise.resolve({});
     let rendered = false;

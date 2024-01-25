@@ -227,6 +227,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     isReactServer,
     routerRoot,
     platform,
+    isExporting,
   }: {
     mode: 'development' | 'production';
     minify?: boolean;
@@ -234,10 +235,10 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     isReactServer?: boolean;
     routerRoot: string;
     platform?: string;
+    isExporting: boolean;
   }): Promise<{ renderToPipeableStream: (...props: any[]) => Promise<ReadableStream> }> {
     const url = this.getDevServerUrl()!;
 
-    console.log('>>A');
     const { renderToPipeableStream } = await getStaticRenderFunctionsForEntry(
       this.projectRoot,
       url,
@@ -250,12 +251,12 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         baseUrl,
         routerRoot,
         isReactServer,
+        isExporting,
       },
 
       'expo-router/node/rsc.js'
     );
 
-    console.log('>>B');
     return {
       renderToPipeableStream,
     };
@@ -597,7 +598,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         const url = new URL(req.url!, this.getDevServerUrl()!);
         const route = url.pathname.replace(/^\/rsc\//, '');
 
-        console.log('Render route:', route, url);
+        // console.log('Render route:', route, url);
 
         const mode = options.mode ?? 'development';
         try {
@@ -609,9 +610,9 @@ export class MetroBundlerDevServer extends BundlerDevServer {
             baseUrl,
             isReactServer: true,
             routerRoot,
+            isExporting: options.isExporting,
           });
 
-          console.log('Render RSC:', renderToPipeableStream);
           const pipe = await renderToPipeableStream(
             { $$route: './index.tsx' },
             {
@@ -645,7 +646,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
           res.statusCode = 500;
           res.statusMessage = `Metro Bundler encountered an error`;
 
-          const sanitizedServerMessage = stripAnsi(error.message)
+          const sanitizedServerMessage = stripAnsi(error.message);
           res.write(`Metro Bundler encountered an error: ` + sanitizedServerMessage);
           res.end();
         }

@@ -269,7 +269,7 @@ function evalMetroAndWrapFunctions<T = Record<string, (...args: any[]) => Promis
   script: string,
   filename: string
 ): Promise<T> {
-  console.log('>>', script);
+  // console.log('>>', script);
   const contents = evalMetro(projectRoot, script, filename);
   // wrap each function with a try/catch that uses Metro's error formatter
   return Object.keys(contents).reduce((acc, key) => {
@@ -282,7 +282,7 @@ function evalMetroAndWrapFunctions<T = Record<string, (...args: any[]) => Promis
       try {
         return await fn.apply(this, props);
       } catch (error: any) {
-        console.error('Err:', error);
+        // console.error('Err:', error);
         await logMetroError(projectRoot, { error });
         throw new SilentError(error);
       }

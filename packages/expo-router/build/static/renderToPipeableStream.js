@@ -15,6 +15,7 @@ const path_1 = __importDefault(require("path"));
 const _ctx_1 = require("../../_ctx");
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
 const stream_1 = require("@remix-run/node/dist/stream");
+const debug = require('debug')('expo:rsc');
 // type WebpackManifest = {
 //   // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/index.client.js"
 //   [filepath: string]: {
@@ -49,7 +50,6 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, url,
         throw new Error('Failed to find route: ' + route + '. Expected one of: ' + _ctx_1.ctx.keys().join(', '));
     }
     const { default: Component } = await (0, _ctx_1.ctx)(route);
-    console.log('Initial component', Component, route);
     const isDev = mode === 'development';
     if (isDev) {
         url.searchParams.set('modulesOnly', 'true');
@@ -79,7 +79,7 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, url,
     };
     const bundlerConfig = new Proxy({}, {
         get(_target, encodedId) {
-            console.log('Get manifest entry:', encodedId);
+            debug('Get manifest entry:', encodedId);
             // const [file, name] = encodedId.split('#') as [string, string];
             // return moduleMap[encodedId];
             const [
@@ -90,7 +90,7 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, url,
             // We'll augment the file path with the incoming RSC request which will forward the metro props required to make a cache hit, e.g. platform=web&...
             // This is similar to how we handle lazy bundling.
             const id = resolveClientEntry(file);
-            console.log('Returning server module:', id, 'for', encodedId);
+            debug('Returning server module:', id, 'for', encodedId);
             // moduleIdCallback?.(id);
             return { id, chunks: [id], name, async: true };
         },
@@ -121,9 +121,9 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, url,
         const [fileId, name] = rsfId.split('#');
         let mod;
         if (isDev) {
-            console.log('Loading module:', fileId, name);
+            // console.log('Loading module:', fileId, name);
             mod = await customImport(resolveClientEntry(fileId));
-            console.log('Loaded module:', mod);
+            // console.log('Loaded module:', mod);
         }
         else {
             // if (!fileId.startsWith('@id/')) {
@@ -132,7 +132,7 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, url,
             // mod = await loadModule!(fileId.slice('@id/'.length));
         }
         const fn = mod[name] || mod;
-        console.log('Target function:', fn);
+        // console.log('Target function:', fn);
         let elements = Promise.resolve({});
         let rendered = false;
         // TODO: Define context
