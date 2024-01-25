@@ -20,22 +20,6 @@ export interface RenderContext<T = unknown> {
   context: T;
 }
 
-type WebpackManifestSubType = {
-  // "id": "./src/index.client.js",
-  id: string;
-  // ['main']
-  chunks: string[];
-  // "name": ""
-  name: string;
-};
-// type WebpackManifest = {
-//   // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/index.client.js"
-//   [filepath: string]: {
-//     // "*"
-//     [name: string]: WebpackManifestSubType;
-//   };
-// };
-
 // NOTE: MUST MATCH THE IMPL IN ExpoMetroConfig.ts
 function stringToHash(str: string): number {
   let hash = 0;

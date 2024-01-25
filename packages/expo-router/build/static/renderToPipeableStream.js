@@ -16,13 +16,6 @@ const _ctx_1 = require("../../_ctx");
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
 const stream_1 = require("@remix-run/node/dist/stream");
 const debug = require('debug')('expo:rsc');
-// type WebpackManifest = {
-//   // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/index.client.js"
-//   [filepath: string]: {
-//     // "*"
-//     [name: string]: WebpackManifestSubType;
-//   };
-// };
 // NOTE: MUST MATCH THE IMPL IN ExpoMetroConfig.ts
 function stringToHash(str) {
     let hash = 0;
