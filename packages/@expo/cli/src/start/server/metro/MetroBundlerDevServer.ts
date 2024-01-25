@@ -135,6 +135,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         port: this.getInstance()?.location.port,
         shouldThrow: true,
         baseUrl,
+        isExporting: true,
       });
       const artifactFilename = path.join(
         outputDir,
@@ -204,6 +205,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         baseUrl,
         routerRoot,
         isReactServer,
+        isExporting: true,
       });
 
     return {
@@ -411,6 +413,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
           environment: 'node',
           baseUrl,
           routerRoot,
+          isExporting,
         }
       );
 
@@ -665,8 +668,10 @@ export class MetroBundlerDevServer extends BundlerDevServer {
             baseUrl,
             routerRoot,
             config,
+            isExporting: !!options.isExporting,
             getWebBundleUrl: manifestMiddleware.getWebBundleUrl.bind(manifestMiddleware),
             getStaticPageAsync: (pathname) => {
+              console.log('getStaticPageAsync:', options.isExporting);
               return this.getStaticPageAsync(pathname, {
                 isExporting: !!options.isExporting,
                 mode: options.mode ?? 'development',

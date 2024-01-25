@@ -175,6 +175,7 @@ export function getMetroDirectBundleOptions(
       __proto__: null,
       environment,
       rsc,
+      exporting: isExporting,
     },
     sourceMapUrl: fakeSourceMapUrl,
     sourceUrl: fakeSourceUrl,
@@ -270,6 +271,10 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
   if (environment) {
     queryParams.append('resolver.environment', environment);
     queryParams.append('transform.environment', environment);
+  }
+
+  if (isExporting) {
+    queryParams.append('resolver.exporting', String(isExporting));
   }
 
   if (serializerOutput) {

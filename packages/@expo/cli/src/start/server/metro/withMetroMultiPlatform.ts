@@ -17,11 +17,13 @@ import {
   EXTERNAL_REQUIRE_NATIVE_POLYFILL,
   EXTERNAL_REQUIRE_POLYFILL,
   // EXTERNAL_RSC_MANIFEST,
+  METRO_EXTERNALS_FOLDER,
   METRO_SHIMS_FOLDER,
   getNodeExternalModuleId,
   isNodeExternal,
   setupNodeExternals,
   setupShimFiles,
+  tapVirtualModuleMemoized,
 } from './externals';
 import { isFailedToResolveNameError, isFailedToResolvePathError } from './metroErrors';
 import {
@@ -32,8 +34,10 @@ import {
 import { Log } from '../../../log';
 import { FileNotifier } from '../../../utils/FileNotifier';
 import { env } from '../../../utils/env';
+import { CommandError } from '../../../utils/errors';
 import { installExitHooks } from '../../../utils/exit';
 import { isInteractive } from '../../../utils/interactive';
+import { memoize } from '../../../utils/fn';
 import { loadTsConfigPathsAsync, TsConfigPaths } from '../../../utils/tsconfig/loadTsConfigPaths';
 import { resolveWithTsConfigPaths } from '../../../utils/tsconfig/resolveWithTsConfigPaths';
 import { WebSupportProjectPrerequisite } from '../../doctor/web/WebSupportProjectPrerequisite';
@@ -101,6 +105,16 @@ export function getNodejsExtensions(srcExts: readonly string[]): string[] {
 
   return nodejsSourceExtensions;
 }
+
+function fastHash(str: string) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+  return hash;
+}
+
+const fastHashMemoized = memoize(fastHash);
 
 /**
  * Apply custom resolvers to do the following:
@@ -241,6 +255,27 @@ export function withExtendedResolver(
     };
   }
 
+  // If Node.js pass-through, then remap to a module like `module.exports = $$require_external(<module>)`.
+  // If module should be shimmed, remap to an empty module.
+  const externals: {
+    match: (context: ResolutionContext, moduleName: string, platform: string | null) => boolean;
+    replace: 'empty' | 'node';
+  }[] = [
+    {
+      match: (context: ResolutionContext, moduleName: string, platform: string | null) => {
+        return (
+          context.customResolverOptions?.environment === 'node' &&
+          // Include everything when exporting
+          !context.customResolverOptions.exporting &&
+          /^(source-map-support(\/.*)?|react|react-helmet-async|@radix-ui\/.+|@babel\/runtime\/.+|react-dom(\/.+)?|debug)$/.test(
+            moduleName
+          )
+        );
+      },
+      replace: 'node',
+    },
+  ];
+
   const metroConfigWithCustomResolver = withMetroResolvers(config, [
     // tsconfig paths
     (context: ResolutionContext, moduleName: string, platform: string | null) => {
@@ -290,6 +325,43 @@ export function withExtendedResolver(
       const redirectedModuleName = getNodeExternalModuleId(context.originModulePath, moduleId);
       debug(`Redirecting Node.js external "${moduleId}" to "${redirectedModuleName}"`);
       return getStrictResolver(context, platform)(redirectedModuleName);
+    },
+
+    // Custom externals support
+    (context: ResolutionContext, moduleName: string, platform: string | null) => {
+      for (const external of externals) {
+        if (external.match(context, moduleName, platform)) {
+          if (external.replace === 'empty') {
+            debug(`Redirecting external "${moduleName}" to "${external.replace}"`);
+            return {
+              type: external.replace,
+            };
+          } else if (external.replace === 'node') {
+            const contents = `module.exports=$$require_external('${moduleName}')`;
+            const generatedModuleId = fastHashMemoized(contents);
+            const absoluteFilePath = path.join(
+              config.projectRoot,
+              METRO_EXTERNALS_FOLDER,
+              String(generatedModuleId),
+              'index.js'
+            );
+            tapVirtualModuleMemoized(absoluteFilePath, contents);
+            const redirectedModuleName = path.relative(
+              path.dirname(context.originModulePath),
+              absoluteFilePath
+            );
+            debug(
+              `Redirecting external "${moduleName}" to Node.js require in "${redirectedModuleName}"`
+            );
+            return getStrictResolver(context, platform)(redirectedModuleName);
+          } else {
+            throw new CommandError(
+              `Invalid external replace type: ${external.replace} for module "${moduleName}" (platform: ${platform}, originModulePath: ${context.originModulePath})`
+            );
+          }
+        }
+      }
+      return null;
     },
 
     // Basic moduleId aliases

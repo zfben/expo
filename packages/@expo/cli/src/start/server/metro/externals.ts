@@ -9,6 +9,7 @@ import { builtinModules } from 'module';
 import path from 'path';
 
 import { copyAsync } from '../../../utils/dir';
+import { memoize } from '../../../utils/fn';
 
 // A list of the Node.js standard library modules that are currently
 // available,
@@ -68,6 +69,25 @@ async function tapExternalRequirePolyfill(projectRoot: string) {
     // 'global.$$require_external = typeof __fbBatchedBridgeConfig === "undefined" ? require : () => null;'
     'global.$$require_external = (moduleId) => {throw new Error(`Node.js standard library module ${moduleId} is not available in this JavaScript environment`);}'
   );
+}
+
+export function tapVirtualModule(filePath: string, contents: string): void {
+  fs.mkdirSync(path.dirname(filePath), {
+    recursive: true,
+  });
+
+  writeIfDifferentSync(filePath, contents);
+}
+
+export const tapVirtualModuleMemoized = memoize(tapVirtualModule);
+
+function writeIfDifferentSync(filePath: string, contents: string): void {
+  if (fs.existsSync(filePath)) {
+    const current = fs.readFileSync(filePath, 'utf8');
+    if (current === contents) return;
+  }
+
+  fs.writeFileSync(filePath, contents);
 }
 
 async function writeIfDifferentAsync(filePath: string, contents: string): Promise<void> {

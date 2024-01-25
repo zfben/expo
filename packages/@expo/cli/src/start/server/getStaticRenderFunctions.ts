@@ -29,6 +29,7 @@ type StaticRenderOptions = {
   baseUrl: string;
   isReactServer?: boolean;
   routerRoot: string;
+  isExporting: boolean;
 };
 
 class MetroNodeError extends Error {
@@ -101,6 +102,7 @@ async function getStaticRenderFunctionsContentAsync(
     isReactServer,
     engine,
     platform,
+    isExporting,
   }: StaticRenderOptions,
   entry?: string
 ): Promise<{ src: string; filename: string }> {
@@ -122,6 +124,7 @@ async function getStaticRenderFunctionsContentAsync(
     routerRoot,
     isReactServer,
     engine,
+    isExporting,
     platform,
   });
 }
@@ -157,6 +160,7 @@ export async function createMetroEndpointAsync(
     baseUrl,
     isReactServer,
     routerRoot,
+    isExporting,
   }: StaticRenderOptions
 ): Promise<string> {
   const root = getMetroServerRoot(projectRoot);
@@ -172,7 +176,7 @@ export async function createMetroEndpointAsync(
     lazy: false,
     minify,
     baseUrl,
-    isExporting: true,
+    isExporting,
     rsc: isReactServer,
     asyncRoutes: false,
     routerRoot,
