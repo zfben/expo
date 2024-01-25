@@ -116,6 +116,23 @@ class InvalidRequireCallError extends Error {
         this.filename = filename;
     }
 }
+function getIgnoredModules(serializedValue) {
+    if (!serializedValue) {
+        return [];
+    }
+    if (Array.isArray(serializedValue)) {
+        return serializedValue;
+    }
+    if (typeof serializedValue === 'string') {
+        try {
+            return getIgnoredModules(JSON.parse(serializedValue));
+        }
+        catch {
+            throw new Error('Invalid `ignoredModules` value. Expected an array or a JSON-encoded array of strings.');
+        }
+    }
+    return [];
+}
 async function transformJS(file, { config, options, projectRoot }) {
     // Transformers can output null ASTs (if they ignore the file). In that case
     // we need to parse the module source code to get their AST.
@@ -208,6 +225,12 @@ async function transformJS(file, { config, options, projectRoot }) {
         wrappedAst = JsFileWrapping_1.default.wrapPolyfill(ast);
     }
     else {
+        const ignoredModules = getIgnoredModules(options.customTransformOptions?.ignoredModules);
+        const isServer = options.customTransformOptions?.environment === 'node';
+        // Automatically ignore node built-in modules in server environments.
+        if (isServer) {
+            ignoredModules.push(/node:.+/);
+        }
         try {
             const opts = {
                 asyncRequireModulePath: config.asyncRequireModulePath,
@@ -220,6 +243,7 @@ async function transformJS(file, { config, options, projectRoot }) {
                 allowOptionalDependencies: config.allowOptionalDependencies,
                 dependencyMapName: config.unstable_dependencyMapReservedName,
                 unstable_allowRequireContext: config.unstable_allowRequireContext,
+                ignoredModules,
             };
             ({ ast, dependencies, dependencyMapName } = (0, collectDependencies_1.default)(ast, opts));
         }
@@ -248,9 +272,11 @@ async function transformJS(file, { config, options, projectRoot }) {
         file.inputFileSize <= config.optimizationSizeLimit &&
         !config.unstable_disableNormalizePseudoGlobals) {
         // NOTE(EvanBacon): Simply pushing this function will mutate the AST, so it must run before the `generate` step!!
-        reserved.push(...metro_transform_plugins_1.default.normalizePseudoGlobals(wrappedAst, {
-            reservedNames: reserved,
-        }));
+        // reserved.push(
+        //   ...metroTransformPlugins.normalizePseudoGlobals(wrappedAst, {
+        //     reservedNames: reserved,
+        //   })
+        // );
     }
     const result = (0, generator_1.default)(wrappedAst, {
         comments: true,
@@ -342,7 +368,7 @@ async function transformJSON(file, { options, config, projectRoot }) {
     }
     const output = [
         {
-            data: { code, lineCount: (0, countLines_1.default)(code), map, functionMap: null, clientReferences: null, },
+            data: { code, lineCount: (0, countLines_1.default)(code), map, functionMap: null, clientReferences: null },
             type: jsType,
         },
     ];

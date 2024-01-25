@@ -291,6 +291,15 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       baseUrl,
       isExporting,
       routerRoot,
+      ignoredModules: isExporting
+        ? []
+        : [
+            '@expo/server',
+            'source-map-support',
+            '@remix-run/node',
+            'react-native',
+            'react-native-web',
+          ],
     });
 
     const bundleUrl = new URL(devBundleUrlPathname, this.getDevServerUrl()!);
@@ -380,6 +389,15 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       isExporting,
       asyncRoutes,
       routerRoot,
+      ignoredModules: isExporting
+        ? []
+        : [
+            '@expo/server',
+            'source-map-support',
+            '@remix-run/node',
+            'react-native',
+            'react-native-web',
+          ],
     });
 
     const bundleStaticHtml = async (): Promise<string> => {

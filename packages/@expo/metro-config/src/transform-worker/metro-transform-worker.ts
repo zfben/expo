@@ -12,6 +12,7 @@ import { transformFromAstSync } from '@babel/core';
 import type { ParseResult, PluginItem } from '@babel/core';
 import generate from '@babel/generator';
 import * as babylon from '@babel/parser';
+import traverse from '@babel/traverse';
 import * as types from '@babel/types';
 import type { TransformResultDependency } from 'metro/src/DeltaBundler';
 import JsFileWrapping from 'metro/src/ModuleGraph/worker/JsFileWrapping';
@@ -64,7 +65,7 @@ interface JSFile extends BaseFile {
   clientReferences: Array<{
     entryPoint: string;
     exports: string[];
-  }> | null,
+  }> | null;
 }
 
 interface JSONFile extends BaseFile {
@@ -167,6 +168,25 @@ class InvalidRequireCallError extends Error {
     this.innerError = innerError;
     this.filename = filename;
   }
+}
+
+function getIgnoredModules(serializedValue: any): string[] {
+  if (!serializedValue) {
+    return [];
+  }
+  if (Array.isArray(serializedValue)) {
+    return serializedValue;
+  }
+  if (typeof serializedValue === 'string') {
+    try {
+      return getIgnoredModules(JSON.parse(serializedValue));
+    } catch {
+      throw new Error(
+        'Invalid `ignoredModules` value. Expected an array or a JSON-encoded array of strings.'
+      );
+    }
+  }
+  return [];
 }
 
 async function transformJS(
@@ -279,6 +299,17 @@ async function transformJS(
     dependencies = [];
     wrappedAst = JsFileWrapping.wrapPolyfill(ast);
   } else {
+    const ignoredModules: (string | RegExp)[] = getIgnoredModules(
+      options.customTransformOptions?.ignoredModules
+    );
+
+    const isServer = options.customTransformOptions?.environment === 'node';
+
+    // Automatically ignore node built-in modules in server environments.
+    if (isServer) {
+      ignoredModules.push(/node:.+/);
+    }
+
     try {
       const opts = {
         asyncRequireModulePath: config.asyncRequireModulePath,
@@ -292,6 +323,7 @@ async function transformJS(
         allowOptionalDependencies: config.allowOptionalDependencies,
         dependencyMapName: config.unstable_dependencyMapReservedName,
         unstable_allowRequireContext: config.unstable_allowRequireContext,
+        ignoredModules,
       };
 
       ({ ast, dependencies, dependencyMapName } = collectDependencies(ast, opts));
@@ -332,11 +364,11 @@ async function transformJS(
     !config.unstable_disableNormalizePseudoGlobals
   ) {
     // NOTE(EvanBacon): Simply pushing this function will mutate the AST, so it must run before the `generate` step!!
-    reserved.push(
-      ...metroTransformPlugins.normalizePseudoGlobals(wrappedAst, {
-        reservedNames: reserved,
-      })
-    );
+    // reserved.push(
+    //   ...metroTransformPlugins.normalizePseudoGlobals(wrappedAst, {
+    //     reservedNames: reserved,
+    //   })
+    // );
   }
 
   const result = generate(
@@ -474,7 +506,7 @@ async function transformJSON(
 
   const output: JsOutput[] = [
     {
-      data: { code, lineCount: countLines(code), map, functionMap: null, clientReferences: null, },
+      data: { code, lineCount: countLines(code), map, functionMap: null, clientReferences: null },
       type: jsType,
     },
   ];

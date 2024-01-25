@@ -40,6 +40,9 @@ export type ExpoMetroOptions = {
   /** Module ID relative to the projectRoot for the Expo Router app directory. */
   routerRoot: string;
   inlineSourceMap?: boolean;
+
+  /** List of module imports to ignore when collecting dependencies. This can be used to create externals that are left in place. */
+  ignoredModules?: string[];
 };
 
 export type SerializerOptions = {
@@ -120,6 +123,7 @@ export function getMetroDirectBundleOptions(
     routerRoot,
     isExporting,
     inlineSourceMap,
+    ignoredModules,
   } = withDefaults(options);
 
   const dev = mode !== 'production';
@@ -165,6 +169,7 @@ export function getMetroDirectBundleOptions(
       environment,
       baseUrl,
       routerRoot,
+      ignoredModules,
     },
     customResolverOptions: {
       __proto__: null,
@@ -214,6 +219,7 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
     routerRoot,
     inlineSourceMap,
     isExporting,
+    ignoredModules,
   } = withDefaults(options);
 
   const dev = String(mode !== 'production');
@@ -250,6 +256,9 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
   }
   if (preserveEnvVars) {
     queryParams.append('transform.preserveEnvVars', String(preserveEnvVars));
+  }
+  if (ignoredModules) {
+    queryParams.append('transform.ignoredModules', JSON.stringify(ignoredModules));
   }
   if (baseUrl) {
     queryParams.append('transform.baseUrl', baseUrl);

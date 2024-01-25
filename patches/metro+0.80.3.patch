@@ -1,3 +1,101 @@
+diff --git a/node_modules/metro/src/ModuleGraph/worker/collectDependencies.js b/node_modules/metro/src/ModuleGraph/worker/collectDependencies.js
+index a5a96a1..720ef58 100644
+--- a/node_modules/metro/src/ModuleGraph/worker/collectDependencies.js
++++ b/node_modules/metro/src/ModuleGraph/worker/collectDependencies.js
+@@ -39,6 +39,7 @@ function collectDependencies(ast, options) {
+     keepRequireNames: options.keepRequireNames,
+     allowOptionalDependencies: options.allowOptionalDependencies,
+     unstable_allowRequireContext: options.unstable_allowRequireContext,
++    ignoredModules: options.ignoredModules ?? [],
+   };
+   const visitor = {
+     CallExpression(path, state) {
+@@ -254,10 +255,11 @@ function processRequireContextCall(path, state) {
+     },
+     path
+   );
+-
+-  // require() the generated module representing this context
+-  path.get("callee").replaceWith(types.identifier("require"));
+-  transformer.transformSyncRequire(path, dep, state);
++  if (dep) {
++    // require() the generated module representing this context
++    path.get("callee").replaceWith(types.identifier("require"));
++    transformer.transformSyncRequire(path, dep, state);
++  }
+ }
+ function processResolveWeakCall(path, state) {
+   const name = getModuleNameFromCallArgs(path);
+@@ -273,11 +275,13 @@ function processResolveWeakCall(path, state) {
+     },
+     path
+   );
+-  path.replaceWith(
+-    makeResolveWeakTemplate({
+-      MODULE_ID: createModuleIDExpression(dependency, state),
+-    })
+-  );
++  if (dependency) {
++    path.replaceWith(
++      makeResolveWeakTemplate({
++        MODULE_ID: createModuleIDExpression(dependency, state),
++      })
++    );
++  }
+ }
+ function collectImports(path, state) {
+   if (path.node.source) {
+@@ -306,11 +310,14 @@ function processImportCall(path, state, options) {
+     },
+     path
+   );
+-  const transformer = state.dependencyTransformer;
+-  if (options.asyncType === "async") {
+-    transformer.transformImportCall(path, dep, state);
++  if (dep) {
++    const transformer = state.dependencyTransformer;
++    if (options.asyncType === "async") {
++      transformer.transformImportCall(path, dep, state);
++    } else {
++      transformer.transformPrefetch(path, dep, state);
++    }
+   } else {
+-    transformer.transformPrefetch(path, dep, state);
+   }
+ }
+ function processRequireCall(path, state) {
+@@ -332,7 +339,12 @@ function processRequireCall(path, state) {
+     },
+     path
+   );
+-  transformer.transformSyncRequire(path, dep, state);
++  if (dep) {
++    transformer.transformSyncRequire(path, dep, state);
++  } else {
++    // Convert the call from `_$$_REQUIRE()` `$$require_external()`.
++    path.get("callee").replaceWith(types.identifier("$$require_external"));    
++  }
+ }
+ function getNearestLocFromPath(path) {
+   let current = path;
+@@ -350,6 +362,17 @@ function getNearestLocFromPath(path) {
+   );
+ }
+ function registerDependency(state, qualifier, path) {
++  if (
++    state.ignoredModules.some((externalMatcher) => {
++      if (typeof externalMatcher === "string") {
++        return externalMatcher === qualifier.name;
++      } else {
++        return externalMatcher.test(qualifier.name);
++      }
++    })
++  ) {
++    return null;
++  }
+   const dependency = state.dependencyRegistry.registerDependency(qualifier);
+   const loc = getNearestLocFromPath(path);
+   if (loc != null) {
 diff --git a/node_modules/metro/src/lib/getPrependedScripts.js b/node_modules/metro/src/lib/getPrependedScripts.js
 index 28beef3..d92a599 100644
 --- a/node_modules/metro/src/lib/getPrependedScripts.js

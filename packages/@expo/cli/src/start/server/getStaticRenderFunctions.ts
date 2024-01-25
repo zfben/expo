@@ -177,6 +177,13 @@ export async function createMetroEndpointAsync(
     asyncRoutes: false,
     routerRoot,
     inlineSourceMap: false,
+    ignoredModules: [
+      '@expo/server',
+      'source-map-support',
+      '@remix-run/node',
+      'react-native',
+      'react-native-web',
+    ],
   });
 
   let url: string;
@@ -258,8 +265,8 @@ function evalMetroAndWrapFunctions<T = Record<string, (...args: any[]) => Promis
   script: string,
   filename: string
 ): Promise<T> {
+  console.log('>>', script);
   const contents = evalMetro(projectRoot, script, filename);
-
   // wrap each function with a try/catch that uses Metro's error formatter
   return Object.keys(contents).reduce((acc, key) => {
     const fn = contents[key];
