@@ -550,50 +550,6 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       const baseUrl = getBaseUrlFromExpoConfig(exp);
       const routerRoot = getRouterDirectoryModuleIdWithManifest(this.projectRoot, exp);
 
-      // const mockManifest = {
-      //   'file:///Users/evanbacon/Documents/GitHub/expo/apps/rsc-e2e/src/components/Counter.tsx': {
-      //     // '/apps/sandbox/app/index.tsx#default': {
-      //     id: '/apps/rsc-e2e/src/components/Counter.tsx',
-      //     chunks: [
-      //       'http://localhost:8081/apps/rsc-e2e/src/components/Counter.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false#-1139933840',
-      //     ],
-      //     name: '*',
-      //   },
-      //   'file:///Users/evanbacon/Documents/GitHub/expo/apps/rsc-e2e/src/components/Counter.tsx#': {
-      //     // '/apps/sandbox/app/index.tsx#default': {
-      //     id: '/apps/rsc-e2e/src/components/Counter.tsx',
-      //     chunks: [
-      //       'http://localhost:8081/apps/rsc-e2e/src/components/Counter.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false#-1139933840',
-      //     ],
-      //     name: '',
-      //   },
-      //   'file:///Users/evanbacon/Documents/GitHub/expo/apps/rsc-e2e/src/components/Counter.tsx#default':
-      //     {
-      //       // '/apps/sandbox/app/index.tsx#default': {
-      //       id: '/apps/rsc-e2e/src/components/Counter.tsx',
-      //       chunks: [
-      //         'http://localhost:8081/apps/rsc-e2e/src/components/Counter.bundle?platform=web&dev=true&hot=false&transform.routerRoot=app&resolver.environment=client&transform.environment=client&modulesOnly=true&runModule=false#-1139933840',
-      //       ],
-      //       name: 'default',
-      //     },
-      // };
-
-      // setTimeout(() => {
-      //   // NOTE: test case
-      //   renderRsc(
-      //     // Props / location
-      //     { $$route: './index.tsx' },
-      //     // Manifest
-      //     mockManifest
-      //   )
-      //     .then((data) => {
-      //       console.log('data', data);
-      //     })
-      //     .catch((error) => {
-      //       Log.log('Error rendering rsc');
-      //       Log.error(error);
-      //     });
-      // }, 10);
       const sendResponse = async (req: ServerRequest, res: ServerResponse) => {
         const url = new URL(req.url!, this.getDevServerUrl()!);
         const route = url.pathname.replace(/^\/rsc\//, '');
@@ -610,7 +566,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
             baseUrl,
             isReactServer: true,
             routerRoot,
-            isExporting: options.isExporting,
+            isExporting: !!options.isExporting,
           });
 
           const pipe = await renderToPipeableStream(
