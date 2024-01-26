@@ -212,6 +212,20 @@ async function exportFromServerAsync(
     }),
   ]);
 
+  await Promise.all(
+    serverManifest.htmlRoutes.map(async (route) => {
+      console.log('route', route);
+      const rsc = await fetch(new URL('/rsc/' + route.file, devServer.getDevServerUrl()!)).then(
+        (res) => res.text()
+      );
+      console.log('route.rsc', rsc);
+      files.set('_expo/rsc/index.txt', {
+        contents: rsc,
+        targetDomain: 'client',
+      });
+    })
+  );
+
   makeRuntimeEntryPointsAbsolute(manifest, appDir);
 
   debug('Routes:\n', inspect(manifest, { colors: true, depth: null }));
