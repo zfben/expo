@@ -152,7 +152,7 @@ export function createControlledEnvironment() {
 
     if (!options.force) {
       const keys = Object.keys(envInfo.env);
-      if (keys.length) {
+      if (keys.length && !options.silent) {
         console.log(
           chalk.gray('env: load', envInfo.files.map((file) => path.basename(file)).join(' '))
         );
