@@ -6,6 +6,8 @@
 
 ### 🎉 New features
 
+- Load dotenv files with `@expo/env` before starting tests. ([#26766](https://github.com/expo/expo/pull/26766) by [@byCedric](https://github.com/byCedric))
+
 ### 🐛 Bug fixes
 
 ### 💡 Others
