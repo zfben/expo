@@ -57,7 +57,10 @@ jestPreset.transformIgnorePatterns = [
 if (!Array.isArray(jestPreset.setupFiles)) {
   jestPreset.setupFiles = [];
 }
-jestPreset.setupFiles.push(require.resolve('jest-expo/src/preset/setup.js'));
+jestPreset.setupFiles.push(
+  require.resolve('jest-expo/src/preset/setup.js'),
+  require.resolve('jest-expo/src/preset/setup-env.js')
+);
 
 // Add typescript custom mapping
 module.exports = withTypescriptMapping(jestPreset);
