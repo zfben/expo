@@ -10,7 +10,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.renderToPipeableStream = exports.fileURLToFilePath = void 0;
-const HMRClient_1 = __importDefault(require("@expo/metro-runtime/build/HMRClient"));
+const HMRClientRSC_1 = __importDefault(require("@expo/metro-runtime/build/HMRClientRSC"));
 const react_1 = __importDefault(require("react"));
 const path_1 = __importDefault(require("path"));
 const _ctx_1 = require("../../_ctx");
@@ -47,7 +47,7 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, url,
     (0, nodeFastRefresh_1.createNodeFastRefresh)({
         onReload,
     });
-    HMRClient_1.default.setup({
+    HMRClientRSC_1.default.setup({
         isEnabled: true,
         onError(error) {
             // Do nothing and reload.

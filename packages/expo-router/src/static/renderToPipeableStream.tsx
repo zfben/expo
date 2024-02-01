@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import HMRClient from '@expo/metro-runtime/build/HMRClient';
+import HMRClient from '@expo/metro-runtime/build/HMRClientRSC';
 import React from 'react';
 import path from 'path';
 import { ctx } from '../../_ctx';
