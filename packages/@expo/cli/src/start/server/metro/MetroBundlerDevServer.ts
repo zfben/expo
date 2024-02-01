@@ -236,10 +236,13 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     routerRoot: string;
     platform?: string;
     isExporting: boolean;
-  }): Promise<{ renderToPipeableStream: (...props: any[]) => Promise<ReadableStream> }> {
+  }): Promise<{
+    serverUrl: string;
+    renderToPipeableStream: (...props: any[]) => Promise<ReadableStream>;
+  }> {
     const url = this.getDevServerUrl()!;
 
-    const { renderToPipeableStream } = await getStaticRenderFunctionsForEntry(
+    const { filename, fn } = await getStaticRenderFunctionsForEntry(
       this.projectRoot,
       url,
       {
@@ -258,7 +261,8 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     );
 
     return {
-      renderToPipeableStream,
+      serverUrl: filename,
+      renderToPipeableStream: fn.renderToPipeableStream,
     };
   }
 
@@ -559,7 +563,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         const mode = options.mode ?? 'development';
         try {
           // TODO: Extract CSS Modules / Assets from the bundler process
-          const { renderToPipeableStream } = await this.getReactServerFunctionAsync({
+          const { serverUrl, renderToPipeableStream } = await this.getReactServerFunctionAsync({
             mode,
             platform: url.searchParams.get('platform') ?? 'web',
             minify: options.minify,
@@ -573,6 +577,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
             { $$route: './index.tsx' },
             {
               mode,
+              serverUrl: new URL(serverUrl),
               serverRoot,
               url,
               method: req.method!,
@@ -591,6 +596,13 @@ export class MetroBundlerDevServer extends BundlerDevServer {
                 // console.log('Server action:');
                 // console.log(contents);
                 return evalMetro(this.projectRoot, contents.src, contents.filename);
+              },
+              onReload: (...args: any[]) => {
+                // Send reload command to client from Fast Refresh code.
+                debug('[CLI]: Reload RSC:', args);
+
+                // TODO: Target only certain platforms
+                this.broadcastMessage('reload');
               },
             }
           );

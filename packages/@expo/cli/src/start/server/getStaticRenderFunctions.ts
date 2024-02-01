@@ -241,19 +241,21 @@ export async function getStaticRenderFunctions(
   devServerUrl: string,
   options: StaticRenderOptions
 ): Promise<Record<string, (...args: any[]) => Promise<any>>> {
-  return getStaticRenderFunctionsForEntry(
-    projectRoot,
-    devServerUrl,
-    options,
-    'expo-router/node/render.js'
-  );
+  return (
+    await getStaticRenderFunctionsForEntry(
+      projectRoot,
+      devServerUrl,
+      options,
+      'expo-router/node/render.js'
+    )
+  ).fn;
 }
 export async function getStaticRenderFunctionsForEntry(
   projectRoot: string,
   devServerUrl: string,
   options: StaticRenderOptions,
   entry: string
-): Promise<Record<string, (...args: any[]) => Promise<any>>> {
+): Promise<{ filename: string; fn: Record<string, (...args: any[]) => Promise<any>> }> {
   const { src: scriptContents, filename } = await getStaticRenderFunctionsContentAsync(
     projectRoot,
     devServerUrl,
@@ -261,7 +263,7 @@ export async function getStaticRenderFunctionsForEntry(
     entry
   );
 
-  return evalMetroAndWrapFunctions(projectRoot, scriptContents, filename);
+  return { filename, fn: await evalMetroAndWrapFunctions(projectRoot, scriptContents, filename) };
 }
 
 function evalMetroAndWrapFunctions<T = Record<string, (...args: any[]) => Promise<any>>>(

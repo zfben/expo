@@ -10,9 +10,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.renderToPipeableStream = exports.fileURLToFilePath = void 0;
+const HMRClient_1 = __importDefault(require("@expo/metro-runtime/build/HMRClient"));
 const react_1 = __importDefault(require("react"));
 const path_1 = __importDefault(require("path"));
 const _ctx_1 = require("../../_ctx");
+const nodeFastRefresh_1 = require("@expo/metro-runtime/build/nodeFastRefresh");
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
 const stream_1 = require("@remix-run/node/dist/stream");
 const debug = require('debug')('expo:rsc');
@@ -35,9 +37,24 @@ const fileURLToFilePath = (fileURL) => {
     return decodeURI(fileURL.slice('file://'.length));
 };
 exports.fileURLToFilePath = fileURLToFilePath;
-async function renderToPipeableStream({ $$route: route, ...props }, { mode, url, serverRoot, method, input, body, contentType, customImport, }
+async function renderToPipeableStream({ $$route: route, ...props }, { mode, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, }
 // moduleMap: WebpackManifest
 ) {
+    // Make the URL for this file accessible so we can register it as an HMR client entry for RSC HMR.
+    globalThis.__DEV_SERVER_URL__ = serverUrl;
+    // Make the WebSocket constructor available to RSC HMR.
+    global.WebSocket = require('ws').WebSocket;
+    (0, nodeFastRefresh_1.createNodeFastRefresh)({
+        onReload,
+    });
+    HMRClient_1.default.setup({
+        isEnabled: true,
+        onError(error) {
+            // Do nothing and reload.
+            // TODO: If we handle this better it could result in faster error feedback.
+            onReload();
+        },
+    });
     const { renderToReadableStream, decodeReply } = require('react-server-dom-webpack/server.edge');
     if (!_ctx_1.ctx.keys().includes(route)) {
         throw new Error('Failed to find route: ' + route + '. Expected one of: ' + _ctx_1.ctx.keys().join(', '));

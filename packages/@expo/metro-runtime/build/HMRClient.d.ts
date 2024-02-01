@@ -6,6 +6,7 @@ export type HMRClientNativeInterface = {
     log(level: LogLevel, data: any[]): void;
     setup(props: {
         isEnabled: boolean;
+        onError?: (error: Error) => void;
     }): void;
 };
 /**

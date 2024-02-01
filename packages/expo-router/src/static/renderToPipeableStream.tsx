@@ -5,11 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import HMRClient from '@expo/metro-runtime/build/HMRClient';
 import React from 'react';
 import path from 'path';
 import { ctx } from '../../_ctx';
 import type { ReactNode } from 'react';
 
+import { createNodeFastRefresh } from '@expo/metro-runtime/build/nodeFastRefresh';
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
 import { readableStreamToString } from '@remix-run/node/dist/stream';
 
@@ -44,24 +46,44 @@ export async function renderToPipeableStream(
   {
     mode,
     url,
+    serverUrl,
     serverRoot,
     method,
     input,
     body,
     contentType,
     customImport,
+    onReload,
   }: {
     mode: string;
     serverRoot: string;
     url: URL;
+    serverUrl: URL;
     method: string;
     input: string;
     body?: ReadableStream | undefined;
     contentType?: string | undefined;
     customImport: (file: string) => Promise<any>;
+    onReload: () => void;
   }
   // moduleMap: WebpackManifest
 ): Promise<ReadableStream> {
+  // Make the URL for this file accessible so we can register it as an HMR client entry for RSC HMR.
+  globalThis.__DEV_SERVER_URL__ = serverUrl;
+  // Make the WebSocket constructor available to RSC HMR.
+  global.WebSocket = require('ws').WebSocket;
+  createNodeFastRefresh({
+    onReload,
+  });
+  HMRClient.setup({
+    isEnabled: true,
+    onError(error) {
+      // Do nothing and reload.
+      // TODO: If we handle this better it could result in faster error feedback.
+      onReload();
+    },
+  });
+
   const { renderToReadableStream, decodeReply } = require('react-server-dom-webpack/server.edge');
 
   if (!ctx.keys().includes(route)) {

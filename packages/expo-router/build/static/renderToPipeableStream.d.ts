@@ -11,14 +11,16 @@ export interface RenderContext<T = unknown> {
 export declare const fileURLToFilePath: (fileURL: string) => string;
 export declare function renderToPipeableStream({ $$route: route, ...props }: {
     $$route: string;
-}, { mode, url, serverRoot, method, input, body, contentType, customImport, }: {
+}, { mode, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, }: {
     mode: string;
     serverRoot: string;
     url: URL;
+    serverUrl: URL;
     method: string;
     input: string;
     body?: ReadableStream | undefined;
     contentType?: string | undefined;
     customImport: (file: string) => Promise<any>;
+    onReload: () => void;
 }): Promise<ReadableStream>;
 //# sourceMappingURL=renderToPipeableStream.d.ts.map

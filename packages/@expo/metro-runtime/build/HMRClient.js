@@ -128,17 +128,27 @@ const HMRClient = {
     },
     // Called once by the bridge on startup, even if Fast Refresh is off.
     // It creates the HMR client but doesn't actually set up the socket yet.
-    setup({ isEnabled }) {
+    setup({ isEnabled, onError }) {
         assert(!hmrClient, 'Cannot initialize hmrClient twice');
-        const serverScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
-        const client = new MetroHMRClient(`${serverScheme}://${window.location.host}/hot`);
+        const devServerUrl = typeof window === 'undefined' ? __DEV_SERVER_URL__ : window.location;
+        const serverScheme = devServerUrl.protocol === 'https:' ? 'wss' : 'ws';
+        const client = new MetroHMRClient(`${serverScheme}://${devServerUrl.host}/hot`);
         hmrClient = client;
-        const { fullBundleUrl } = (0, getDevServer_1.default)();
-        pendingEntryPoints.push(
-        // HMRServer understands regular bundle URLs, so prefer that in case
-        // there are any important URL parameters we can't reconstruct from
-        // `setup()`'s arguments.
-        fullBundleUrl);
+        if (typeof window === 'undefined') {
+            if (typeof __DEV_SERVER_URL__ !== 'undefined') {
+                pendingEntryPoints.push(__DEV_SERVER_URL__.toString());
+            }
+        }
+        else {
+            const { fullBundleUrl } = (0, getDevServer_1.default)();
+            if (fullBundleUrl) {
+                pendingEntryPoints.push(
+                // HMRServer understands regular bundle URLs, so prefer that in case
+                // there are any important URL parameters we can't reconstruct from
+                // `setup()`'s arguments.
+                fullBundleUrl);
+            }
+        }
         client.on('connection-error', (e) => {
             let error = `Cannot connect to Metro.
  
@@ -146,7 +156,7 @@ const HMRClient = {
  - Ensure the Metro dev server is running and available on the same network as this device`;
             error += `
  
- URL: ${window.location.host}
+ URL: ${devServerUrl.host}
  
  Error: ${e.message}`;
             setHMRUnavailableReason(error);
@@ -161,7 +171,9 @@ const HMRClient = {
         client.on('update', ({ isInitialUpdate }) => {
             if (client.isEnabled() && !isInitialUpdate) {
                 dismissRedbox();
-                LogBox_1.default.clearAllLogs();
+                if (typeof window !== 'undefined') {
+                    LogBox_1.default.clearAllLogs();
+                }
             }
         });
         client.on('update-done', () => {
@@ -180,7 +192,7 @@ const HMRClient = {
             else {
                 currentCompileErrorMessage = `${data.type} ${data.message}`;
                 if (client.isEnabled()) {
-                    showCompileError();
+                    showCompileError({ onError });
                 }
             }
         });
@@ -228,8 +240,12 @@ function setHMRUnavailableReason(reason) {
 }
 function registerBundleEntryPoints(client) {
     if (hmrUnavailableReason != null) {
-        // "Bundle Splitting – Metro disconnected"
-        window.location.reload();
+        if (typeof window !== 'undefined') {
+            // "Bundle Splitting – Metro disconnected"
+            window.location.reload();
+        }
+        else {
+        }
         return;
     }
     if (pendingEntryPoints.length > 0) {
@@ -253,7 +269,7 @@ function flushEarlyLogs() {
 function dismissRedbox() {
     // TODO(EvanBacon): Error overlay for web.
 }
-function showCompileError() {
+function showCompileError({ onError } = {}) {
     if (currentCompileErrorMessage === null) {
         return;
     }
@@ -267,7 +283,12 @@ function showCompileError() {
     // because the stack trace is meaningless:
     // @ts-expect-error
     error.preventSymbolication = true;
-    throw error;
+    if (onError) {
+        onError(error);
+    }
+    else {
+        throw error;
+    }
 }
 exports.default = HMRClient;
 //# sourceMappingURL=HMRClient.js.map

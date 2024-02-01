@@ -274,7 +274,7 @@ export function withExtendedResolver(
 
         if (context.customResolverOptions?.rsc) {
           // Ensure these non-react-server modules are excluded when bundling for React Server Components in development.
-          return /^(source-map-support(\/.*)?|@babel\/runtime\/.+|debug)$/.test(moduleName);
+          return /^(source-map-support(\/.*)?|@babel\/runtime\/.+|debug|metro)$/.test(moduleName);
         }
 
         return (
