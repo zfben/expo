@@ -31,8 +31,8 @@ const App = () => {
 
         <Text>A whole new world.</Text>
       </View>
-      {/* <A02_Suspense /> */}
-      {/* <A03_Promises /> */}
+      <A02_Suspense />
+      <A03_Promises />
       <A04_ServerPlatformExtensions />
       <A05_ClientPlatformExtensions />
       <A06_RSCChildren />
