@@ -103,7 +103,7 @@ export function rscForbiddenReactAPIsPlugin(
             // e.g. https://x.com/Baconbrix/status/1749223042440392806?s=20
             if (path.node.property.name === 'Component') {
               throw path.buildCodeFrameError(
-                `Class components cannot be used in a React server component due to their ability to contain stateful and interactive APIs that cannot be statically evaluated in non-interactive environments such as at build-time or in a server. Migrate to a function component, or add the "use client" directive to the top of this file or one of the parent files to render this class component on a user's device.`
+                `Class components cannot be used in a React server component due to their ability to contain stateful and interactive APIs that cannot be statically evaluated in non-interactive environments such as a server or at build-time. Migrate to a function component, or add the "use client" directive to the top of this file or one of the parent files to render this class component on a user's device.`
               );
             }
             throw path.buildCodeFrameError(

@@ -612,7 +612,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         } catch (error: any) {
           await logMetroError(this.projectRoot, { error });
           res.statusCode = 500;
-          res.statusMessage = `Metro Bundler encountered an error`;
+          res.statusMessage = `Metro Bundler encountered an error (check the terminal for more info).`;
 
           const sanitizedServerMessage = stripAnsi(error.message);
           res.write(`Metro Bundler encountered an error: ` + sanitizedServerMessage);

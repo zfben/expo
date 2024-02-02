@@ -1,3 +1,6 @@
+/**
+ * Copyright © 2024 650 Industries.
+ */
 import { ConfigAPI, types } from '@babel/core';
 /**
  * Inlines environment variables to configure the process:
@@ -14,13 +17,5 @@ export declare function expoRouterBabelPlugin(api: ConfigAPI & {
     name: string;
     visitor: {
         MemberExpression(path: any, state: any): void;
-    };
-};
-export declare function expoRouterServerComponentClientReferencesPlugin(api: ConfigAPI & {
-    types: typeof types;
-}): {
-    name: string;
-    visitor: {
-        Program(path: any, state: any): void;
     };
 };

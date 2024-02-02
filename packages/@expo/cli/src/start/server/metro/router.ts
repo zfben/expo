@@ -48,9 +48,12 @@ export function getRouterDirectoryModuleIdWithManifest(
   return exp.extra?.router?.root ?? getRouterDirectory(projectRoot);
 }
 
-const logSrcDir = memoize(() =>
-  Log.log(chalk.gray('Using src/app as the root directory for Expo Router.'))
-);
+let hasWarnedAboutSrcDir = false;
+const logSrcDir = () => {
+  if (hasWarnedAboutSrcDir) return;
+  hasWarnedAboutSrcDir = true;
+  Log.log(chalk.gray('Using src/app as the root directory for Expo Router.'));
+};
 
 export function getRouterDirectory(projectRoot: string): string {
   // more specific directories first

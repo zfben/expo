@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("./common");
 const expo_inline_manifest_plugin_1 = require("./expo-inline-manifest-plugin");
 const expo_router_plugin_1 = require("./expo-router-plugin");
+const client_module_proxy_plugin_1 = require("./client-module-proxy-plugin");
 const inline_env_vars_1 = require("./inline-env-vars");
 const lazyImports_1 = require("./lazyImports");
 function getOptions(options, platform) {
@@ -22,6 +23,7 @@ function babelPresetExpo(api, options = {}) {
     const baseUrl = api.caller(common_1.getBaseUrl);
     // const isServer = api.caller(getIsServer);
     const supportsStaticESM = api.caller((caller) => caller?.supportsStaticESM);
+    const isReactServer = api.caller(common_1.getIsReactServer);
     // Unlike `isDev`, this will be `true` when the bundler is explicitly set to `production`,
     // i.e. `false` when testing, development, or used with a bundler that doesn't specify the correct inputs.
     const isProduction = api.caller(common_1.getIsProd);
@@ -110,7 +112,10 @@ function babelPresetExpo(api, options = {}) {
     if ((0, common_1.hasModule)('expo-router')) {
         extraPlugins.push(expo_router_plugin_1.expoRouterBabelPlugin);
     }
-    extraPlugins.push(expo_router_plugin_1.expoRouterServerComponentClientReferencesPlugin);
+    extraPlugins.push(client_module_proxy_plugin_1.expoRouterServerComponentClientReferencesPlugin);
+    if (isReactServer) {
+        extraPlugins.push(client_module_proxy_plugin_1.rscForbiddenReactAPIsPlugin);
+    }
     if (isFastRefreshEnabled) {
         extraPlugins.push([
             require('react-refresh/babel'),

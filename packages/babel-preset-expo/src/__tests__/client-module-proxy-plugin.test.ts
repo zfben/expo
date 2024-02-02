@@ -63,6 +63,7 @@ describe('forbidden server APIs', () => {
   it(`asserts importing client-side React APIs in server components`, () => {
     expect(() => runServerPass(`import { useState } from 'react';`)).toThrowErrorMatchingSnapshot();
     expect(() => runServerPass(`import { useRef, useContext } from 'react';`)).toThrowError();
+    expect(() => runServerPass(`import React, { useRef } from 'react';`)).toThrowError();
     expect(() => runServerPass(`import { PureComponent } from 'react';`)).toThrowError();
     expect(() => runServerPass(`import { Component } from 'react';`)).toThrowError();
     expect(() => runServerPass(`import { useRandom } from 'react';`)).not.toThrowError();
