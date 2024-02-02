@@ -7,13 +7,16 @@ import {
   getIsDev,
   getIsFastRefreshEnabled,
   getIsProd,
-  getIsServer,
+  getIsReactServer,
   hasModule,
 } from './common';
 import { expoInlineManifestPlugin } from './expo-inline-manifest-plugin';
 import { expoRouterBabelPlugin } from './expo-router-plugin';
 
-import { expoRouterServerComponentClientReferencesPlugin } from './client-module-proxy-plugin';
+import {
+  expoRouterServerComponentClientReferencesPlugin,
+  rscForbiddenReactAPIsPlugin,
+} from './client-module-proxy-plugin';
 import { expoInlineEnvVars, expoInlineTransformEnvVars } from './inline-env-vars';
 import { lazyImports } from './lazyImports';
 
@@ -70,6 +73,7 @@ function babelPresetExpo(api: ConfigAPI, options: BabelPresetExpoOptions = {}): 
   const supportsStaticESM: boolean | undefined = api.caller(
     (caller) => (caller as any)?.supportsStaticESM
   );
+  const isReactServer = api.caller(getIsReactServer);
 
   // Unlike `isDev`, this will be `true` when the bundler is explicitly set to `production`,
   // i.e. `false` when testing, development, or used with a bundler that doesn't specify the correct inputs.
@@ -175,6 +179,10 @@ function babelPresetExpo(api: ConfigAPI, options: BabelPresetExpoOptions = {}): 
   }
 
   extraPlugins.push(expoRouterServerComponentClientReferencesPlugin);
+
+  if (isReactServer) {
+    extraPlugins.push(rscForbiddenReactAPIsPlugin);
+  }
 
   if (isFastRefreshEnabled) {
     extraPlugins.push([
