@@ -274,12 +274,14 @@ export function withExtendedResolver(
 
         if (context.customResolverOptions?.rsc) {
           // Ensure these non-react-server modules are excluded when bundling for React Server Components in development.
-          return /^(source-map-support(\/.*)?|@babel\/runtime\/.+|debug|metro)$/.test(moduleName);
+          return /^(source-map-support(\/.*)?|@babel\/runtime\/.+|debug|metro|acorn-loose|acorn)$/.test(
+            moduleName
+          );
         }
 
         return (
           // Extern these modules in standard Node.js environments.
-          /^(source-map-support(\/.*)?|react|react-helmet-async|@radix-ui\/.+|@babel\/runtime\/.+|react-dom(\/.+)?|debug)$/.test(
+          /^(source-map-support(\/.*)?|react|react-helmet-async|@radix-ui\/.+|@babel\/runtime\/.+|react-dom(\/.+)?|debug|acorn-loose|acorn)$/.test(
             moduleName
           )
         );
