@@ -4,7 +4,7 @@
 import { ConfigAPI, types } from '@babel/core';
 import url from 'url';
 
-import { getIsDev, getServerRoot } from './common';
+import { getIsDev, getIsReactServer } from './common';
 
 const INVALID_SERVER_REACT_DOM_APIS = [
   'findDOMNode',
@@ -120,12 +120,8 @@ export function expoRouterServerComponentClientReferencesPlugin(
   api: ConfigAPI & { types: typeof types }
 ) {
   const { types: t } = api;
-
-  // @ts-expect-error
-  const isServer = api.caller((caller) => caller?.isReactServer ?? false);
+  const isServer = api.caller(getIsReactServer);
   const isDev = api.caller(getIsDev);
-  const mode = isDev ? 'development' : 'production';
-  const serverRoot = api.caller(getServerRoot) as string;
   return {
     name: 'expo-rsc-client-references',
     visitor: {
