@@ -62,10 +62,12 @@ interface JSFile extends BaseFile {
   readonly type: JSFileType;
   readonly functionMap: FBSourceFunctionMap | null;
   // Added by `babel-preset-expo` for server components.
-  clientReferences: Array<{
-    entryPoint: string;
-    exports: string[];
-  }> | null;
+  clientReferences:
+    | {
+        entryPoint: string;
+        exports: string[];
+      }[]
+    | null;
 }
 
 interface JSONFile extends BaseFile {
