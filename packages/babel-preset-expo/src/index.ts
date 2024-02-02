@@ -11,10 +11,9 @@ import {
   hasModule,
 } from './common';
 import { expoInlineManifestPlugin } from './expo-inline-manifest-plugin';
-import {
-  expoRouterBabelPlugin,
-  expoRouterServerComponentClientReferencesPlugin,
-} from './expo-router-plugin';
+import { expoRouterBabelPlugin } from './expo-router-plugin';
+
+import { expoRouterServerComponentClientReferencesPlugin } from './client-module-proxy-plugin';
 import { expoInlineEnvVars, expoInlineTransformEnvVars } from './inline-env-vars';
 import { lazyImports } from './lazyImports';
 
