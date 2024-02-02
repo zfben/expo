@@ -142,7 +142,6 @@ const general = [
       [
         makePage('workflow/web.mdx'),
         makePage('distribution/publishing-websites.mdx'),
-        makePage('guides/customizing-metro.mdx'),
         makePage('guides/progressive-web-apps.mdx'),
       ],
       { expanded: false }
@@ -224,6 +223,7 @@ const general = [
         makePage('modules/use-standalone-expo-module-in-your-project.mdx'),
         makePage('modules/third-party-library.mdx'),
         makePage('modules/existing-library.mdx'),
+        makePage('modules/additional-platform-support.mdx'),
       ]),
       makeSection('Reference', [
         makePage('modules/module-api.mdx'),
@@ -400,6 +400,7 @@ const general = [
         makePage('guides/using-sentry.mdx'),
         makePage('guides/building-for-tv.mdx'),
         makePage('guides/typescript.mdx'),
+        makePage('guides/in-app-purchases.mdx'),
       ]),
       makeSection('Expo accounts', [
         makePage('accounts/account-types.mdx'),

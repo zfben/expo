@@ -40,7 +40,6 @@ import { isInteractive } from '../../../utils/interactive';
 import { memoize } from '../../../utils/fn';
 import { loadTsConfigPathsAsync, TsConfigPaths } from '../../../utils/tsconfig/loadTsConfigPaths';
 import { resolveWithTsConfigPaths } from '../../../utils/tsconfig/resolveWithTsConfigPaths';
-import { WebSupportProjectPrerequisite } from '../../doctor/web/WebSupportProjectPrerequisite';
 import { PlatformBundlers } from '../platformBundlers';
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
@@ -180,13 +179,14 @@ export function withExtendedResolver(
     web: ['browser', 'module', 'main'],
   };
 
-  let tsConfigResolve = tsconfig?.paths
-    ? resolveWithTsConfigPaths.bind(resolveWithTsConfigPaths, {
-        paths: tsconfig.paths ?? {},
-        baseUrl: tsconfig.baseUrl ?? config.projectRoot,
-        hasBaseUrl: !!tsconfig.baseUrl,
-      })
-    : null;
+  let tsConfigResolve =
+    isTsconfigPathsEnabled && (tsconfig?.paths || tsconfig?.baseUrl != null)
+      ? resolveWithTsConfigPaths.bind(resolveWithTsConfigPaths, {
+          paths: tsconfig.paths ?? {},
+          baseUrl: tsconfig.baseUrl ?? config.projectRoot,
+          hasBaseUrl: !!tsconfig.baseUrl,
+        })
+      : null;
 
   // TODO: Move this to be a transform key for invalidation.
   if (!isExporting && isInteractive()) {
@@ -578,10 +578,6 @@ export async function withMetroMultiPlatformAsync(
   config.transformer._expoRouterWebRendering = webOutput;
   // @ts-expect-error: Invalidate the cache when the location of expo-router changes on-disk.
   config.transformer._expoRouterPath = resolveFrom.silent(projectRoot, 'expo-router');
-
-  if (exp.platforms?.includes('web') && platformBundlers.web === 'metro') {
-    await new WebSupportProjectPrerequisite(projectRoot).assertAsync();
-  }
 
   let tsconfig: null | TsConfigPaths = null;
 
