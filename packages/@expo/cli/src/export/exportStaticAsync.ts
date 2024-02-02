@@ -26,6 +26,7 @@ import { getApiRoutesForDirectory } from '../start/server/metro/router';
 import { serializeHtmlWithAssets } from '../start/server/metro/serializeHtml';
 import { learnMore } from '../utils/link';
 import { getFreePortAsync } from '../utils/port';
+import { getMetroServerRoot } from '../start/server/middleware/ManifestMiddleware';
 
 const debug = require('debug')('expo:export:generateStaticRoutes') as typeof console.log;
 
@@ -75,6 +76,7 @@ export async function unstable_exportStaticAsync(projectRoot: string, options: O
     {
       type: 'metro',
       options: {
+        mode: 'production',
         port,
         location: {},
         isExporting: true,
@@ -219,6 +221,36 @@ async function exportFromServerAsync(
         (res) => res.text()
       );
       console.log('route.rsc', rsc);
+
+      const clientEntries = devServer.getClientModules(route.file);
+
+      // TODO: Improve this
+      const serverRoot = getMetroServerRoot(projectRoot);
+      const entryFiles = clientEntries.map((entry) => {
+        return path.join(serverRoot, entry.replace(/#.+$/, ''));
+      });
+
+      const clientBundles = await devServer.bundleMultiEntryGraph(entryFiles, {
+        mainModuleName: 'TODO',
+
+        isExporting: true,
+        mode: 'production',
+        minify,
+        // TODO: Support all platforms
+        platform: 'web',
+        routerRoot,
+        asyncRoutes,
+        baseUrl,
+        engine: 'hermes',
+        serializerIncludeBytecode: false,
+        serializerIncludeMaps: true,
+        serializerOutput: 'static',
+      });
+      console.log('clientBundles', clientBundles);
+      // TODO: Multi-entry bundle all boundaries
+
+      console.log();
+
       files.set('_expo/rsc/index.txt', {
         contents: rsc,
         targetDomain: 'client',

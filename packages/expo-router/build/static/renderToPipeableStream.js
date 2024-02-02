@@ -10,11 +10,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.renderToPipeableStream = exports.fileURLToFilePath = void 0;
-const HMRClientRSC_1 = __importDefault(require("@expo/metro-runtime/build/HMRClientRSC"));
 const react_1 = __importDefault(require("react"));
 const path_1 = __importDefault(require("path"));
 const _ctx_1 = require("../../_ctx");
-const nodeFastRefresh_1 = require("@expo/metro-runtime/build/nodeFastRefresh");
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
 const stream_1 = require("@remix-run/node/dist/stream");
 const debug = require('debug')('expo:rsc');
@@ -37,24 +35,29 @@ const fileURLToFilePath = (fileURL) => {
     return decodeURI(fileURL.slice('file://'.length));
 };
 exports.fileURLToFilePath = fileURLToFilePath;
-async function renderToPipeableStream({ $$route: route, ...props }, { mode, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, }
+async function renderToPipeableStream({ $$route: route, ...props }, { mode, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, moduleIdCallback, }
 // moduleMap: WebpackManifest
 ) {
-    // Make the URL for this file accessible so we can register it as an HMR client entry for RSC HMR.
-    globalThis.__DEV_SERVER_URL__ = serverUrl;
-    // Make the WebSocket constructor available to RSC HMR.
-    global.WebSocket = require('ws').WebSocket;
-    (0, nodeFastRefresh_1.createNodeFastRefresh)({
-        onReload,
-    });
-    HMRClientRSC_1.default.setup({
-        isEnabled: true,
-        onError(error) {
-            // Do nothing and reload.
-            // TODO: If we handle this better it could result in faster error feedback.
-            onReload();
-        },
-    });
+    if (process.env.NODE_ENV === 'development') {
+        const HMRClient = require('@expo/metro-runtime/build/HMRClientRSC')
+            .default;
+        const { createNodeFastRefresh } = require('@expo/metro-runtime/build/nodeFastRefresh');
+        // Make the URL for this file accessible so we can register it as an HMR client entry for RSC HMR.
+        globalThis.__DEV_SERVER_URL__ = serverUrl;
+        // Make the WebSocket constructor available to RSC HMR.
+        global.WebSocket = require('ws').WebSocket;
+        createNodeFastRefresh({
+            onReload,
+        });
+        HMRClient.setup({
+            isEnabled: true,
+            onError(error) {
+                // Do nothing and reload.
+                // TODO: If we handle this better it could result in faster error feedback.
+                onReload();
+            },
+        });
+    }
     const { renderToReadableStream, decodeReply } = require('react-server-dom-webpack/server.edge');
     if (!_ctx_1.ctx.keys().includes(route)) {
         throw new Error('Failed to find route: ' + route + '. Expected one of: ' + _ctx_1.ctx.keys().join(', '));
@@ -80,10 +83,20 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, url,
             return url.pathname + url.search + url.hash;
         }
         else {
-            if (!file.startsWith('@id/')) {
-                throw new Error('Unexpected client entry in PRD');
-            }
-            url.pathname = file.slice('@id/'.length);
+            // if (!file.startsWith('@id/')) {
+            //   throw new Error('Unexpected client entry in PRD: ' + file);
+            // }
+            // url.pathname = file.slice('@id/'.length);
+            // TODO: This should be different for prod
+            const filePath = file.startsWith('file://') ? (0, exports.fileURLToFilePath)(file) : file;
+            const metroOpaqueId = stringToHash(filePath);
+            const relativeFilePath = path_1.default.relative(serverRoot, filePath);
+            // TODO: May need to remove the original extension.
+            url.pathname = relativeFilePath;
+            // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
+            url.hash = String(metroOpaqueId);
+            // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
+            return url.pathname + url.search + url.hash;
         }
         return url.toString();
     };
@@ -101,7 +114,7 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, url,
             // This is similar to how we handle lazy bundling.
             const id = resolveClientEntry(file);
             debug('Returning server module:', id, 'for', encodedId);
-            // moduleIdCallback?.(id);
+            moduleIdCallback?.({ id, chunks: [id], name, async: true });
             return { id, chunks: [id], name, async: true };
         },
     });

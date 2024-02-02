@@ -11,7 +11,7 @@ import { ExpoResponse } from '@expo/server';
 import { respond } from '@expo/server/build/vendor/http';
 import { createReadableStreamFromReadable } from '@remix-run/node';
 import chalk from 'chalk';
-import { AssetData } from 'metro';
+import { AssetData, Server } from 'metro';
 import fetch from 'node-fetch';
 import path from 'path';
 
@@ -60,6 +60,8 @@ import {
   createBundleUrlPath,
   getBaseUrlFromExpoConfig,
   getAsyncRoutesFromExpoConfig,
+  ExpoMetroOptions,
+  getMetroDirectBundleOptions,
 } from '../middleware/metroOptions';
 import { prependMiddleware } from '../middleware/mutations';
 import { ServerNext, ServerRequest, ServerResponse } from '../middleware/server.types';
@@ -475,6 +477,53 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     );
   }
 
+  /** RSC Client boundaries */
+  private clientModuleMap = new Map<string, Set<string>>();
+
+  public getClientModules(input: string) {
+    const key = input.replace(/^\.\//, '');
+    console.log('getClientModules:', input, key, this.clientModuleMap.keys(), this.clientModuleMap);
+    const idSet = this.clientModuleMap.get(key);
+    return Array.from(idSet || []);
+  }
+
+  public async bundleMultiEntryGraph(entries: readonly string[], options: ExpoMetroOptions) {
+    const directOptions = getMetroDirectBundleOptions(options);
+
+    // const { customResolverOptions, ...defaultTransformInputOptions } = Server.DEFAULT_GRAPH_OPTIONS;
+
+    const multiGraph = await this.metro!.getBundler().buildGraphForEntries(
+      entries,
+      {
+        // ...defaultTransformInputOptions,
+        hot: false,
+
+        unstable_transformProfile: directOptions.unstable_transformProfile!,
+        customTransformOptions: directOptions.customTransformOptions,
+        dev: directOptions.dev!,
+        minify: directOptions.minify!,
+        platform: directOptions.platform,
+        type: 'module',
+      },
+      { customResolverOptions: directOptions.customResolverOptions },
+      {
+        onProgress(numProcessed, total) {
+          console.log(`Processed ${numProcessed} of ${total} modules...`);
+        },
+        shallow: false,
+        // TODO: progress bar support.
+        // onProgress
+      }
+    );
+    // TODO: Run graph through multi-entry serializer for splitting.
+
+    console.log('multiGraph:', multiGraph);
+
+    // TODO
+    process.exit(0);
+    return '';
+  }
+
   protected async startImplementationAsync(
     options: BundlerStartOptions
   ): Promise<DevServerInstance> {
@@ -573,8 +622,10 @@ export class MetroBundlerDevServer extends BundlerDevServer {
             isExporting: !!options.isExporting,
           });
 
+          const input = './index.tsx';
+
           const pipe = await renderToPipeableStream(
-            { $$route: './index.tsx' },
+            { $$route: input },
             {
               mode,
               serverUrl: new URL(serverUrl),
@@ -603,6 +654,21 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
                 // TODO: Target only certain platforms
                 this.broadcastMessage('reload');
+              },
+              moduleIdCallback: (moduleInfo: {
+                id: string;
+                chunks: string[];
+                name: string;
+                async: boolean;
+              }) => {
+                // Collect the client boundaries while rendering the server components.
+                // Indexed by routes.
+                let idSet = this.clientModuleMap.get(route);
+                if (!idSet) {
+                  idSet = new Set();
+                  this.clientModuleMap.set(route, idSet);
+                }
+                idSet.add(moduleInfo.id);
               },
             }
           );

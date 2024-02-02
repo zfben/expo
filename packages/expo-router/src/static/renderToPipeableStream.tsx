@@ -5,13 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import HMRClient from '@expo/metro-runtime/build/HMRClientRSC';
 import React from 'react';
 import path from 'path';
 import { ctx } from '../../_ctx';
 import type { ReactNode } from 'react';
 
-import { createNodeFastRefresh } from '@expo/metro-runtime/build/nodeFastRefresh';
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
 import { readableStreamToString } from '@remix-run/node/dist/stream';
 
@@ -54,6 +52,7 @@ export async function renderToPipeableStream(
     contentType,
     customImport,
     onReload,
+    moduleIdCallback,
   }: {
     mode: string;
     serverRoot: string;
@@ -65,24 +64,38 @@ export async function renderToPipeableStream(
     contentType?: string | undefined;
     customImport: (file: string) => Promise<any>;
     onReload: () => void;
+    moduleIdCallback?: (module: {
+      id: string;
+      chunks: string[];
+      name: string;
+      async: boolean;
+    }) => void;
   }
   // moduleMap: WebpackManifest
 ): Promise<ReadableStream> {
-  // Make the URL for this file accessible so we can register it as an HMR client entry for RSC HMR.
-  globalThis.__DEV_SERVER_URL__ = serverUrl;
-  // Make the WebSocket constructor available to RSC HMR.
-  global.WebSocket = require('ws').WebSocket;
-  createNodeFastRefresh({
-    onReload,
-  });
-  HMRClient.setup({
-    isEnabled: true,
-    onError(error) {
-      // Do nothing and reload.
-      // TODO: If we handle this better it could result in faster error feedback.
-      onReload();
-    },
-  });
+  if (process.env.NODE_ENV === 'development') {
+    const HMRClient = require('@expo/metro-runtime/build/HMRClientRSC')
+      .default as typeof import('@expo/metro-runtime/build/HMRClientRSC').default;
+    const { createNodeFastRefresh } =
+      require('@expo/metro-runtime/build/nodeFastRefresh') as typeof import('@expo/metro-runtime/build/nodeFastRefresh');
+
+    // Make the URL for this file accessible so we can register it as an HMR client entry for RSC HMR.
+    globalThis.__DEV_SERVER_URL__ = serverUrl;
+    // Make the WebSocket constructor available to RSC HMR.
+    global.WebSocket = require('ws').WebSocket;
+    createNodeFastRefresh({
+      onReload,
+    });
+
+    HMRClient.setup({
+      isEnabled: true,
+      onError(error) {
+        // Do nothing and reload.
+        // TODO: If we handle this better it could result in faster error feedback.
+        onReload();
+      },
+    });
+  }
 
   const { renderToReadableStream, decodeReply } = require('react-server-dom-webpack/server.edge');
 
@@ -118,10 +131,22 @@ export async function renderToPipeableStream(
       // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
       return url.pathname + url.search + url.hash;
     } else {
-      if (!file.startsWith('@id/')) {
-        throw new Error('Unexpected client entry in PRD');
-      }
-      url.pathname = file.slice('@id/'.length);
+      // if (!file.startsWith('@id/')) {
+      //   throw new Error('Unexpected client entry in PRD: ' + file);
+      // }
+      // url.pathname = file.slice('@id/'.length);
+
+      // TODO: This should be different for prod
+      const filePath = file.startsWith('file://') ? fileURLToFilePath(file) : file;
+      const metroOpaqueId = stringToHash(filePath);
+      const relativeFilePath = path.relative(serverRoot, filePath);
+      // TODO: May need to remove the original extension.
+      url.pathname = relativeFilePath;
+      // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
+      url.hash = String(metroOpaqueId);
+
+      // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
+      return url.pathname + url.search + url.hash;
     }
     return url.toString();
   };
@@ -145,7 +170,7 @@ export async function renderToPipeableStream(
         // This is similar to how we handle lazy bundling.
         const id = resolveClientEntry(file);
         debug('Returning server module:', id, 'for', encodedId);
-        // moduleIdCallback?.(id);
+        moduleIdCallback?.({ id, chunks: [id], name, async: true });
         return { id, chunks: [id], name, async: true };
       },
     }

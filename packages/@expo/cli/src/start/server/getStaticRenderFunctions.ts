@@ -212,6 +212,7 @@ export async function requireFileContentsWithMetro(
 }
 
 export async function metroFetchAsync(url: string): Promise<{ src: string; filename: string }> {
+  console.log('Fetching:', url);
   const res = await fetch(url);
 
   // TODO: Improve error handling

@@ -11,7 +11,7 @@ export interface RenderContext<T = unknown> {
 export declare const fileURLToFilePath: (fileURL: string) => string;
 export declare function renderToPipeableStream({ $$route: route, ...props }: {
     $$route: string;
-}, { mode, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, }: {
+}, { mode, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, moduleIdCallback, }: {
     mode: string;
     serverRoot: string;
     url: URL;
@@ -22,5 +22,11 @@ export declare function renderToPipeableStream({ $$route: route, ...props }: {
     contentType?: string | undefined;
     customImport: (file: string) => Promise<any>;
     onReload: () => void;
+    moduleIdCallback?: (module: {
+        id: string;
+        chunks: string[];
+        name: string;
+        async: boolean;
+    }) => void;
 }): Promise<ReadableStream>;
 //# sourceMappingURL=renderToPipeableStream.d.ts.map

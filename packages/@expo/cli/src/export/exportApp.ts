@@ -60,6 +60,8 @@ export async function exportAppAsync(
     await new WebSupportProjectPrerequisite(projectRoot).assertAsync();
   }
 
+  const useRSC = true;
+
   const useServerRendering = ['static', 'server'].includes(exp.web?.output ?? '');
   const baseUrl = getBaseUrlFromExpoConfig(exp);
 
@@ -87,7 +89,11 @@ export async function exportAppAsync(
     clear: !!clear,
     minify,
     sourcemaps: sourceMaps,
-    platforms: useServerRendering ? platforms.filter((platform) => platform !== 'web') : platforms,
+    platforms: useRSC
+      ? []
+      : useServerRendering
+        ? platforms.filter((platform) => platform !== 'web')
+        : platforms,
     dev,
     maxWorkers,
   });
@@ -151,8 +157,8 @@ export async function exportAppAsync(
   // Additional web-only steps...
 
   if (platforms.includes('web')) {
-    if (useServerRendering) {
-      const exportServer = exp.web?.output === 'server';
+    if (useServerRendering || useRSC) {
+      const exportServer = useRSC ?? exp.web?.output === 'server';
 
       if (exportServer) {
         // TODO: Remove when this is abstracted into the files map
