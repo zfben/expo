@@ -48,6 +48,8 @@ PODS:
     - ExpoModulesCore
   - ExpoAppleAuthentication (6.3.0):
     - ExpoModulesCore
+  - ExpoAudio (0.1.0):
+    - ExpoModulesCore
   - ExpoBackgroundFetch (11.8.0):
     - ExpoModulesCore
   - ExpoBattery (7.7.1):
@@ -1509,6 +1511,7 @@ DEPENDENCIES:
   - EXNotifications (from `../../../packages/expo-notifications/ios`)
   - Expo (from `../../../packages/expo`)
   - ExpoAppleAuthentication (from `../../../packages/expo-apple-authentication/ios`)
+  - ExpoAudio (from `../../../packages/expo-audio/ios`)
   - ExpoBackgroundFetch (from `../../../packages/expo-background-fetch/ios`)
   - ExpoBattery (from `../../../packages/expo-battery/ios`)
   - ExpoBlur (from `../../../packages/expo-blur/ios`)
@@ -1708,6 +1711,8 @@ EXTERNAL SOURCES:
     :path: "../../../packages/expo"
   ExpoAppleAuthentication:
     :path: "../../../packages/expo-apple-authentication/ios"
+  ExpoAudio:
+    :path: "../../../packages/expo-audio/ios"
   ExpoBackgroundFetch:
     :path: "../../../packages/expo-background-fetch/ios"
   ExpoBattery:
@@ -1958,6 +1963,7 @@ SPEC CHECKSUMS:
   EXNotifications: 6e3b49fa7f916bc2783d37fbd5599509b160776c
   Expo: 5096704437d0388c1ae6c622c8fd6d1b61889a53
   ExpoAppleAuthentication: 4fc9972356977f009911f2f3a5f56319c2a5b11b
+  ExpoAudio: 5e7d15c9b6901eb32913a220b0e99590739f4db3
   ExpoBackgroundFetch: 094377b73648adb55032a440f50cad1a5d3c3a89
   ExpoBattery: c75a7c094d64d89d96d3e3f419627b152da94f29
   ExpoBlur: 6c4602d729a492663b0916e5862b334a23157f0a
@@ -2016,7 +2022,7 @@ SPEC CHECKSUMS:
   GoogleDataTransport: 54dee9d48d14580407f8f5fbf2f496e92437a2f2
   GoogleMaps: a146f275ee429d14822178c7a841c03366ec92a1
   GoogleUtilities: 13e2c67ede716b8741c7989e26893d151b2b2084
-  hermes-engine: 4cad560bf3d3c6dcd5f010abec75454dcd64f75a
+  hermes-engine: 02d78269d139ac0efea73711734498d9d680f466
   JKBigInteger: 5c72131974815e969c0782c41e3452f1bbe5619f
   libaom: 144606b1da4b5915a1054383c3a4459ccdb3c661
   libavif: 84bbb62fb232c3018d6f1bab79beea87e35de7b7
