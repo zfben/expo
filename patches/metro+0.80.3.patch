@@ -248,3 +248,20 @@ index 3518dcb..8779519 100644
    );
  
    return [
+diff --git a/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js b/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js
+index 06594a3..ec9375e 100644
+--- a/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js
++++ b/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js
+@@ -314,6 +314,12 @@ function refineDependencyLocation(loc, fileContents, targetSpecifier) {
+   // Note that module names may not always be found in the source code verbatim,
+   // whether because of escaping or because of exotic dependency APIs.
+   for (let line = loc.end.line - 1; line >= loc.start.line - 1; line--) {
++    
++    if (lines[line] == null) {
++      break;
++    }
++
++
+     const maxColumn =
+       line === loc.end.line ? loc.end.column + 2 : lines[line].length;
+     const minColumn = line === loc.start.line ? loc.start.column - 1 : 0;

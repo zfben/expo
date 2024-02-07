@@ -11,7 +11,8 @@ export interface RenderContext<T = unknown> {
 export declare const fileURLToFilePath: (fileURL: string) => string;
 export declare function renderToPipeableStream({ $$route: route, ...props }: {
     $$route: string;
-}, { mode, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, moduleIdCallback, }: {
+}, { mode, isExporting, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, moduleIdCallback, }: {
+    isExporting: boolean;
     mode: string;
     serverRoot: string;
     url: URL;

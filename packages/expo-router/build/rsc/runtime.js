@@ -6,7 +6,27 @@
  */
 // Runtime code for patching Webpack's require function to use Metro.
 const rscClientModuleCache = new Map();
-const boundaries = require('expo-router/virtual-client-boundaries');
+/** Create an `loadBundleAsync` function in the expected shape for Metro bundler. */
+function buildProdAsyncRequire() {
+    const cache = new Map();
+    const boundaries = require('expo-router/virtual-client-boundaries');
+    if (!boundaries)
+        return null;
+    return async function universal_loadBundleAsync(path) {
+        if (cache.has(path)) {
+            return cache.get(path);
+        }
+        debugger;
+        const promise = boundaries[path]().catch((error) => {
+            cache.delete(path);
+            debugger;
+            throw error;
+        });
+        cache.set(path, promise);
+        return promise;
+    };
+}
+const prodFetcher = buildProdAsyncRequire();
 globalThis.__webpack_chunk_load__ = (id) => {
     // ID is a URL with the opaque Metro require ID as the hash.
     // http://localhost:8081/node_modules/react-native-web/dist/exports/Text/index.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=src%2Fapp&modulesOnly=true&runModule=false#798513620
@@ -14,19 +34,21 @@ globalThis.__webpack_chunk_load__ = (id) => {
     const url = new URL(id, id.startsWith('/') ? 'http://e' : undefined);
     const numericMetroId = parseInt(url.hash.slice(1));
     console.log('__webpack_chunk_load__', id, numericMetroId);
-    const loadBundleAsync = global[`${__METRO_GLOBAL_PREFIX__}__loadBundleAsync`];
     let loadBundlePromise;
-    if (boundaries) {
-        loadBundlePromise = boundaries[numericMetroId]();
+    if (prodFetcher) {
+        console.log('__webpack_chunk_load__ > production:', numericMetroId);
+        loadBundlePromise = prodFetcher(String(numericMetroId));
     }
     else {
+        const loadBundleAsync = global[`${__METRO_GLOBAL_PREFIX__}__loadBundleAsync`];
         loadBundlePromise = loadBundleAsync(id);
     }
     return loadBundlePromise
         .then(() => {
         const m = __r(numericMetroId);
         rscClientModuleCache.set(id, m);
-        console.log('loaded module.2:', id);
+        console.log(`Remote client module "${id}" >`, m);
+        debugger;
         return m;
     })
         .catch((e) => {

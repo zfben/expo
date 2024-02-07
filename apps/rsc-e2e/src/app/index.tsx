@@ -49,10 +49,15 @@
 
 // export default App;
 
+import Child from './client-child';
+
 export default function App() {
   return (
     <div>
       <h1>Hello world</h1>
+      <Child>
+        <h2>Child</h2>
+      </Child>
     </div>
   );
 }

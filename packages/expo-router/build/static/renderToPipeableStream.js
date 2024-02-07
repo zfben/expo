@@ -35,43 +35,44 @@ const fileURLToFilePath = (fileURL) => {
     return decodeURI(fileURL.slice('file://'.length));
 };
 exports.fileURLToFilePath = fileURLToFilePath;
-async function renderToPipeableStream({ $$route: route, ...props }, { mode, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, moduleIdCallback, }
+async function renderToPipeableStream({ $$route: route, ...props }, { mode, isExporting, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, moduleIdCallback, }
 // moduleMap: WebpackManifest
 ) {
-    if (process.env.NODE_ENV === 'development') {
-        const HMRClient = require('@expo/metro-runtime/build/HMRClientRSC')
-            .default;
-        const { createNodeFastRefresh } = require('@expo/metro-runtime/build/nodeFastRefresh');
-        // Make the URL for this file accessible so we can register it as an HMR client entry for RSC HMR.
-        globalThis.__DEV_SERVER_URL__ = serverUrl;
-        // Make the WebSocket constructor available to RSC HMR.
-        global.WebSocket = require('ws').WebSocket;
-        createNodeFastRefresh({
-            onReload,
-        });
-        HMRClient.setup({
-            isEnabled: true,
-            onError(error) {
-                // Do nothing and reload.
-                // TODO: If we handle this better it could result in faster error feedback.
-                onReload();
-            },
-        });
+    if (!isExporting) {
+        if (process.env.NODE_ENV === 'development') {
+            const HMRClient = require('@expo/metro-runtime/build/HMRClientRSC')
+                .default;
+            const { createNodeFastRefresh } = require('@expo/metro-runtime/build/nodeFastRefresh');
+            // Make the URL for this file accessible so we can register it as an HMR client entry for RSC HMR.
+            globalThis.__DEV_SERVER_URL__ = serverUrl;
+            // Make the WebSocket constructor available to RSC HMR.
+            global.WebSocket = require('ws').WebSocket;
+            createNodeFastRefresh({
+                onReload,
+            });
+            HMRClient.setup({
+                isEnabled: true,
+                onError(error) {
+                    // Do nothing and reload.
+                    // TODO: If we handle this better it could result in faster error feedback.
+                    onReload();
+                },
+            });
+        }
     }
     const { renderToReadableStream, decodeReply } = require('react-server-dom-webpack/server.edge');
     if (!_ctx_1.ctx.keys().includes(route)) {
         throw new Error('Failed to find route: ' + route + '. Expected one of: ' + _ctx_1.ctx.keys().join(', '));
     }
     const { default: Component } = await (0, _ctx_1.ctx)(route);
-    const isDev = mode === 'development';
-    if (isDev) {
+    if (!isExporting) {
         url.searchParams.set('modulesOnly', 'true');
         url.searchParams.set('runModule', 'false');
         // TODO: Maybe add a new param to execute and return the module exports.
     }
     const resolveClientEntry = (file // filePath or fileURL
     ) => {
-        if (isDev) {
+        if (!isExporting) {
             const filePath = file.startsWith('file://') ? (0, exports.fileURLToFilePath)(file) : file;
             const metroOpaqueId = stringToHash(filePath);
             const relativeFilePath = path_1.default.relative(serverRoot, filePath);
@@ -143,7 +144,7 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, url,
         }
         const [fileId, name] = rsfId.split('#');
         let mod;
-        if (isDev) {
+        if (!isExporting) {
             // console.log('Loading module:', fileId, name);
             mod = await customImport(resolveClientEntry(fileId));
             // console.log('Loaded module:', mod);

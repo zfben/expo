@@ -632,6 +632,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
             { $$route: input },
             {
               mode,
+              isExporting: !!options.isExporting,
               serverUrl: new URL(serverUrl),
               serverRoot,
               url,

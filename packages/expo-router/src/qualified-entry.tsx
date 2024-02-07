@@ -35,11 +35,11 @@ export function App() {
   return (
     <React.Suspense fallback={null}>
       <Head.Provider>
-        <Try catch={ErrorBoundary}>
+        {/* <Try catch={ErrorBoundary}> */}
           <Root initialSearchParamsString={searchParams}>
             <Slot id="index" />
           </Root>
-        </Try>
+        {/* </Try> */}
       </Head.Provider>
     </React.Suspense>
   );
