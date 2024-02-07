@@ -196,16 +196,7 @@ async function exportFromServerAsync(
   const devServer = devServerManager.getDefaultDevServer();
   assert(devServer instanceof MetroBundlerDevServer);
 
-  const [resources, { manifest, serverManifest, renderAsync }] = await Promise.all([
-    devServer.getStaticResourcesAsync({
-      isExporting: true,
-      mode: 'production',
-      minify,
-      includeSourceMaps,
-      baseUrl,
-      asyncRoutes,
-      routerRoot,
-    }),
+  const [{ manifest, serverManifest, renderAsync }] = await Promise.all([
     devServer.getStaticRenderFunctionAsync({
       mode: 'production',
       minify,
@@ -214,7 +205,7 @@ async function exportFromServerAsync(
     }),
   ]);
 
-  await Promise.all(
+  const clientBoundaries = await Promise.all(
     serverManifest.htmlRoutes.map(async (route) => {
       console.log('route', route);
       const rsc = await fetch(new URL('/rsc/' + route.file, devServer.getDevServerUrl()!)).then(
@@ -230,33 +221,49 @@ async function exportFromServerAsync(
         return path.join(serverRoot, entry.replace(/#.+$/, ''));
       });
 
-      const clientBundles = await devServer.bundleMultiEntryGraph(entryFiles, {
-        mainModuleName: 'TODO',
+      // const clientBundles = await devServer.bundleMultiEntryGraph(entryFiles, {
+      //   mainModuleName: 'TODO',
+      //   isExporting: true,
+      //   mode: 'production',
+      //   minify,
+      //   // TODO: Support all platforms
+      //   platform: 'web',
+      //   routerRoot,
+      //   asyncRoutes,
+      //   baseUrl,
+      //   engine: 'hermes',
+      //   serializerIncludeBytecode: false,
+      //   serializerIncludeMaps: true,
+      //   serializerOutput: 'static',
+      // });
+      // console.log('clientBundles', clientBundles);
+      // // TODO: Multi-entry bundle all boundaries
 
-        isExporting: true,
-        mode: 'production',
-        minify,
-        // TODO: Support all platforms
-        platform: 'web',
-        routerRoot,
-        asyncRoutes,
-        baseUrl,
-        engine: 'hermes',
-        serializerIncludeBytecode: false,
-        serializerIncludeMaps: true,
-        serializerOutput: 'static',
-      });
-      console.log('clientBundles', clientBundles);
-      // TODO: Multi-entry bundle all boundaries
+      // console.log();
 
-      console.log();
-
-      files.set('_expo/rsc/index.txt', {
+      files.set('rsc/index.txt', {
         contents: rsc,
         targetDomain: 'client',
       });
+
+      return { route, clientBoundaries: entryFiles };
     })
   );
+
+  const [resources] = await Promise.all([
+    devServer.getStaticResourcesAsync({
+      isExporting: true,
+      mode: 'production',
+      minify,
+      includeSourceMaps,
+      baseUrl,
+      asyncRoutes,
+      routerRoot,
+      clientBoundaries: [
+        ...new Set(clientBoundaries.map(({ clientBoundaries }) => clientBoundaries).flat()),
+      ],
+    }),
+  ]);
 
   makeRuntimeEntryPointsAbsolute(manifest, appDir);
 

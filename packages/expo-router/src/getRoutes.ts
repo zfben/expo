@@ -244,9 +244,9 @@ function getDirectoryTree(contextModule: RequireContext, options: Options) {
   // Only include the sitemap if there are routes.
   if (!options.skipGenerated) {
     if (hasRoutes) {
-      appendSitemapRoute(rootDirectory);
+      // appendSitemapRoute(rootDirectory);
     }
-    appendNotFoundRoute(rootDirectory);
+    // appendNotFoundRoute(rootDirectory);
   }
   return rootDirectory;
 }

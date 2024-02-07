@@ -6,6 +6,7 @@
  */
 // Runtime code for patching Webpack's require function to use Metro.
 const rscClientModuleCache = new Map();
+const boundaries = require('expo-router/virtual-client-boundaries');
 globalThis.__webpack_chunk_load__ = (id) => {
     // ID is a URL with the opaque Metro require ID as the hash.
     // http://localhost:8081/node_modules/react-native-web/dist/exports/Text/index.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=src%2Fapp&modulesOnly=true&runModule=false#798513620
@@ -14,7 +15,14 @@ globalThis.__webpack_chunk_load__ = (id) => {
     const numericMetroId = parseInt(url.hash.slice(1));
     console.log('__webpack_chunk_load__', id, numericMetroId);
     const loadBundleAsync = global[`${__METRO_GLOBAL_PREFIX__}__loadBundleAsync`];
-    return loadBundleAsync(id)
+    let loadBundlePromise;
+    if (boundaries) {
+        loadBundlePromise = boundaries[numericMetroId]();
+    }
+    else {
+        loadBundlePromise = loadBundleAsync(id);
+    }
+    return loadBundlePromise
         .then(() => {
         const m = __r(numericMetroId);
         rscClientModuleCache.set(id, m);

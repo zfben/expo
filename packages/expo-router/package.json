@@ -7,7 +7,8 @@
   "main": "build/index",
   "types": "build/index.d.ts",
   "sideEffects": [
-    "entry.js"
+    "entry.js",
+    "virtual-client-boundaries.js"
   ],
   "files": [
     "assets",
@@ -22,6 +23,7 @@
     "_ctx-html.js",
     "_error.js",
     "app.plugin.js",
+    "virtual-client-boundaries.js",
     "babel.js",
     "drawer.js",
     "drawer.d.ts",

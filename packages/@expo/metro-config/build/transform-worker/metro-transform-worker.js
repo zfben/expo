@@ -249,6 +249,14 @@ async function transformJS(file, { config, options, projectRoot }) {
                 // ignoredModules,
             };
             ({ ast, dependencies, dependencyMapName } = (0, collectDependencies_1.default)(ast, opts));
+            // if (
+            //   // !options.customTransformOptions?.environment &&
+            //   file.filename.match(/expo-router\/virtual-client-boundaries\.js/)
+            // ) {
+            //   console.log('Clear ast');
+            //   // Clear AST to prevent it from eagerly loading JS.
+            //   ast.program.body = [];
+            // }
         }
         catch (error) {
             if (error instanceof collectDependencies_1.InvalidRequireCallError) {

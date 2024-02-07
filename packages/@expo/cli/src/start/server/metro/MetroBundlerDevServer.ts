@@ -277,6 +277,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     isExporting,
     asyncRoutes,
     routerRoot,
+    clientBoundaries,
   }: {
     isExporting: boolean;
     mode: string;
@@ -286,6 +287,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     mainModuleName?: string;
     asyncRoutes: boolean;
     routerRoot: string;
+    clientBoundaries: string[];
   }): Promise<{ artifacts: SerialAsset[]; assets?: AssetData[] }> {
     const devBundleUrlPathname = createBundleUrlPath({
       platform: 'web',
@@ -301,6 +303,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       baseUrl,
       isExporting,
       routerRoot,
+      clientBoundaries,
       // ignoredModules: isExporting
       //   ? []
       //   : [
@@ -311,6 +314,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       //       'react-native-web',
       //     ],
     });
+    console.log('devBundleUrlPathname:', devBundleUrlPathname, clientBoundaries);
 
     const bundleUrl = new URL(devBundleUrlPathname, this.getDevServerUrl()!);
 

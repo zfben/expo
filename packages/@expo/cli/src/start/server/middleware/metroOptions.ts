@@ -41,6 +41,8 @@ export type ExpoMetroOptions = {
   routerRoot: string;
   inlineSourceMap?: boolean;
 
+  clientBoundaries?: string[];
+
   /** List of module imports to ignore when collecting dependencies. This can be used to create externals that are left in place. */
   // ignoredModules?: string[];
 };
@@ -123,6 +125,7 @@ export function getMetroDirectBundleOptions(
     routerRoot,
     isExporting,
     inlineSourceMap,
+    clientBoundaries,
     // ignoredModules,
   } = withDefaults(options);
 
@@ -169,6 +172,7 @@ export function getMetroDirectBundleOptions(
       environment,
       baseUrl,
       routerRoot,
+      clientBoundaries,
       // ignoredModules,
     },
     customResolverOptions: {
@@ -220,6 +224,7 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
     routerRoot,
     inlineSourceMap,
     isExporting,
+    clientBoundaries,
     // ignoredModules,
   } = withDefaults(options);
 
@@ -263,6 +268,9 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
   // }
   if (baseUrl) {
     queryParams.append('transform.baseUrl', baseUrl);
+  }
+  if (clientBoundaries?.length) {
+    queryParams.append('transform.clientBoundaries', JSON.stringify(clientBoundaries));
   }
   if (routerRoot != null) {
     queryParams.append('transform.routerRoot', routerRoot);
