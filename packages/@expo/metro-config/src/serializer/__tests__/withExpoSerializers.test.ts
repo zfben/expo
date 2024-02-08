@@ -727,15 +727,25 @@ describe('serializes', () => {
   async function serializeSplitAsync(fs: Record<string, string>) {
     return await serializeTo({
       fs,
-      options: { platform: 'web', dev: false, output: 'static' },
+      options: {
+        platform: 'web',
+        dev: false,
+        isReactServer: false,
+        output: 'static',
+        isServer: false,
+      },
     });
   }
 
   it(`bundle splits an async import`, async () => {
     const artifacts = await serializeSplitAsync({
       'index.js': `
+          require.resolveWeak('./foo')
           import('./foo')
         `,
+      // 'index.js': `
+      //     import('./foo')
+      //   `,
       'foo.js': `
           export const foo = 'foo';
         `,
@@ -763,6 +773,74 @@ describe('serializes', () => {
           "source": "__d(function (global, _$$_REQUIRE, _$$_IMPORT_DEFAULT, _$$_IMPORT_ALL, module, exports, dependencyMap) {
         _$$_REQUIRE(dependencyMap[1], "expo-mock/async-require")(dependencyMap[0], dependencyMap.paths, "./foo");
       },"/app/index.js",{"0":"/app/foo.js","1":"/app/node_modules/expo-mock/async-require/index.js","paths":{"/app/foo.js":"/_expo/static/js/web/foo-c054379d08b2cfa157d6fc1caa8f4802.js"}});
+      TEST_RUN_MODULE("/app/index.js");",
+          "type": "js",
+        },
+        {
+          "filename": "_expo/static/js/web/foo-c054379d08b2cfa157d6fc1caa8f4802.js",
+          "metadata": {
+            "isAsync": true,
+            "modulePaths": [
+              "/app/foo.js",
+            ],
+            "requires": [],
+          },
+          "originFilename": "foo.js",
+          "source": "__d(function (global, _$$_REQUIRE, _$$_IMPORT_DEFAULT, _$$_IMPORT_ALL, module, exports, dependencyMap) {
+        Object.defineProperty(exports, '__esModule', {
+          value: true
+        });
+        const foo = 'foo';
+        exports.foo = foo;
+      },"/app/foo.js",[]);",
+          "type": "js",
+        },
+      ]
+    `);
+
+    // Split bundle
+    expect(artifacts.length).toBe(2);
+    expect(artifacts[1].metadata).toEqual({
+      isAsync: true,
+      modulePaths: ['/app/foo.js'],
+      requires: [],
+    });
+  });
+
+  it(`bundle splits an async import with resolveWeak`, async () => {
+    const artifacts = await serializeSplitAsync({
+      'index.js': `
+          require.resolveWeak('./foo')
+          import('./foo')
+        `,
+      'foo.js': `
+          export const foo = 'foo';
+        `,
+    });
+
+    expect(artifacts.map((art) => art.filename)).toMatchInlineSnapshot(`
+      [
+        "_expo/static/js/web/index-7951a0d98a7db8b7f749f56f8c6942d1.js",
+        "_expo/static/js/web/foo-c054379d08b2cfa157d6fc1caa8f4802.js",
+      ]
+    `);
+
+    expect(artifacts).toMatchInlineSnapshot(`
+      [
+        {
+          "filename": "_expo/static/js/web/index-7951a0d98a7db8b7f749f56f8c6942d1.js",
+          "metadata": {
+            "isAsync": false,
+            "modulePaths": [
+              "/app/index.js",
+            ],
+            "requires": [],
+          },
+          "originFilename": "index.js",
+          "source": "__d(function (global, _$$_REQUIRE, _$$_IMPORT_DEFAULT, _$$_IMPORT_ALL, module, exports, dependencyMap) {
+        dependencyMap[0];
+        _$$_REQUIRE(dependencyMap[2], "expo-mock/async-require")(dependencyMap[1], dependencyMap.paths, "./foo");
+      },"/app/index.js",{"0":"/app/foo.js","1":"/app/foo.js","2":"/app/node_modules/expo-mock/async-require/index.js","paths":{"/app/foo.js":"/_expo/static/js/web/foo-c054379d08b2cfa157d6fc1caa8f4802.js"}});
       TEST_RUN_MODULE("/app/index.js");",
           "type": "js",
         },

@@ -5,7 +5,7 @@ import CountingSet from 'metro/src/lib/CountingSet';
 import countLines from 'metro/src/lib/countLines';
 import * as path from 'path';
 
-export const projectRoot = '/app/';
+export const projectRoot = '/app';
 
 function toDependencyMap(...deps: Dependency[]): Map<string, Dependency> {
   const map = new Map();
@@ -25,10 +25,16 @@ export function microBundle({
       ...preModulesFs,
       ...fs,
     };
-    for (const ext of ['', '.js', '.ts', '.tsx']) {
-      const next = path.join(path.dirname(from), id) + ext;
-      if (fullFs[next]) {
-        return next;
+    for (const index of ['index', '']) {
+      for (const ext of ['', '.js', '.ts', '.tsx']) {
+        let next = path.join(path.dirname(from), id);
+        if (index) {
+          next = path.join(next, index);
+        }
+        next += ext;
+        if (fullFs[next]) {
+          return next;
+        }
       }
     }
     if (id === 'expo-mock/async-require' && !fullFs['expo-mock/async-require']) {
@@ -69,6 +75,9 @@ export function microBundle({
   SerializerOptions<MixedOutput>,
 ] {
   const fullFs = {
+    'expo-mock/async-require': `
+    module.exports = () => 'MOCK'
+`,
     ...preModulesFs,
     ...fs,
   };
@@ -236,7 +245,7 @@ export function parseModule(
     filename,
     plugins: [
       require('babel-preset-expo/build/expo-router-plugin')
-        .expoRouterServerComponentClientReferencesPlugin,
+        .expoRouterBabelPlugin,
       [metroTransformPlugins.importExportPlugin, babelPluginOpts],
     ],
     caller: {
