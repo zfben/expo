@@ -7,15 +7,14 @@
 // a different file in a custom resolver for bundle splitting in Node.js.
 import { ctx } from 'expo-router/_ctx';
 import React from 'react';
-import { Text, View } from 'react-native';
 // import { ExpoRoot } from './ExpoRoot';
 import { Head } from './head';
 import { Slot, Root } from './rsc/client';
 
 // MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
 import getDevServer from '@expo/metro-runtime/build/getDevServer';
-import { Try } from './views/Try';
-import { ErrorBoundary } from './exports';
+// import { Try } from './views/Try';
+// import { ErrorBoundary } from './exports';
 
 const introUrl = getDevServer().fullBundleUrl;
 // TODO: This is buggy and doesn't work well, maybe inject the query params in babel.

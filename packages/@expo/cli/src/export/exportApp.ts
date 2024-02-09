@@ -19,6 +19,7 @@ import { serializeHtmlWithAssets } from '../start/server/metro/serializeHtml';
 import {
   getAsyncRoutesFromExpoConfig,
   getBaseUrlFromExpoConfig,
+  getRscPathFromExpoConfig,
 } from '../start/server/middleware/metroOptions';
 import { createTemplateHtmlFromExpoConfigAsync } from '../start/server/webTemplate';
 import { env } from '../utils/env';
@@ -64,6 +65,7 @@ export async function exportAppAsync(
 
   const useServerRendering = ['static', 'server'].includes(exp.web?.output ?? '');
   const baseUrl = getBaseUrlFromExpoConfig(exp);
+  const rscPath = getRscPathFromExpoConfig(exp);
 
   // Print out logs
   if (baseUrl) {
@@ -172,6 +174,7 @@ export async function exportAppAsync(
         outputDir: outputPath,
         minify,
         baseUrl,
+        rscPath,
         includeSourceMaps: sourceMaps,
         asyncRoutes: getAsyncRoutesFromExpoConfig(exp, dev ? 'development' : 'production', 'web'),
         routerRoot: getRouterDirectoryModuleIdWithManifest(projectRoot, exp),

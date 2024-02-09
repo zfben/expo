@@ -14,6 +14,8 @@ const head_1 = require("./head");
 const client_1 = require("./rsc/client");
 // MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
 const getDevServer_1 = __importDefault(require("@expo/metro-runtime/build/getDevServer"));
+// import { Try } from './views/Try';
+// import { ErrorBoundary } from './exports';
 const introUrl = (0, getDevServer_1.default)().fullBundleUrl;
 // TODO: This is buggy and doesn't work well, maybe inject the query params in babel.
 const searchParams = introUrl ? new URL(introUrl).searchParams.toString() : '';

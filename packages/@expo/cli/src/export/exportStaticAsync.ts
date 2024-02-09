@@ -27,6 +27,7 @@ import { serializeHtmlWithAssets } from '../start/server/metro/serializeHtml';
 import { learnMore } from '../utils/link';
 import { getFreePortAsync } from '../utils/port';
 import { getMetroServerRoot } from '../start/server/middleware/ManifestMiddleware';
+import { getRscPathFromExpoConfig } from '../start/server/middleware/metroOptions';
 
 const debug = require('debug')('expo:export:generateStaticRoutes') as typeof console.log;
 
@@ -37,6 +38,7 @@ type Options = {
   minify: boolean;
   exportServer: boolean;
   baseUrl: string;
+  rscPath: string;
   includeSourceMaps: boolean;
   entryPoint?: string;
   clear: boolean;
@@ -179,6 +181,7 @@ async function exportFromServerAsync(
   {
     outputDir,
     baseUrl,
+    rscPath,
     exportServer,
     minify,
     includeSourceMaps,
@@ -203,6 +206,7 @@ async function exportFromServerAsync(
     devServer.getStaticRenderFunctionAsync({
       mode,
       minify,
+      rscPath,
       baseUrl,
       routerRoot,
     }),
@@ -212,7 +216,7 @@ async function exportFromServerAsync(
     serverManifest.htmlRoutes.map(async (route) => {
       console.log('route', route);
       const rsc = await fetch(
-        new URL('/' + process.env.EXPO_RSC_PATH + '/' + route.file, devServer.getDevServerUrl()!)
+        new URL('/' + rscPath + '/' + route.file, devServer.getDevServerUrl()!)
       ).then((res) => res.text());
       console.log('route.rsc', rsc);
 
@@ -244,7 +248,7 @@ async function exportFromServerAsync(
 
       // console.log();
 
-      files.set('rsc/index.txt', {
+      files.set(rscPath.replace(/^\/+/, '') + '/index.txt', {
         contents: rsc,
         targetDomain: 'client',
       });

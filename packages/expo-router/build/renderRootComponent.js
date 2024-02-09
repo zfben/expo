@@ -30,7 +30,8 @@ exports.renderRootComponent = void 0;
 const expo_1 = require("expo");
 const SplashScreen = __importStar(require("expo-splash-screen"));
 const react_1 = __importDefault(require("react"));
-const react_native_1 = require("react-native");
+const os_1 = __importDefault(require("expo-router/os"));
+// import { View } from 'react-native';
 function isBaseObject(obj) {
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
         return false;
@@ -93,9 +94,9 @@ function renderRootComponent(Component) {
         //  ERROR  Invariant Violation: "main" has not been registered. This can happen if:
         // * Metro (the local dev server) is run from the wrong folder. Check if Metro is running, stop it and restart it in the current project.
         // * A module failed to load due to an error and `AppRegistry.registerComponent` wasn't called.
-        (0, expo_1.registerRootComponent)(() => <react_native_1.View />);
+        // registerRootComponent(() => <View />);
         // Console is pretty useless on native, on web you get interactive stack traces.
-        if (react_native_1.Platform.OS === 'web') {
+        if (os_1.default === 'web') {
             console.error(error);
             console.error(`A runtime error has occurred while rendering the root component.`);
         }

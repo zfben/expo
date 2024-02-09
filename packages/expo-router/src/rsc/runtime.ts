@@ -33,7 +33,6 @@ function buildProdAsyncRequire(): AsyncRequire | null {
     // debugger;
     const promise = boundaries[path]().catch((error) => {
       cache.delete(path);
-      debugger;
       throw error;
     });
 
@@ -67,6 +66,9 @@ globalThis.__webpack_chunk_load__ = (id) => {
     .then(() => {
       const m = __r(numericMetroId);
       rscClientModuleCache.set(id, m);
+      if (!m) {
+        throw new Error(`Module "${id}" not found`);
+      }
       // NOTE: DO NOT LOG MODULES AS THIS BREAKS REACT NATIVE
       // console.log(`Remote client module "${id}" >`, m);
       // debugger;
