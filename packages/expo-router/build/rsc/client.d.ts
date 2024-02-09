@@ -26,7 +26,7 @@ export declare const Slot: ({ id, children, fallback, }: {
     id: string;
     children?: ReactNode;
     fallback?: ReactNode;
-}) => string | number | true | import("react").ReactElement<any, string | import("react").JSXElementConstructor<any>> | Iterable<ReactNode>;
+}) => string | number | true | import("react").ReactElement<any, string | import("react").JSXElementConstructor<any>> | Iterable<ReactNode> | import("react").FunctionComponentElement<import("react").ProviderProps<ReactNode>>;
 export declare const Children: () => ReactNode;
 export declare const ServerRoot: ({ elements, children }: {
     elements: Elements;

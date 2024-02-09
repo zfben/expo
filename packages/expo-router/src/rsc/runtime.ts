@@ -30,7 +30,7 @@ function buildProdAsyncRequire(): AsyncRequire | null {
       return cache.get(path)!;
     }
 
-    debugger;
+    // debugger;
     const promise = boundaries[path]().catch((error) => {
       cache.delete(path);
       debugger;
@@ -68,7 +68,7 @@ globalThis.__webpack_chunk_load__ = (id) => {
       const m = __r(numericMetroId);
       rscClientModuleCache.set(id, m);
       console.log(`Remote client module "${id}" >`, m);
-      debugger;
+      // debugger;
       return m;
     })
     .catch((e) => {

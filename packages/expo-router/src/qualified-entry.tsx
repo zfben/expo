@@ -36,9 +36,9 @@ export function App() {
     <React.Suspense fallback={null}>
       <Head.Provider>
         {/* <Try catch={ErrorBoundary}> */}
-          <Root initialSearchParamsString={searchParams}>
-            <Slot id="index" />
-          </Root>
+        <Root initialSearchParamsString={searchParams}>
+          <Slot id="index" />
+        </Root>
         {/* </Try> */}
       </Head.Provider>
     </React.Suspense>

@@ -1,4 +1,4 @@
-// From Waku -- https://github.com/dai-shi/waku/blob/main/packages/waku/src/client.ts
+// From Waku -- https://github.com/dai-shi/waku/blob/32d52242c1450b5f5965860e671ff73c42da8bd0/packages/waku/src/client.ts#L1
 
 /// <reference types="react/canary" />
 'use client';
@@ -168,14 +168,9 @@ export const Slot = ({
     if (fallback) {
       return fallback;
     }
-    // throw new Error('Not found: ' + id);
+    throw new Error('Not found: ' + id);
   }
-  return createElement(
-    ChildrenContextProvider,
-    { value: children },
-    elements
-    // elements[id],
-  );
+  return createElement(ChildrenContextProvider, { value: children }, elements[id]);
 };
 
 export const Children = () => use(ChildrenContext);

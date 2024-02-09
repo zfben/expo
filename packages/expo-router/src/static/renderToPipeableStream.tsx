@@ -111,8 +111,6 @@ export async function renderToPipeableStream(
 
   const { default: Component } = await ctx(route);
 
-  
-
   if (!isExporting) {
     url.searchParams.set('modulesOnly', 'true');
     url.searchParams.set('runModule', 'false');
@@ -242,7 +240,32 @@ export async function renderToPipeableStream(
 
   //   moduleMap
 
-  const elements = React.createElement(Component, props);
+  // TODO: Populate this with Expo Router results.
+  const renderEntries = async (input) => {
+    return {
+      index: React.createElement(Component, props),
+    };
+  };
+
+  const render = async (
+    renderContext: RenderContext,
+    input: string,
+    searchParams: URLSearchParams
+  ) => {
+    const elements = await renderEntries.call(renderContext, input, searchParams);
+    if (elements === null) {
+      const err = new Error('No function component found');
+      (err as any).statusCode = 404; // HACK our convention for NotFound
+      throw err;
+    }
+    if (Object.keys(elements).some((key) => key.startsWith('_'))) {
+      throw new Error('"_" prefix is reserved');
+    }
+    return elements;
+  };
+
+  const elements = await render({}, input, url.searchParams);
+
   return renderToReadableStream(elements, bundlerConfig);
 
   // return rsc.pipe;
