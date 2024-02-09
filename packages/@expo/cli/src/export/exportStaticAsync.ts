@@ -211,9 +211,9 @@ async function exportFromServerAsync(
   const clientBoundaries = await Promise.all(
     serverManifest.htmlRoutes.map(async (route) => {
       console.log('route', route);
-      const rsc = await fetch(new URL('/rsc/' + route.file, devServer.getDevServerUrl()!)).then(
-        (res) => res.text()
-      );
+      const rsc = await fetch(
+        new URL('/' + process.env.EXPO_RSC_PATH + '/' + route.file, devServer.getDevServerUrl()!)
+      ).then((res) => res.text());
       console.log('route.rsc', rsc);
 
       const clientEntries = devServer.getClientModules(route.file);
@@ -318,7 +318,6 @@ async function exportFromServerAsync(
       routerRoot,
       manifest: serverManifest,
       baseUrl,
-      
     });
 
     // Add the api routes to the files to export.

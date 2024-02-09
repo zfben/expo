@@ -25,8 +25,7 @@ declare global {
   }
 }
 
-// TODO: Add this env var
-const RSC_PATH = process.env.EXPO_RSC_PATH || '/rsc';
+const RSC_PATH = process.env.EXPO_RSC_PATH;
 
 const BASE_PATH = `${process.env.EXPO_BASE_URL}${RSC_PATH}/`;
 

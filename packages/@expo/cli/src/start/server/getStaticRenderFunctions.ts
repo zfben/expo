@@ -28,6 +28,7 @@ export type StaticRenderOptions = {
   environment?: 'node';
   engine?: 'hermes';
   baseUrl: string;
+  rscPath: string;
   isReactServer?: boolean;
   routerRoot: string;
   isExporting: boolean;
@@ -99,6 +100,7 @@ async function getStaticRenderFunctionsContentAsync(
     minify = false,
     environment,
     baseUrl,
+    rscPath,
     routerRoot,
     isReactServer,
     engine,
@@ -127,6 +129,7 @@ async function getStaticRenderFunctionsContentAsync(
     engine,
     isExporting,
     platform,
+    rscPath,
   });
 }
 

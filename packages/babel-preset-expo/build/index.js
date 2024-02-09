@@ -21,6 +21,7 @@ function babelPresetExpo(api, options = {}) {
     const isDev = api.caller(common_1.getIsDev);
     const isFastRefreshEnabled = api.caller(common_1.getIsFastRefreshEnabled);
     const baseUrl = api.caller(common_1.getBaseUrl);
+    const rscPath = api.caller(common_1.getRscPath);
     // const isServer = api.caller(getIsServer);
     const supportsStaticESM = api.caller((caller) => caller?.supportsStaticESM);
     const isReactServer = api.caller(common_1.getIsReactServer);
@@ -91,6 +92,7 @@ function babelPresetExpo(api, options = {}) {
                 // These values should not be prefixed with `EXPO_PUBLIC_`, so we don't
                 // squat user-defined environment variables.
                 EXPO_BASE_URL: baseUrl,
+                EXPO_RSC_PATH: rscPath,
             },
         ]);
     }

@@ -11,8 +11,7 @@ const react_1 = require("react");
 const client_1 = __importDefault(require("react-server-dom-webpack/client"));
 const utils_1 = require("./renderers/utils");
 const { createFromFetch, encodeReply } = client_1.default;
-// TODO: Add this env var
-const RSC_PATH = process.env.EXPO_RSC_PATH || '/rsc';
+const RSC_PATH = process.env.EXPO_RSC_PATH;
 const BASE_PATH = `${process.env.EXPO_BASE_URL}${RSC_PATH}/`;
 const checkStatus = async (responsePromise) => {
     const response = await responsePromise;

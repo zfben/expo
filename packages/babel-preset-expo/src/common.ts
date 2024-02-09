@@ -82,6 +82,9 @@ export function getIsReactServer(caller: any): boolean {
 export function getBaseUrl(caller: any): string {
   return caller?.baseUrl ?? '';
 }
+export function getRscPath(caller: any): string {
+  return caller?.rscPath ?? 'RSC';
+}
 
 export function getIsServer(caller: any) {
   return caller?.isServer ?? false;

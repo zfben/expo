@@ -8,6 +8,7 @@ import {
   getIsFastRefreshEnabled,
   getIsProd,
   getIsReactServer,
+  getRscPath,
   hasModule,
 } from './common';
 import { expoInlineManifestPlugin } from './expo-inline-manifest-plugin';
@@ -69,6 +70,7 @@ function babelPresetExpo(api: ConfigAPI, options: BabelPresetExpoOptions = {}): 
   const isDev = api.caller(getIsDev);
   const isFastRefreshEnabled = api.caller(getIsFastRefreshEnabled);
   const baseUrl = api.caller(getBaseUrl);
+  const rscPath = api.caller(getRscPath);
   // const isServer = api.caller(getIsServer);
   const supportsStaticESM: boolean | undefined = api.caller(
     (caller) => (caller as any)?.supportsStaticESM
@@ -152,6 +154,7 @@ function babelPresetExpo(api: ConfigAPI, options: BabelPresetExpoOptions = {}): 
         // These values should not be prefixed with `EXPO_PUBLIC_`, so we don't
         // squat user-defined environment variables.
         EXPO_BASE_URL: baseUrl,
+        EXPO_RSC_PATH: rscPath,
       },
     ]);
   }

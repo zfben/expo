@@ -64,6 +64,7 @@ import {
   getAsyncRoutesFromExpoConfig,
   ExpoMetroOptions,
   getMetroDirectBundleOptions,
+  getRscPathFromExpoConfig,
 } from '../middleware/metroOptions';
 import { prependMiddleware } from '../middleware/mutations';
 import { ServerNext, ServerRequest, ServerResponse } from '../middleware/server.types';
@@ -186,12 +187,14 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     mode,
     minify = mode !== 'development',
     baseUrl,
+    rscPath,
     isReactServer,
     routerRoot,
   }: {
     mode: 'development' | 'production';
     minify?: boolean;
     baseUrl: string;
+    rscPath: string;
     isReactServer?: boolean;
     routerRoot: string;
   }): Promise<{
@@ -208,6 +211,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         // Ensure the API Routes are included
         environment: 'node',
         baseUrl,
+        rscPath,
         routerRoot,
         isReactServer,
         isExporting: true,
@@ -228,6 +232,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     mode,
     minify = mode !== 'development',
     baseUrl,
+    rscPath,
     isReactServer,
     routerRoot,
     platform,
@@ -236,6 +241,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     mode: 'development' | 'production';
     minify?: boolean;
     baseUrl: string;
+    rscPath: string;
     isReactServer?: boolean;
     routerRoot: string;
     platform?: string;
@@ -256,6 +262,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         // Ensure the API Routes are included
         environment: 'node',
         baseUrl,
+        rscPath,
         routerRoot,
         isReactServer,
         isExporting,
@@ -275,6 +282,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     minify = mode !== 'development',
     includeSourceMaps,
     baseUrl,
+    rscPath,
     mainModuleName,
     isExporting,
     asyncRoutes,
@@ -286,6 +294,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     minify?: boolean;
     includeSourceMaps?: boolean;
     baseUrl?: string;
+    rscPath?: string;
     mainModuleName?: string;
     asyncRoutes: boolean;
     routerRoot: string;
@@ -303,6 +312,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       lazy: shouldEnableAsyncImports(this.projectRoot),
       asyncRoutes,
       baseUrl,
+      rscPath,
       isExporting,
       routerRoot,
       clientBoundaries,
@@ -383,6 +393,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       mode,
       minify = mode !== 'development',
       baseUrl,
+      rscPath,
       routerRoot,
       isExporting,
       asyncRoutes,
@@ -391,6 +402,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       mode: 'development' | 'production';
       minify?: boolean;
       baseUrl: string;
+      rscPath: string;
       asyncRoutes: boolean;
       routerRoot: string;
     }
@@ -402,6 +414,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       mainModuleName: resolveMainModuleName(this.projectRoot, { platform: 'web' }),
       lazy: shouldEnableAsyncImports(this.projectRoot),
       baseUrl,
+      rscPath,
       isExporting,
       asyncRoutes,
       routerRoot,
@@ -426,6 +439,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
           // Ensure the API Routes are included
           environment: 'node',
           baseUrl,
+          rscPath,
           routerRoot,
           isExporting,
         }
@@ -436,7 +450,17 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     };
 
     const [{ artifacts: resources }, staticHtml] = await Promise.all([
-      this.getStaticResourcesAsync({ isExporting, mode, minify, baseUrl, asyncRoutes, routerRoot }),
+      this.getStaticResourcesAsync({
+        isExporting,
+        mode,
+        minify,
+        baseUrl,
+        rscPath,
+        asyncRoutes,
+        routerRoot,
+        // TODO(Bacon-RSC): Check this
+        clientBoundaries: [],
+      }),
       bundleStaticHtml(),
     ]);
     const content = serializeHtmlWithAssets({
@@ -610,6 +634,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       // This should come after the static middleware so it doesn't serve the favicon from `public/favicon.ico`.
       middleware.use(new FaviconMiddleware(this.projectRoot).getHandler());
 
+      const rscPath = getRscPathFromExpoConfig(exp);
       const baseUrl = getBaseUrlFromExpoConfig(exp);
       const routerRoot = getRouterDirectoryModuleIdWithManifest(this.projectRoot, exp);
 
@@ -618,15 +643,22 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         platform: 'web',
         minify: options.minify,
         baseUrl,
+        rscPath,
         isReactServer: true,
         routerRoot,
         isExporting: !!options.isExporting,
         environment: 'node',
       });
 
+      let rscPathPrefix = '/' + rscPath.replace(/^\/+/, '').replace(/\/+$/, '');
+      if (rscPathPrefix !== '/') {
+        rscPathPrefix += '/';
+      }
+
       const sendResponse = async (req: ServerRequest, res: ServerResponse) => {
         const url = new URL(req.url!, this.getDevServerUrl()!);
-        const route = url.pathname.replace(/^\/rsc\//, '');
+
+        const route = url.pathname.replace(rscPathPrefix, '');
 
         // console.log('Render route:', route, url);
 
@@ -641,6 +673,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
             isReactServer: true,
             routerRoot,
             isExporting: !!options.isExporting,
+            rscPath,
           });
 
           const input = './index.tsx';
@@ -710,7 +743,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
       // Server components
       middleware.use(async (req: ServerRequest, res: ServerResponse, next: ServerNext) => {
-        if (!req?.url || !req.url.startsWith('/rsc/')) {
+        if (!req?.url || !req.url.startsWith(rscPathPrefix)) {
           return next();
         }
         return sendResponse(req, res);
@@ -779,6 +812,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
                 mode: options.mode ?? 'development',
                 minify: options.minify,
                 baseUrl,
+                rscPath,
                 asyncRoutes,
                 routerRoot,
               });

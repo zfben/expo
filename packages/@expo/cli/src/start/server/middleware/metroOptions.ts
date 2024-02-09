@@ -36,6 +36,7 @@ export type ExpoMetroOptions = {
   asyncRoutes?: boolean;
 
   baseUrl?: string;
+  rscPath?: string;
   isExporting: boolean;
   /** Module ID relative to the projectRoot for the Expo Router app directory. */
   routerRoot: string;
@@ -76,6 +77,12 @@ function withDefaults({
 export function getBaseUrlFromExpoConfig(exp: ExpoConfig) {
   return exp.experiments?.baseUrl?.trim().replace(/\/+$/, '') ?? '';
 }
+
+export function getRscPathFromExpoConfig(exp: ExpoConfig) {
+  // NOTE: Default is added here...
+  return exp.experiments?.rscPath?.trim().replace(/\/+$/, '') ?? 'RSC';
+}
+
 export function getAsyncRoutesFromExpoConfig(exp: ExpoConfig, mode: string, platform: string) {
   let asyncRoutesSetting;
 
@@ -94,11 +101,12 @@ export function getAsyncRoutesFromExpoConfig(exp: ExpoConfig, mode: string, plat
 export function getMetroDirectBundleOptionsForExpoConfig(
   projectRoot: string,
   exp: ExpoConfig,
-  options: Omit<ExpoMetroOptions, 'baseUrl' | 'routerRoot' | 'asyncRoutes'>
+  options: Omit<ExpoMetroOptions, 'baseUrl' | 'rscPath' | 'routerRoot' | 'asyncRoutes'>
 ): Partial<ExpoMetroBundleOptions> {
   return getMetroDirectBundleOptions({
     ...options,
     baseUrl: getBaseUrlFromExpoConfig(exp),
+    rscPath: getBaseUrlFromExpoConfig(exp),
     routerRoot: getRouterDirectoryModuleIdWithManifest(projectRoot, exp),
     asyncRoutes: getAsyncRoutesFromExpoConfig(exp, options.mode, options.platform),
   });
@@ -122,6 +130,7 @@ export function getMetroDirectBundleOptions(
     rsc,
     asyncRoutes,
     baseUrl,
+    rscPath,
     routerRoot,
     isExporting,
     inlineSourceMap,
@@ -171,6 +180,7 @@ export function getMetroDirectBundleOptions(
       asyncRoutes,
       environment,
       baseUrl,
+      rscPath,
       routerRoot,
       clientBoundaries,
       // ignoredModules,
@@ -196,11 +206,12 @@ export function getMetroDirectBundleOptions(
 export function createBundleUrlPathFromExpoConfig(
   projectRoot: string,
   exp: ExpoConfig,
-  options: Omit<ExpoMetroOptions, 'baseUrl' | 'routerRoot'>
+  options: Omit<ExpoMetroOptions, 'baseUrl' | 'rscPath' | 'routerRoot'>
 ): string {
   return createBundleUrlPath({
     ...options,
     baseUrl: getBaseUrlFromExpoConfig(exp),
+    rscPath: getRscPathFromExpoConfig(exp),
     routerRoot: getRouterDirectoryModuleIdWithManifest(projectRoot, exp),
   });
 }
@@ -221,6 +232,7 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
     rsc,
     asyncRoutes,
     baseUrl,
+    rscPath,
     routerRoot,
     inlineSourceMap,
     isExporting,
@@ -268,6 +280,9 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
   // }
   if (baseUrl) {
     queryParams.append('transform.baseUrl', baseUrl);
+  }
+  if (rscPath) {
+    queryParams.append('transform.rscPath', rscPath);
   }
   if (clientBoundaries?.length) {
     queryParams.append('transform.clientBoundaries', JSON.stringify(clientBoundaries));
