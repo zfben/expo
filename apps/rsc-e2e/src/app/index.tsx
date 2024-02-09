@@ -1,6 +1,6 @@
 // import React, { Suspense } from 'react';
 // import OS from 'expo-router/os';
-// import { Text, View, ScrollView } from 'react-native';
+import { Text, View, ScrollView } from 'react-native';
 
 // import A02_Suspense from '../02-suspense/entry';
 // import A03_Promises from '../03-promises/entry';
@@ -52,10 +52,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Child from './client-child';
 
 export default function App() {
+  // return (
+  //   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+  //     <Text style={{ fontSize: 24 }}>Hey</Text>
+  //   </View>
+  // );
   return (
     <div>
       <h1>Hello world</h1>
-      <LinearGradient colors={['red', 'yellow']}/>
+      <LinearGradient colors={['red', 'yellow']} />
       <Child>
         <h2>Child</h2>
       </Child>

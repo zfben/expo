@@ -12,7 +12,7 @@ const client_1 = __importDefault(require("react-server-dom-webpack/client"));
 const utils_1 = require("./renderers/utils");
 const { createFromFetch, encodeReply } = client_1.default;
 const RSC_PATH = process.env.EXPO_RSC_PATH;
-const BASE_PATH = `${process.env.EXPO_BASE_URL}${RSC_PATH}/`;
+const BASE_PATH = '/' + `${process.env.EXPO_BASE_URL}${RSC_PATH}/`;
 const checkStatus = async (responsePromise) => {
     const response = await responsePromise;
     if (!response.ok) {
@@ -59,6 +59,7 @@ const fetchRSC = (input, searchParamsString, setElements, cache = fetchCache) =>
     };
     const prefetched = (globalThis.__WAKU_PREFETCHED__ ||= {});
     const url = BASE_PATH + (0, utils_1.encodeInput)(input) + (searchParamsString ? '?' + searchParamsString : '');
+    console.log('fetch', url);
     const response = prefetched[url] || fetch(url);
     delete prefetched[url];
     const data = createFromFetch(checkStatus(response), options);

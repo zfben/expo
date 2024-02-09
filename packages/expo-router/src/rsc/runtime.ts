@@ -67,7 +67,8 @@ globalThis.__webpack_chunk_load__ = (id) => {
     .then(() => {
       const m = __r(numericMetroId);
       rscClientModuleCache.set(id, m);
-      console.log(`Remote client module "${id}" >`, m);
+      // NOTE: DO NOT LOG MODULES AS THIS BREAKS REACT NATIVE
+      // console.log(`Remote client module "${id}" >`, m);
       // debugger;
       return m;
     })

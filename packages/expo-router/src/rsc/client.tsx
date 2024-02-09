@@ -27,7 +27,7 @@ declare global {
 
 const RSC_PATH = process.env.EXPO_RSC_PATH;
 
-const BASE_PATH = `${process.env.EXPO_BASE_URL}${RSC_PATH}/`;
+const BASE_PATH = '/' + `${process.env.EXPO_BASE_URL}${RSC_PATH}/`;
 
 const checkStatus = async (responsePromise: Promise<Response>): Promise<Response> => {
   const response = await responsePromise;
@@ -94,6 +94,7 @@ export const fetchRSC = (
   };
   const prefetched = ((globalThis as any).__WAKU_PREFETCHED__ ||= {});
   const url = BASE_PATH + encodeInput(input) + (searchParamsString ? '?' + searchParamsString : '');
+  console.log('fetch', url);
   const response = prefetched[url] || fetch(url);
   delete prefetched[url];
   const data = createFromFetch<Awaited<Elements>>(checkStatus(response), options);
