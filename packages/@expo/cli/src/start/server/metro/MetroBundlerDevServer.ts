@@ -37,6 +37,8 @@ import { CommandError } from '../../../utils/errors';
 import { getFreePortAsync } from '../../../utils/port';
 import { BundlerDevServer, BundlerStartOptions, DevServerInstance } from '../BundlerDevServer';
 import {
+  StaticRenderOptions,
+  createMetroSsr,
   evalMetro,
   getStaticRenderFunctions,
   getStaticRenderFunctionsForEntry,
@@ -528,6 +530,10 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     return '';
   }
 
+  createMetroSsr(options: StaticRenderOptions) {
+    return createMetroSsr(this.projectRoot, this.getDevServerUrl()!, options);
+  }
+
   protected async startImplementationAsync(
     options: BundlerStartOptions
   ): Promise<DevServerInstance> {
@@ -606,6 +612,17 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
       const baseUrl = getBaseUrlFromExpoConfig(exp);
       const routerRoot = getRouterDirectoryModuleIdWithManifest(this.projectRoot, exp);
+
+      const metroSsr = this.createMetroSsr({
+        dev: options.mode !== 'production',
+        platform: 'web',
+        minify: options.minify,
+        baseUrl,
+        isReactServer: true,
+        routerRoot,
+        isExporting: !!options.isExporting,
+        environment: 'node',
+      });
 
       const sendResponse = async (req: ServerRequest, res: ServerResponse) => {
         const url = new URL(req.url!, this.getDevServerUrl()!);
@@ -699,11 +716,53 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         return sendResponse(req, res);
       });
 
+      middleware.use(async (req: ServerRequest, res: ServerResponse, next: ServerNext) => {
+        const devMiddleware = (await metroSsr.ssrLoadModule(
+          require.resolve('expo-router/build/static/handler-dev.js')
+        )) as typeof import('expo-router/build/static/handler-dev');
+
+        const handler = await devMiddleware.createHandler({
+          projectRoot: this.projectRoot,
+          config: {
+            basePath: baseUrl,
+            htmlHead: '',
+            mainJs: '',
+            publicDir: '',
+            rscPath: '/rsc',
+            srcDir: '',
+          },
+          async renderRscWithWorker(props) {
+            return null;
+          },
+          ssrLoadModule: metroSsr.ssrLoadModule,
+          async transformIndexHtml(pathname, data) {
+            const start = `<!DOCTYPE html>
+            <html>
+              <head>
+                <meta charset="utf-8" />
+                <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+                <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover" />
+              </head>
+              <body></body>
+            </html>`;
+
+            // TODO: Run additional plugins.
+
+            return start;
+          },
+          env: process.env,
+          ssr: true,
+        });
+
+        return handler(req, res, next);
+      });
+
       if (useServerRendering) {
         const baseUrl = getBaseUrlFromExpoConfig(exp);
         const asyncRoutes = getAsyncRoutesFromExpoConfig(exp, options.mode ?? 'development', 'web');
         const routerRoot = getRouterDirectoryModuleIdWithManifest(this.projectRoot, exp);
         const appDir = path.join(this.projectRoot, routerRoot);
+
         middleware.use(
           createRouteHandlerMiddleware(this.projectRoot, {
             ...options,

@@ -1,6 +1,6 @@
 // import React, { Suspense } from 'react';
 // import OS from 'expo-router/os';
-// // import { Text, View, ScrollView } from 'react-native';
+// import { Text, View, ScrollView } from 'react-native';
 
 // import A02_Suspense from '../02-suspense/entry';
 // import A03_Promises from '../03-promises/entry';
@@ -14,7 +14,7 @@
 // import A11_ExpoViewsTest from '../11-expo-views/entry';
 // import A14_RNW from '../14-react-native-web/entry';
 
-// // import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient';
 // import { ScrollView, Text, View } from 'react-native';
 
 // const Container = OS === 'web' ? (props) => <div {...props} /> : (props) => <View {...props} />;
@@ -55,6 +55,7 @@ export default function App() {
   return (
     <div>
       <h1>Hello world</h1>
+      <LinearGradient colors={['red', 'yellow']}/>
       <Child>
         <h2>Child</h2>
       </Child>

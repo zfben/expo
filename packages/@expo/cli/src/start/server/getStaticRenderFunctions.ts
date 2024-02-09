@@ -20,7 +20,7 @@ import { SilentError } from '../../utils/errors';
 import { memoize } from '../../utils/fn';
 import { profile } from '../../utils/profile';
 
-type StaticRenderOptions = {
+export type StaticRenderOptions = {
   // Ensure the style format is `css-xxxx` (prod) instead of `css-view-xxxx` (dev)
   dev?: boolean;
   minify?: boolean;
@@ -238,6 +238,28 @@ export async function metroFetchAsync(url: string): Promise<{ src: string; filen
   return { src: wrapBundle(content), filename: url };
 }
 
+export function createMetroSsr(
+  projectRoot: string,
+  devServerUrl: string,
+  options: StaticRenderOptions
+) {
+  return {
+    async ssrLoadModule(
+      filePath: string,
+      specificOptions: Partial<StaticRenderOptions> = {}
+    ): Promise<any> {
+      return (
+        await getStaticRenderFunctionsForEntry(
+          projectRoot,
+          devServerUrl,
+          { ...options, ...specificOptions },
+          filePath
+        )
+      ).fn;
+    },
+  };
+}
+
 export async function getStaticRenderFunctions(
   projectRoot: string,
   devServerUrl: string,
@@ -252,6 +274,7 @@ export async function getStaticRenderFunctions(
     )
   ).fn;
 }
+
 export async function getStaticRenderFunctionsForEntry(
   projectRoot: string,
   devServerUrl: string,
