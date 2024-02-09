@@ -14,6 +14,7 @@ export declare function Link({ to, children, pending, notPending, unstable_prefe
 export declare function Router(): import("react").FunctionComponentElement<Omit<{
     initialInput?: string | undefined;
     initialSearchParamsString?: string | undefined;
+    cache?: [([input: string, searchParamsString: string, setElements: (fn: (prev: Promise<Record<string, ReactNode>>) => Promise<Record<string, ReactNode>>) => void, elements: Promise<Record<string, ReactNode>>] | undefined)?] | undefined;
     children: ReactNode;
 }, "children">>;
 export {};

@@ -23,79 +23,68 @@ const checkStatus = async (responsePromise) => {
     }
     return response;
 };
-const mergeElements = (0, react_1.cache)(async (a, b) => {
-    const nextElements = { ...(await a), ...(await b) };
-    delete nextElements._value;
-    return nextElements;
-});
-exports.fetchRSC = (0, react_1.cache)((input, searchParamsString, rerender) => {
+function getCached(c, m, k) {
+    return (m.has(k) ? m : m.set(k, c())).get(k);
+}
+const cache1 = new WeakMap();
+const mergeElements = (a, b) => {
+    const getResult = async () => {
+        const nextElements = { ...(await a), ...(await b) };
+        delete nextElements._value;
+        return nextElements;
+    };
+    const cache2 = getCached(() => new WeakMap(), cache1, a);
+    return getCached(getResult, cache2, b);
+};
+const fetchCache = [];
+const fetchRSC = (input, searchParamsString, setElements, cache = fetchCache) => {
+    let entry = cache[0];
+    if (entry && entry[0] === input && entry[1] === searchParamsString) {
+        entry[2] = setElements;
+        return entry[3];
+    }
     const options = {
         async callServer(actionId, args) {
-            console.log('call server action', actionId, args);
-            const searchParams = new URLSearchParams(searchParamsString);
-            const response = fetch(BASE_PATH + (0, utils_1.encodeInput)(encodeURIComponent(actionId)) + '?' + searchParams.toString(), {
+            const response = fetch(BASE_PATH + (0, utils_1.encodeInput)(encodeURIComponent(actionId)), {
                 method: 'POST',
                 body: await encodeReply(args),
-                // reactNative: { textStreaming: true },
             });
             const data = createFromFetch(checkStatus(response), options);
+            const setElements = entry[2];
             (0, react_1.startTransition)(() => {
-                console.log('update renderer:', data);
                 // FIXME this causes rerenders even if data is empty
-                rerender((prev) => mergeElements(prev, data));
+                setElements((prev) => mergeElements(prev, data));
             });
             return (await data)._value;
         },
     };
     const prefetched = (globalThis.__WAKU_PREFETCHED__ ||= {});
     const url = BASE_PATH + (0, utils_1.encodeInput)(input) + (searchParamsString ? '?' + searchParamsString : '');
-    console.log('fetchRSC', url);
-    const response = prefetched[url] ||
-        fetch(url, {
-        // reactNative: { textStreaming: true }
-        });
+    const response = prefetched[url] || fetch(url);
     delete prefetched[url];
     const data = createFromFetch(checkStatus(response), options);
+    cache[0] = entry = [input, searchParamsString, setElements, data];
     return data;
-});
-exports.prefetchRSC = (0, react_1.cache)((input, searchParamsString) => {
+};
+exports.fetchRSC = fetchRSC;
+const prefetchRSC = (input, searchParamsString) => {
     const prefetched = (globalThis.__WAKU_PREFETCHED__ ||= {});
     const url = BASE_PATH + (0, utils_1.encodeInput)(input) + (searchParamsString ? '?' + searchParamsString : '');
     if (!(url in prefetched)) {
-        console.log('prefetchRSC', url);
-        prefetched[url] = fetch(url, {
-        // reactNative: { textStreaming: true }
-        });
+        prefetched[url] = fetch(url);
     }
-});
+};
+exports.prefetchRSC = prefetchRSC;
 const RefetchContext = (0, react_1.createContext)(() => {
     throw new Error('Missing Root component');
 });
 const ElementsContext = (0, react_1.createContext)(null);
-// HACK there should be a better way...
-const createRerender = (0, react_1.cache)(() => {
-    let rerender;
-    const stableRerender = (fn) => {
-        rerender?.(fn);
-    };
-    const getRerender = () => stableRerender;
-    const setRerender = (newRerender) => {
-        rerender = newRerender;
-    };
-    return [getRerender, setRerender];
-});
-// export function ServerComponentHost(props) {
-//   return useServerComponent(props).readRoot();
-// }
-const Root = ({ initialInput, initialSearchParamsString, children, }) => {
-    const [getRerender, setRerender] = createRerender();
-    const [elements, setElements] = (0, react_1.useState)(() => (0, exports.fetchRSC)(initialInput || '', initialSearchParamsString || '', getRerender()));
-    setRerender(setElements);
+const Root = ({ initialInput, initialSearchParamsString, cache, children, }) => {
+    const [elements, setElements] = (0, react_1.useState)(() => (0, exports.fetchRSC)(initialInput || '', initialSearchParamsString || '', (fn) => setElements(fn), cache));
     const refetch = (0, react_1.useCallback)((input, searchParams) => {
-        const data = (0, exports.fetchRSC)(input, searchParams?.toString() || '', getRerender());
+        const data = (0, exports.fetchRSC)(input, searchParams?.toString() || '', setElements, cache);
         setElements((prev) => mergeElements(prev, data));
-    }, [getRerender]);
-    console.log('Render with elements,', elements);
+    }, [cache]);
     return (0, react_1.createElement)(RefetchContext.Provider, { value: refetch }, (0, react_1.createElement)(ElementsContext.Provider, { value: elements }, children));
 };
 exports.Root = Root;
@@ -104,23 +93,20 @@ exports.useRefetch = useRefetch;
 const ChildrenContext = (0, react_1.createContext)(undefined);
 const ChildrenContextProvider = (0, react_1.memo)(ChildrenContext.Provider);
 const Slot = ({ id, children, fallback, }) => {
-    // const elementsPromise = ElementsContext;
     const elementsPromise = (0, react_1.use)(ElementsContext);
     if (!elementsPromise) {
         throw new Error('Missing Root component');
     }
-    // const elements = elementsPromise;
     const elements = (0, react_1.use)(elementsPromise);
     if (!(id in elements)) {
         if (fallback) {
             return fallback;
         }
-        console.log('Expected one of:', elements);
         // throw new Error('Not found: ' + id);
     }
-    // TODO: Fix this to support multiple children
-    return (0, react_1.createElement)(ChildrenContextProvider, { value: children }, elements);
-    // return createElement(ChildrenContextProvider, { value: children }, elements[id]);
+    return (0, react_1.createElement)(ChildrenContextProvider, { value: children }, elements
+    // elements[id],
+    );
 };
 exports.Slot = Slot;
 const Children = () => (0, react_1.use)(ChildrenContext);

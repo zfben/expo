@@ -4,7 +4,6 @@
 'use client';
 
 import {
-  cache,
   createContext,
   createElement,
   memo,
@@ -12,7 +11,6 @@ import {
   useCallback,
   useState,
   startTransition,
-  Suspense,
 } from 'react';
 import type { ReactNode } from 'react';
 import RSDWClient from 'react-server-dom-webpack/client';
@@ -44,65 +42,73 @@ const checkStatus = async (responsePromise: Promise<Response>): Promise<Response
 
 type Elements = Promise<Record<string, ReactNode>>;
 
-const mergeElements = cache(async (a: Elements, b: Elements | Awaited<Elements>): Elements => {
-  const nextElements = { ...(await a), ...(await b) };
-  delete nextElements._value;
-  return nextElements;
-});
+function getCached<T>(c: () => T, m: WeakMap<object, T>, k: object): T {
+  return (m.has(k) ? m : m.set(k, c())).get(k) as T;
+}
 
-export const fetchRSC = cache(
-  (
-    input: string,
-    searchParamsString: string,
-    rerender: (fn: (prev: Elements) => Elements) => void
-  ): Elements => {
-    const options = {
-      async callServer(actionId: string, args: unknown[]) {
-        console.log('call server action', actionId, args);
-        const searchParams = new URLSearchParams(searchParamsString);
+const cache1 = new WeakMap();
+const mergeElements = (a: Elements, b: Elements | Awaited<Elements>): Elements => {
+  const getResult = async () => {
+    const nextElements = { ...(await a), ...(await b) };
+    delete nextElements._value;
+    return nextElements;
+  };
+  const cache2 = getCached(() => new WeakMap(), cache1, a);
+  return getCached(getResult, cache2, b);
+};
 
-        const response = fetch(
-          BASE_PATH + encodeInput(encodeURIComponent(actionId)) + '?' + searchParams.toString(),
-          {
-            method: 'POST',
-            body: await encodeReply(args),
-            // reactNative: { textStreaming: true },
-          }
-        );
-        const data = createFromFetch<Awaited<Elements>>(checkStatus(response), options);
-        startTransition(() => {
-          console.log('update renderer:', data);
-          // FIXME this causes rerenders even if data is empty
-          rerender((prev) => mergeElements(prev, data));
-        });
-        return (await data)._value;
-      },
-    };
-    const prefetched = ((globalThis as any).__WAKU_PREFETCHED__ ||= {});
-    const url =
-      BASE_PATH + encodeInput(input) + (searchParamsString ? '?' + searchParamsString : '');
-    console.log('fetchRSC', url);
-    const response =
-      prefetched[url] ||
-      fetch(url, {
-        // reactNative: { textStreaming: true }
-      });
-    delete prefetched[url];
-    const data = createFromFetch<Awaited<Elements>>(checkStatus(response), options);
-    return data;
+type SetElements = (fn: (prev: Elements) => Elements) => void;
+type CacheEntry = [
+  input: string,
+  searchParamsString: string,
+  setElements: SetElements,
+  elements: Elements,
+];
+
+const fetchCache: [CacheEntry?] = [];
+
+export const fetchRSC = (
+  input: string,
+  searchParamsString: string,
+  setElements: SetElements,
+  cache = fetchCache
+): Elements => {
+  let entry: CacheEntry | undefined = cache[0];
+  if (entry && entry[0] === input && entry[1] === searchParamsString) {
+    entry[2] = setElements;
+    return entry[3];
   }
-);
+  const options = {
+    async callServer(actionId: string, args: unknown[]) {
+      const response = fetch(BASE_PATH + encodeInput(encodeURIComponent(actionId)), {
+        method: 'POST',
+        body: await encodeReply(args),
+      });
+      const data = createFromFetch<Awaited<Elements>>(checkStatus(response), options);
+      const setElements = entry![2];
+      startTransition(() => {
+        // FIXME this causes rerenders even if data is empty
+        setElements((prev) => mergeElements(prev, data));
+      });
+      return (await data)._value;
+    },
+  };
+  const prefetched = ((globalThis as any).__WAKU_PREFETCHED__ ||= {});
+  const url = BASE_PATH + encodeInput(input) + (searchParamsString ? '?' + searchParamsString : '');
+  const response = prefetched[url] || fetch(url);
+  delete prefetched[url];
+  const data = createFromFetch<Awaited<Elements>>(checkStatus(response), options);
+  cache[0] = entry = [input, searchParamsString, setElements, data];
+  return data;
+};
 
-export const prefetchRSC = cache((input: string, searchParamsString: string): void => {
+export const prefetchRSC = (input: string, searchParamsString: string): void => {
   const prefetched = ((globalThis as any).__WAKU_PREFETCHED__ ||= {});
   const url = BASE_PATH + encodeInput(input) + (searchParamsString ? '?' + searchParamsString : '');
   if (!(url in prefetched)) {
-    console.log('prefetchRSC', url);
-    prefetched[url] = fetch(url, {
-      // reactNative: { textStreaming: true }
-    });
+    prefetched[url] = fetch(url);
   }
-});
+};
 
 const RefetchContext = createContext<(input: string, searchParams?: URLSearchParams) => void>(
   () => {
@@ -111,47 +117,27 @@ const RefetchContext = createContext<(input: string, searchParams?: URLSearchPar
 );
 const ElementsContext = createContext<Elements | null>(null);
 
-// HACK there should be a better way...
-const createRerender = cache(() => {
-  let rerender: ((fn: (prev: Elements) => Elements) => void) | undefined;
-  const stableRerender = (fn: Parameters<NonNullable<typeof rerender>>[0]) => {
-    rerender?.(fn);
-  };
-  const getRerender = () => stableRerender;
-  const setRerender = (newRerender: NonNullable<typeof rerender>) => {
-    rerender = newRerender;
-  };
-  return [getRerender, setRerender] as const;
-});
-
-// export function ServerComponentHost(props) {
-//   return useServerComponent(props).readRoot();
-// }
-
 export const Root = ({
   initialInput,
   initialSearchParamsString,
+  cache,
   children,
 }: {
   initialInput?: string;
   initialSearchParamsString?: string;
+  cache?: typeof fetchCache;
   children: ReactNode;
 }) => {
-  const [getRerender, setRerender] = createRerender();
-
   const [elements, setElements] = useState(() =>
-    fetchRSC(initialInput || '', initialSearchParamsString || '', getRerender())
+    fetchRSC(initialInput || '', initialSearchParamsString || '', (fn) => setElements(fn), cache)
   );
-
-  setRerender(setElements);
   const refetch = useCallback(
     (input: string, searchParams?: URLSearchParams) => {
-      const data = fetchRSC(input, searchParams?.toString() || '', getRerender());
+      const data = fetchRSC(input, searchParams?.toString() || '', setElements, cache);
       setElements((prev) => mergeElements(prev, data));
     },
-    [getRerender]
+    [cache]
   );
-  console.log('Render with elements,', elements);
   return createElement(
     RefetchContext.Provider,
     { value: refetch },
@@ -173,23 +159,23 @@ export const Slot = ({
   children?: ReactNode;
   fallback?: ReactNode;
 }) => {
-  // const elementsPromise = ElementsContext;
   const elementsPromise = use(ElementsContext);
   if (!elementsPromise) {
     throw new Error('Missing Root component');
   }
-  // const elements = elementsPromise;
   const elements = use(elementsPromise);
   if (!(id in elements)) {
     if (fallback) {
       return fallback;
     }
-    console.log('Expected one of:', elements);
     // throw new Error('Not found: ' + id);
   }
-  // TODO: Fix this to support multiple children
-  return createElement(ChildrenContextProvider, { value: children }, elements);
-  // return createElement(ChildrenContextProvider, { value: children }, elements[id]);
+  return createElement(
+    ChildrenContextProvider,
+    { value: children },
+    elements
+    // elements[id],
+  );
 };
 
 export const Children = () => use(ChildrenContext);

@@ -716,46 +716,46 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         return sendResponse(req, res);
       });
 
-      middleware.use(async (req: ServerRequest, res: ServerResponse, next: ServerNext) => {
-        const devMiddleware = (await metroSsr.ssrLoadModule(
-          require.resolve('expo-router/build/static/handler-dev.js')
-        )) as typeof import('expo-router/build/static/handler-dev');
+      // middleware.use(async (req: ServerRequest, res: ServerResponse, next: ServerNext) => {
+      //   const devMiddleware = (await metroSsr.ssrLoadModule(
+      //     require.resolve('expo-router/build/static/handler-dev.js')
+      //   )) as typeof import('expo-router/build/static/handler-dev');
 
-        const handler = await devMiddleware.createHandler({
-          projectRoot: this.projectRoot,
-          config: {
-            basePath: baseUrl,
-            htmlHead: '',
-            mainJs: '',
-            publicDir: '',
-            rscPath: '/rsc',
-            srcDir: '',
-          },
-          async renderRscWithWorker(props) {
-            return null;
-          },
-          ssrLoadModule: metroSsr.ssrLoadModule,
-          async transformIndexHtml(pathname, data) {
-            const start = `<!DOCTYPE html>
-            <html>
-              <head>
-                <meta charset="utf-8" />
-                <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-                <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover" />
-              </head>
-              <body></body>
-            </html>`;
+      //   const handler = await devMiddleware.createHandler({
+      //     projectRoot: this.projectRoot,
+      //     config: {
+      //       basePath: baseUrl,
+      //       htmlHead: '',
+      //       mainJs: '',
+      //       publicDir: '',
+      //       rscPath: '/rsc',
+      //       srcDir: '',
+      //     },
+      //     async renderRscWithWorker(props) {
+      //       return null;
+      //     },
+      //     ssrLoadModule: metroSsr.ssrLoadModule,
+      //     async transformIndexHtml(pathname, data) {
+      //       const start = `<!DOCTYPE html>
+      //       <html>
+      //         <head>
+      //           <meta charset="utf-8" />
+      //           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+      //           <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover" />
+      //         </head>
+      //         <body></body>
+      //       </html>`;
 
-            // TODO: Run additional plugins.
+      //       // TODO: Run additional plugins.
 
-            return start;
-          },
-          env: process.env,
-          ssr: true,
-        });
+      //       return start;
+      //     },
+      //     env: process.env,
+      //     ssr: true,
+      //   });
 
-        return handler(req, res, next);
-      });
+      //   return handler(req, res, next);
+      // });
 
       if (useServerRendering) {
         const baseUrl = getBaseUrlFromExpoConfig(exp);

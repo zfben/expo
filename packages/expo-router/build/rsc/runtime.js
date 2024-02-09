@@ -10,7 +10,8 @@ const rscClientModuleCache = new Map();
 function buildProdAsyncRequire() {
     const cache = new Map();
     const boundaries = require('expo-router/virtual-client-boundaries');
-    if (!boundaries)
+    // TODO: Expose "is connected to dev server" to disable this.
+    if (!boundaries || !Object.keys(boundaries).length)
         return null;
     return async function universal_loadBundleAsync(path) {
         if (cache.has(path)) {

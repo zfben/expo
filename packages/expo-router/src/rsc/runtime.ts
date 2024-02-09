@@ -8,7 +8,6 @@
 // Runtime code for patching Webpack's require function to use Metro.
 const rscClientModuleCache = new Map();
 
-
 /**
  * Must satisfy the requirements of the Metro bundler.
  * https://github.com/react-native-community/discussions-and-proposals/blob/main/proposals/0605-lazy-bundling.md#__loadbundleasync-in-metro
@@ -23,17 +22,18 @@ function buildProdAsyncRequire(): AsyncRequire | null {
     [key: string]: () => Promise<any>;
   };
 
-  if (!boundaries) return null;
+  // TODO: Expose "is connected to dev server" to disable this.
+  if (!boundaries || !Object.keys(boundaries).length) return null;
 
   return async function universal_loadBundleAsync(path: string): Promise<void> {
     if (cache.has(path)) {
       return cache.get(path)!;
     }
 
-    debugger
+    debugger;
     const promise = boundaries[path]().catch((error) => {
       cache.delete(path);
-      debugger
+      debugger;
       throw error;
     });
 
@@ -45,7 +45,6 @@ function buildProdAsyncRequire(): AsyncRequire | null {
 
 const prodFetcher = buildProdAsyncRequire();
 
-
 globalThis.__webpack_chunk_load__ = (id) => {
   // ID is a URL with the opaque Metro require ID as the hash.
   // http://localhost:8081/node_modules/react-native-web/dist/exports/Text/index.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=src%2Fapp&modulesOnly=true&runModule=false#798513620
@@ -54,7 +53,7 @@ globalThis.__webpack_chunk_load__ = (id) => {
 
   const numericMetroId = parseInt(url.hash.slice(1));
   console.log('__webpack_chunk_load__', id, numericMetroId);
-  
+
   let loadBundlePromise: Promise<void>;
   if (prodFetcher) {
     console.log('__webpack_chunk_load__ > production:', numericMetroId);
@@ -68,8 +67,8 @@ globalThis.__webpack_chunk_load__ = (id) => {
     .then(() => {
       const m = __r(numericMetroId);
       rscClientModuleCache.set(id, m);
-      console.log(`Remote client module "${id}" >`, m)
-      debugger
+      console.log(`Remote client module "${id}" >`, m);
+      debugger;
       return m;
     })
     .catch((e) => {
