@@ -8,12 +8,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.App = void 0;
+// This has to be the string "expo-router/_ctx" as we resolve the exact string to
+// a different file in a custom resolver for bundle splitting in Node.js.
+const getDevServer_1 = __importDefault(require("@expo/metro-runtime/build/getDevServer"));
 const react_1 = __importDefault(require("react"));
 // import { ExpoRoot } from './ExpoRoot';
 const head_1 = require("./head");
 const client_1 = require("./rsc/client");
 // MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
-const getDevServer_1 = __importDefault(require("@expo/metro-runtime/build/getDevServer"));
 // import { Try } from './views/Try';
 // import { ErrorBoundary } from './exports';
 const introUrl = (0, getDevServer_1.default)().fullBundleUrl;

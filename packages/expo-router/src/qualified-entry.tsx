@@ -5,14 +5,15 @@
 
 // This has to be the string "expo-router/_ctx" as we resolve the exact string to
 // a different file in a custom resolver for bundle splitting in Node.js.
+import getDevServer from '@expo/metro-runtime/build/getDevServer';
 import { ctx } from 'expo-router/_ctx';
 import React from 'react';
+
 // import { ExpoRoot } from './ExpoRoot';
 import { Head } from './head';
 import { Slot, Root } from './rsc/client';
 
 // MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
-import getDevServer from '@expo/metro-runtime/build/getDevServer';
 // import { Try } from './views/Try';
 // import { ErrorBoundary } from './exports';
 

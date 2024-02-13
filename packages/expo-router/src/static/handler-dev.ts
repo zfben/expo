@@ -4,10 +4,10 @@ import { Readable, Writable } from 'node:stream';
 
 // import type { Config } from '../../config.js';
 // import { resolveConfig } from '../config.js';
-import { joinPath, fileURLToFilePath, decodeFilePathFromAbsolute } from '../rsc/path.js';
-import { endStream } from '../rsc/stream';
 import { renderHtml } from './html-renderer';
 import { decodeInput, hasStatusCode } from './utils';
+import { joinPath, fileURLToFilePath, decodeFilePathFromAbsolute } from '../rsc/path.js';
+import { endStream } from '../rsc/stream';
 // import {
 //   initializeWorker,
 //   registerReloadCallback,
@@ -240,6 +240,5 @@ export function createHandler<Context, Req extends Request, Res extends Response
     // vite.middlewares(viteReq, viteRes, next);
 
     // TODO: End request
-    return;
   };
 }

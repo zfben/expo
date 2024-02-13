@@ -10,11 +10,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.renderToPipeableStream = exports.fileURLToFilePath = void 0;
-const react_1 = __importDefault(require("react"));
+const stream_1 = require("@remix-run/node/dist/stream");
 const path_1 = __importDefault(require("path"));
+const react_1 = __importDefault(require("react"));
 const _ctx_1 = require("../../_ctx");
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
-const stream_1 = require("@remix-run/node/dist/stream");
 const debug = require('debug')('expo:rsc');
 // NOTE: MUST MATCH THE IMPL IN ExpoMetroConfig.ts
 function stringToHash(str) {
@@ -157,7 +157,7 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, isEx
         }
         const fn = mod[name] || mod;
         // console.log('Target function:', fn);
-        let elements = Promise.resolve({});
+        const elements = Promise.resolve({});
         let rendered = false;
         // TODO: Define context
         const context = {};

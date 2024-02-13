@@ -2,7 +2,9 @@
 // import { renderToPipeableStream } from '../renderStaticContent';
 // import { Text } from 'react-native';
 import React from 'react';
+import ReactDOMServer from 'react-dom/server.node';
 import { Writable } from 'stream';
+
 // import { router } from 'expo-router';
 // import { useGlobalSearchParams } from '../../hooks';
 // import requireContext from '../../testing-library/require-context-ponyfill';
@@ -28,10 +30,8 @@ jest.mock('../../../_ctx.web.js', () => {
   });
 });
 
-import ReactDOMServer from 'react-dom/server.node';
-
-const { renderToPipeableStream } = require('react-server-dom-webpack/server');
 const register = require('react-server-dom-webpack/node-register');
+const { renderToPipeableStream } = require('react-server-dom-webpack/server');
 register();
 
 it(`renders browser-native RSC`, async () => {

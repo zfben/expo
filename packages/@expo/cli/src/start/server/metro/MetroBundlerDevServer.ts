@@ -12,15 +12,14 @@ import { respond } from '@expo/server/build/vendor/http';
 import { createReadableStreamFromReadable } from '@remix-run/node';
 import assert from 'assert';
 import chalk from 'chalk';
-import { AssetData, Server } from 'metro';
+import { AssetData } from 'metro';
 import fetch from 'node-fetch';
 import path from 'path';
 
 import { createRouteHandlerMiddleware } from './createServerRouteMiddleware';
 import { ExpoRouterServerManifestV1, fetchManifest } from './fetchRouterManifest';
 import { instantiateMetroAsync } from './instantiateMetro';
-import { logMetroError } from './metroErrorInterface';
-import { getErrorOverlayHtmlAsync, logMetroErrorAsync } from './metroErrorInterface';
+import { logMetroError, getErrorOverlayHtmlAsync, logMetroErrorAsync } from './metroErrorInterface';
 import { metroWatchTypeScriptFiles } from './metroWatchTypeScriptFiles';
 import {
   getRouterDirectoryModuleIdWithManifest,
@@ -38,16 +37,10 @@ import { CommandError } from '../../../utils/errors';
 import { getFreePortAsync } from '../../../utils/port';
 import { BundlerDevServer, BundlerStartOptions, DevServerInstance } from '../BundlerDevServer';
 import {
-  StaticRenderOptions,
-  createMetroSsr,
   evalMetro,
-  getStaticRenderFunctions,
   getStaticRenderFunctionsForEntry,
   metroFetchAsync,
-} from '../getStaticRenderFunctions';
-import {
   evalMetroNoHandling,
-  getStaticRenderFunctionsForEntry,
   requireFileContentsWithMetro,
 } from '../getStaticRenderFunctions';
 import { ContextModuleSourceMapsMiddleware } from '../middleware/ContextModuleSourceMapsMiddleware';
@@ -57,6 +50,7 @@ import { FaviconMiddleware } from '../middleware/FaviconMiddleware';
 import { HistoryFallbackMiddleware } from '../middleware/HistoryFallbackMiddleware';
 import { InterstitialPageMiddleware } from '../middleware/InterstitialPageMiddleware';
 import { getMetroServerRoot, resolveMainModuleName } from '../middleware/ManifestMiddleware';
+import { stripAnsi } from '../../../utils/ansi';
 import { ReactDevToolsPageMiddleware } from '../middleware/ReactDevToolsPageMiddleware';
 import {
   DeepLinkHandler,
@@ -75,7 +69,6 @@ import {
 import { prependMiddleware } from '../middleware/mutations';
 import { ServerNext, ServerRequest, ServerResponse } from '../middleware/server.types';
 import { startTypescriptTypeGenerationAsync } from '../type-generation/startTypescriptTypeGeneration';
-import { stripAnsi } from '../../../utils/ansi';
 
 export type ExpoRouterRuntimeManifest = Awaited<
   ReturnType<typeof import('expo-router/build/static/renderStaticContent').getManifest>
@@ -213,55 +206,6 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       async renderAsync(path: string) {
         return await getStaticContent(new URL(path, url));
       },
-    };
-  }
-
-  private async getReactServerFunctionAsync({
-    mode,
-    minify = mode !== 'development',
-    baseUrl,
-    rscPath,
-    isReactServer,
-    routerRoot,
-    platform,
-    isExporting,
-  }: {
-    mode: 'development' | 'production';
-    minify?: boolean;
-    baseUrl: string;
-    rscPath: string;
-    isReactServer?: boolean;
-    routerRoot: string;
-    platform?: string;
-    isExporting: boolean;
-  }): Promise<{
-    serverUrl: string;
-    renderToPipeableStream: (...props: any[]) => Promise<ReadableStream>;
-  }> {
-    const url = this.getDevServerUrl()!;
-
-    const { filename, fn } = await getStaticRenderFunctionsForEntry(
-      this.projectRoot,
-      url,
-      {
-        minify,
-        platform,
-        dev: mode !== 'production',
-        // Ensure the API Routes are included
-        environment: 'node',
-        baseUrl,
-        rscPath,
-        routerRoot,
-        isReactServer,
-        isExporting,
-      },
-
-      'expo-router/node/rsc.js'
-    );
-
-    return {
-      serverUrl: filename,
-      renderToPipeableStream: fn.renderToPipeableStream,
     };
   }
 
@@ -408,6 +352,8 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       isExporting,
       asyncRoutes,
       routerRoot,
+      clientBoundaries,
+
       // ignoredModules: isExporting
       //   ? []
       //   : [
@@ -461,32 +407,39 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     filePath: string,
     specificOptions: Partial<ExpoMetroOptions> = {}
   ): Promise<T> {
+    return await (
+      await this.ssrLoadModuleAndHmrEntry<T>(filePath, specificOptions)
+    ).fn;
+  }
+
+  async ssrLoadModuleAndHmrEntry<T extends Record<string, any>>(
+    filePath: string,
+    specificOptions: Partial<ExpoMetroOptions> = {}
+  ): Promise<{ fn: T; filename: string }> {
     const { baseUrl, routerRoot, isExporting } = this.instanceMetroOptions;
     assert(
       baseUrl != null && routerRoot != null && isExporting != null,
       'The server must be started before calling ssrLoadModule.'
     );
 
-    return (
-      await getStaticRenderFunctionsForEntry<T>(
-        this.projectRoot,
-        this.getDevServerUrl()!,
-        {
-          // Bundle in Node.js mode for SSR.
-          environment: 'node',
-          platform: 'web',
-          mode: 'development',
-          bytecode: false,
+    return await getStaticRenderFunctionsForEntry<T>(
+      this.projectRoot,
+      this.getDevServerUrl()!,
+      {
+        // Bundle in Node.js mode for SSR.
+        environment: 'node',
+        platform: 'web',
+        mode: 'development',
+        bytecode: false,
 
-          ...this.instanceMetroOptions,
-          baseUrl,
-          routerRoot,
-          isExporting,
-          ...specificOptions,
-        },
-        filePath
-      )
-    ).fn;
+        ...this.instanceMetroOptions,
+        baseUrl,
+        routerRoot,
+        isExporting,
+        ...specificOptions,
+      },
+      filePath
+    );
   }
 
   async ssrLoadModuleContents(
@@ -592,10 +545,6 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     return '';
   }
 
-  createMetroSsr(options: StaticRenderOptions) {
-    return createMetroSsr(this.projectRoot, this.getDevServerUrl()!, options);
-  }
-
   getExpoLineOptions() {
     return this.instanceMetroOptions;
   }
@@ -612,6 +561,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     const baseUrl = getBaseUrlFromExpoConfig(exp);
     const asyncRoutes = getAsyncRoutesFromExpoConfig(exp, options.mode ?? 'development', 'web');
     const routerRoot = getRouterDirectoryModuleIdWithManifest(this.projectRoot, exp);
+    const rscPath = getRscPathFromExpoConfig(exp);
     const appDir = path.join(this.projectRoot, routerRoot);
     const mode = options.mode ?? 'development';
 
@@ -622,6 +572,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       routerRoot,
       minify: options.minify,
       asyncRoutes,
+      rscPath,
       // Options that are changing between platforms like engine, platform, and environment aren't set here.
     };
 
@@ -691,22 +642,6 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       // This should come after the static middleware so it doesn't serve the favicon from `public/favicon.ico`.
       middleware.use(new FaviconMiddleware(this.projectRoot).getHandler());
 
-      const rscPath = getRscPathFromExpoConfig(exp);
-      const baseUrl = getBaseUrlFromExpoConfig(exp);
-      const routerRoot = getRouterDirectoryModuleIdWithManifest(this.projectRoot, exp);
-
-      const metroSsr = this.createMetroSsr({
-        dev: options.mode !== 'production',
-        platform: 'web',
-        minify: options.minify,
-        baseUrl,
-        rscPath,
-        isReactServer: true,
-        routerRoot,
-        isExporting: !!options.isExporting,
-        environment: 'node',
-      });
-
       let rscPathPrefix = '/' + rscPath.replace(/^\/+/, '').replace(/\/+$/, '');
       if (rscPathPrefix !== '/') {
         rscPathPrefix += '/';
@@ -722,15 +657,14 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         const mode = options.mode ?? 'development';
         try {
           // TODO: Extract CSS Modules / Assets from the bundler process
-          const { serverUrl, renderToPipeableStream } = await this.getReactServerFunctionAsync({
-            mode,
+          const {
+            filename: serverUrl,
+            fn: { renderToPipeableStream },
+          } = await this.ssrLoadModuleAndHmrEntry<
+            typeof import('expo-router/build/static/renderToPipeableStream')
+          >('expo-router/node/rsc.js', {
+            rsc: true,
             platform: url.searchParams.get('platform') ?? 'web',
-            minify: options.minify,
-            baseUrl,
-            isReactServer: true,
-            routerRoot,
-            isExporting: !!options.isExporting,
-            rscPath,
           });
 
           const input = './index.tsx';
@@ -755,7 +689,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
                 url.searchParams.set('resolver.rsc', String(rsc));
 
                 const urlString = url.toString();
-                const contents = await metroFetchAsync(urlString);
+                const contents = await metroFetchAsync(this.projectRoot, urlString);
                 // console.log('Server action:');
                 // console.log(contents);
                 return evalMetro(this.projectRoot, contents.src, contents.filename);

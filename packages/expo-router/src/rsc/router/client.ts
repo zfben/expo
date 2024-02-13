@@ -20,9 +20,9 @@ import type {
   MouseEvent,
 } from 'react';
 
-import { prefetchRSC, Root, Slot, useRefetch } from '../client';
 import { getComponentIds, getInputString, PARAM_KEY_SKIP, SHOULD_SKIP_ID } from './common';
 import type { RouteProps, ShouldSkip } from './common';
+import { prefetchRSC, Root, Slot, useRefetch } from '../client';
 
 const parseLocation = (): RouteProps => {
   const { pathname, search } = window.location;

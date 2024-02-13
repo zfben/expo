@@ -5,13 +5,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import { readableStreamToString } from '@remix-run/node/dist/stream';
 import path from 'path';
-import { ctx } from '../../_ctx';
+import React from 'react';
 import type { ReactNode } from 'react';
 
+import { ctx } from '../../_ctx';
+
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
-import { readableStreamToString } from '@remix-run/node/dist/stream';
 
 const debug = require('debug')('expo:rsc');
 
@@ -213,7 +214,7 @@ export async function renderToPipeableStream(
     const fn = mod[name] || mod;
     // console.log('Target function:', fn);
 
-    let elements: Promise<Record<string, ReactNode>> = Promise.resolve({});
+    const elements: Promise<Record<string, ReactNode>> = Promise.resolve({});
     let rendered = false;
 
     // TODO: Define context

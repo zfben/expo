@@ -6,10 +6,10 @@ const node_stream_1 = require("node:stream");
 // import viteReact from '@vitejs/plugin-react';
 // import type { Config } from '../../config.js';
 // import { resolveConfig } from '../config.js';
-const path_js_1 = require("../rsc/path.js");
-const stream_1 = require("../rsc/stream");
 const html_renderer_1 = require("./html-renderer");
 const utils_1 = require("./utils");
+const path_js_1 = require("../rsc/path.js");
+const stream_1 = require("../rsc/stream");
 // import {
 //   initializeWorker,
 //   registerReloadCallback,
@@ -209,7 +209,6 @@ function createHandler(options) {
         };
         // vite.middlewares(viteReq, viteRes, next);
         // TODO: End request
-        return;
     };
 }
 exports.createHandler = createHandler;

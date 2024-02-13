@@ -28,9 +28,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.renderRootComponent = void 0;
 const expo_1 = require("expo");
+const os_1 = __importDefault(require("expo-router/os"));
 const SplashScreen = __importStar(require("expo-splash-screen"));
 const react_1 = __importDefault(require("react"));
-const os_1 = __importDefault(require("expo-router/os"));
 // import { View } from 'react-native';
 function isBaseObject(obj) {
     if (Object.prototype.toString.call(obj) !== '[object Object]') {

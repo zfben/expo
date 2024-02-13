@@ -244,8 +244,7 @@ export function parseModule(
     comments: true,
     filename,
     plugins: [
-      require('babel-preset-expo/build/expo-router-plugin')
-        .expoRouterBabelPlugin,
+      require('babel-preset-expo/build/expo-router-plugin').expoRouterBabelPlugin,
       [metroTransformPlugins.importExportPlugin, babelPluginOpts],
     ],
     caller: {

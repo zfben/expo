@@ -3,8 +3,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Router = exports.Link = exports.useLocation = exports.useChangeLocation = void 0;
 const react_1 = require("react");
-const client_1 = require("../client");
 const common_1 = require("./common");
+const client_1 = require("../client");
 const parseLocation = () => {
     const { pathname, search } = window.location;
     const searchParams = new URLSearchParams(search);

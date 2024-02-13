@@ -24,9 +24,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.renderHtml = void 0;
-const stream_1 = require("../rsc/stream");
-const path_1 = require("../rsc/path");
+const react_1 = require("react");
+const server_edge_1 = require("react-dom/server.edge");
+const client_edge_1 = require("react-server-dom-webpack/client.edge");
 const utils_1 = require("./utils");
+const client_1 = require("../rsc/client");
+const path_1 = require("../rsc/path");
+const stream_1 = require("../rsc/stream");
 // TODO(bacon): Add this somehow
 const importMetaUrl = import.meta.url;
 // HACK for react-server-dom-webpack without webpack
@@ -163,10 +167,6 @@ const rectifyHtml = () => {
     });
 };
 const buildHtml = (createElement, head, body) => createElement('html', null, createElement('head', { dangerouslySetInnerHTML: { __html: head } }), createElement('body', null, body));
-const react_1 = require("react");
-const server_edge_1 = require("react-dom/server.edge");
-const client_edge_1 = require("react-server-dom-webpack/client.edge");
-const client_1 = require("../rsc/client");
 const renderHtml = async (opts) => {
     const { config, pathname, searchParams, htmlHead, renderRscForHtml, getSsrConfigForHtml, isDev } = opts;
     const ssrConfig = await getSsrConfigForHtml?.(pathname, searchParams);

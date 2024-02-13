@@ -33,7 +33,6 @@ export function createRouteHandlerMiddleware(
       functionFilePath: string
     ) => Promise<null | Record<string, Function> | Response>;
     config: ProjectConfig;
-    isExporting: boolean;
   }
 ) {
   if (!resolveFrom.silent(projectRoot, 'expo-router')) {

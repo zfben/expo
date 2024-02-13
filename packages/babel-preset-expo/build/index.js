@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const client_module_proxy_plugin_1 = require("./client-module-proxy-plugin");
 const common_1 = require("./common");
 const expo_inline_manifest_plugin_1 = require("./expo-inline-manifest-plugin");
 const expo_router_plugin_1 = require("./expo-router-plugin");
-const client_module_proxy_plugin_1 = require("./client-module-proxy-plugin");
 const inline_env_vars_1 = require("./inline-env-vars");
 const lazyImports_1 = require("./lazyImports");
 function getOptions(options, platform) {

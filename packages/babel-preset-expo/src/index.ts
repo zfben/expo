@@ -1,6 +1,10 @@
 import { ConfigAPI, PluginItem, TransformOptions } from '@babel/core';
 
 import {
+  expoRouterServerComponentClientReferencesPlugin,
+  rscForbiddenReactAPIsPlugin,
+} from './client-module-proxy-plugin';
+import {
   getBaseUrl,
   getBundler,
   getInlineEnvVarsEnabled,
@@ -13,11 +17,6 @@ import {
 } from './common';
 import { expoInlineManifestPlugin } from './expo-inline-manifest-plugin';
 import { expoRouterBabelPlugin } from './expo-router-plugin';
-
-import {
-  expoRouterServerComponentClientReferencesPlugin,
-  rscForbiddenReactAPIsPlugin,
-} from './client-module-proxy-plugin';
 import { expoInlineEnvVars, expoInlineTransformEnvVars } from './inline-env-vars';
 import { lazyImports } from './lazyImports';
 

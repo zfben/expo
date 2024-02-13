@@ -50,6 +50,9 @@ function getBabelCaller({ filename, options }) {
         baseUrl: typeof options.customTransformOptions?.baseUrl === 'string'
             ? decodeURI(options.customTransformOptions.baseUrl)
             : '',
+        rscPath: typeof options.customTransformOptions?.rscPath === 'string'
+            ? decodeURI(options.customTransformOptions.rscPath)
+            : '',
         // Ensure we always use a mostly-valid router root.
         routerRoot: routerRoot ?? 'app',
         isDev: options.dev,

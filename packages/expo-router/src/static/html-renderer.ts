@@ -4,10 +4,14 @@ import type {
   FunctionComponent,
   ComponentProps,
 } from 'react';
+import { createElement } from 'react';
+import { renderToReadableStream } from 'react-dom/server.edge';
+import { createFromReadableStream } from 'react-server-dom-webpack/client.edge';
 
-import { concatUint8Arrays } from '../rsc/stream';
-import { joinPath, filePathToFileURL, fileURLToFilePath } from '../rsc/path';
 import { encodeInput, hasStatusCode } from './utils';
+import { ServerRoot } from '../rsc/client';
+import { joinPath, filePathToFileURL, fileURLToFilePath } from '../rsc/path';
+import { concatUint8Arrays } from '../rsc/stream';
 
 // TODO(bacon): Add this somehow
 const importMetaUrl = import.meta.url;
@@ -172,11 +176,6 @@ const buildHtml = (createElement: typeof createElementType, head: string, body: 
     createElement('head', { dangerouslySetInnerHTML: { __html: head } }),
     createElement('body', null, body)
   );
-
-import { createElement } from 'react';
-import { renderToReadableStream } from 'react-dom/server.edge';
-import { createFromReadableStream } from 'react-server-dom-webpack/client.edge';
-import { ServerRoot } from '../rsc/client';
 
 export const renderHtml = async (
   opts: {
