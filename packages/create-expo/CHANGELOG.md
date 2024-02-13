@@ -14,6 +14,8 @@
 
 ### 💡 Others
 
+- Document basic assumptions about the templating system.
+
 ## 2.1.3 — 2023-12-12
 
 ### 💡 Others
