@@ -137,7 +137,6 @@ function getDefaultSerializer(config, fallbackSerializer, configOptions = {}) {
         const serializerOptions = (() => {
             if (customSerializerOptions) {
                 return {
-                    includeBytecode: customSerializerOptions.includeBytecode,
                     outputMode: customSerializerOptions.output,
                     includeSourceMaps: customSerializerOptions.includeSourceMaps,
                 };
@@ -150,7 +149,6 @@ function getDefaultSerializer(config, fallbackSerializer, configOptions = {}) {
                 return {
                     outputMode: url.searchParams.get('serializer.output'),
                     includeSourceMaps: url.searchParams.get('serializer.map') === 'true',
-                    includeBytecode: url.searchParams.get('serializer.bytecode') === 'true',
                 };
             }
             return null;
@@ -194,7 +192,6 @@ function getDefaultSerializer(config, fallbackSerializer, configOptions = {}) {
         };
         const assets = await (0, serializeChunks_1.graphToSerialAssetsAsync)(config, {
             includeSourceMaps: !!serializerOptions.includeSourceMaps,
-            includeBytecode: !!serializerOptions.includeBytecode,
             ...configOptions,
         }, ...props);
         if (supportsNonSerialReturn) {

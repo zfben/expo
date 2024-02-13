@@ -2,6 +2,17 @@ import { getConfig } from '@expo/config';
 import chalk from 'chalk';
 import path from 'path';
 
+import * as Log from '../log';
+import { WebSupportProjectPrerequisite } from '../start/doctor/web/WebSupportProjectPrerequisite';
+import { getRouterDirectoryModuleIdWithManifest } from '../start/server/metro/router';
+import { serializeHtmlWithAssets } from '../start/server/metro/serializeHtml';
+import {
+  getBaseUrlFromExpoConfig,
+  getRscPathFromExpoConfig,
+} from '../start/server/middleware/metroOptions';
+import { createTemplateHtmlFromExpoConfigAsync } from '../start/server/webTemplate';
+import { env } from '../utils/env';
+import { setNodeEnv } from '../utils/nodeEnv';
 import { createMetadataJson } from './createMetadataJson';
 import { exportAssetsAsync } from './exportAssets';
 import { unstable_exportStaticAsync } from './exportStaticAsync';
@@ -12,18 +23,6 @@ import { copyPublicFolderAsync } from './publicFolder';
 import { Options } from './resolveOptions';
 import { ExportAssetMap, getFilesFromSerialAssets, persistMetroFilesAsync } from './saveAssets';
 import { createAssetMap, createSourceMapDebugHtml } from './writeContents';
-import * as Log from '../log';
-import { WebSupportProjectPrerequisite } from '../start/doctor/web/WebSupportProjectPrerequisite';
-import { getRouterDirectoryModuleIdWithManifest } from '../start/server/metro/router';
-import { serializeHtmlWithAssets } from '../start/server/metro/serializeHtml';
-import {
-  getAsyncRoutesFromExpoConfig,
-  getBaseUrlFromExpoConfig,
-  getRscPathFromExpoConfig,
-} from '../start/server/middleware/metroOptions';
-import { createTemplateHtmlFromExpoConfigAsync } from '../start/server/webTemplate';
-import { env } from '../utils/env';
-import { setNodeEnv } from '../utils/nodeEnv';
 
 export async function exportAppAsync(
   projectRoot: string,
@@ -35,6 +34,7 @@ export async function exportAppAsync(
     dumpAssetmap,
     sourceMaps,
     minify,
+    bytecode,
     maxWorkers,
   }: Pick<
     Options,
@@ -45,6 +45,7 @@ export async function exportAppAsync(
     | 'outputDir'
     | 'platforms'
     | 'minify'
+    | 'bytecode'
     | 'maxWorkers'
   >
 ): Promise<void> {
@@ -67,6 +68,12 @@ export async function exportAppAsync(
   const baseUrl = getBaseUrlFromExpoConfig(exp);
   const rscPath = getRscPathFromExpoConfig(exp);
 
+  if (!bytecode && (platforms.includes('ios') || platforms.includes('android'))) {
+    Log.warn(
+      `Bytecode makes the app startup faster, disabling bytecode is highly discouraged and should only be used for debugging purposes.`
+    );
+  }
+
   // Print out logs
   if (baseUrl) {
     Log.log();
@@ -79,6 +86,7 @@ export async function exportAppAsync(
     }
   }
 
+  const mode = dev ? 'development' : 'production';
   const publicPath = path.resolve(projectRoot, env.EXPO_PUBLIC_FOLDER);
   const outputPath = path.resolve(projectRoot, outputDir);
 
@@ -90,6 +98,7 @@ export async function exportAppAsync(
   const bundles = await createBundlesAsync(projectRoot, projectConfig, {
     clear: !!clear,
     minify,
+    bytecode,
     sourcemaps: sourceMaps,
     platforms: useRSC
       ? []
@@ -168,6 +177,7 @@ export async function exportAppAsync(
       }
 
       await unstable_exportStaticAsync(projectRoot, {
+        mode,
         files,
         dev,
         clear: !!clear,
@@ -176,16 +186,16 @@ export async function exportAppAsync(
         baseUrl,
         rscPath,
         includeSourceMaps: sourceMaps,
-        asyncRoutes: getAsyncRoutesFromExpoConfig(exp, dev ? 'development' : 'production', 'web'),
         routerRoot: getRouterDirectoryModuleIdWithManifest(projectRoot, exp),
         exportServer,
         maxWorkers,
+        isExporting: true,
       });
     } else {
       // TODO: Unify with exportStaticAsync
       // TODO: Maybe move to the serializer.
       let html = await serializeHtmlWithAssets({
-        mode: 'production',
+        isExporting: true,
         resources: bundles.web!.artifacts,
         template: await createTemplateHtmlFromExpoConfigAsync(projectRoot, {
           scripts: [],

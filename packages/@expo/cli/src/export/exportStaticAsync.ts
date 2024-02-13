@@ -32,7 +32,7 @@ import { getRscPathFromExpoConfig } from '../start/server/middleware/metroOption
 const debug = require('debug')('expo:export:generateStaticRoutes') as typeof console.log;
 
 type Options = {
-  dev: boolean;
+  mode: 'production' | 'development';
   files?: ExportAssetMap;
   outputDir: string;
   minify: boolean;
@@ -42,9 +42,9 @@ type Options = {
   includeSourceMaps: boolean;
   entryPoint?: string;
   clear: boolean;
-  asyncRoutes: boolean;
   routerRoot: string;
   maxWorkers?: number;
+  isExporting: boolean;
 };
 
 type HtmlRequestLocation = {
@@ -69,20 +69,23 @@ export async function unstable_exportStaticAsync(projectRoot: string, options: O
   // TODO: Prevent starting the watcher.
   const devServerManager = new DevServerManager(projectRoot, {
     minify: options.minify,
-    mode: options.dev ? 'development' : 'production',
+    mode: options.mode,
     port,
+    isExporting: true,
     location: {},
     resetDevServer: options.clear,
     maxWorkers: options.maxWorkers,
   });
+
   await devServerManager.startAsync([
     {
       type: 'metro',
       options: {
-        mode: options.dev ? 'development' : 'production',
         port,
+        mode: options.mode,
         location: {},
         isExporting: true,
+        minify: options.minify,
         resetDevServer: options.clear,
         maxWorkers: options.maxWorkers,
       },
@@ -180,18 +183,17 @@ async function exportFromServerAsync(
   devServerManager: DevServerManager,
   {
     outputDir,
+    mode,
     baseUrl,
     rscPath,
     exportServer,
-    minify,
     includeSourceMaps,
     routerRoot,
-    dev,
-    asyncRoutes,
     files = new Map(),
   }: Options
 ): Promise<ExportAssetMap> {
-  const mode = dev ? 'development' : 'production';
+  const platform = 'web';
+  const isExporting = true;
   const appDir = path.join(projectRoot, routerRoot);
   const injectFaviconTag = await getVirtualFaviconAssetsAsync(projectRoot, {
     outputDir,
@@ -259,17 +261,14 @@ async function exportFromServerAsync(
 
   const [resources] = await Promise.all([
     devServer.getStaticResourcesAsync({
-      isExporting: true,
-      mode,
-      minify,
       includeSourceMaps,
       baseUrl,
-      asyncRoutes,
       routerRoot,
       clientBoundaries: [
         ...new Set(clientBoundaries.map(({ clientBoundaries }) => clientBoundaries).flat()),
       ],
     }),
+    devServer.getStaticRenderFunctionAsync(),
   ]);
 
   makeRuntimeEntryPointsAbsolute(manifest, appDir);
@@ -283,7 +282,7 @@ async function exportFromServerAsync(
     async renderAsync({ pathname, route }) {
       const template = await renderAsync(pathname);
       let html = await serializeHtmlWithAssets({
-        mode,
+        isExporting,
         resources: resources.artifacts,
         template,
         baseUrl,
@@ -299,7 +298,7 @@ async function exportFromServerAsync(
   });
 
   getFilesFromSerialAssets(resources.artifacts, {
-    platform: 'web',
+    platform,
     includeSourceMaps,
     files,
   });
@@ -309,7 +308,7 @@ async function exportFromServerAsync(
     // NOTE(kitten): Re. above, this is now using `files` except for iOS catalog output, which isn't used here
     await persistMetroAssetsAsync(resources.assets, {
       files,
-      platform: 'web',
+      platform,
       outputDirectory: outputDir,
       baseUrl,
     });
@@ -319,9 +318,7 @@ async function exportFromServerAsync(
     const apiRoutes = await exportApiRoutesAsync({
       outputDir,
       server: devServer,
-      routerRoot,
       manifest: serverManifest,
-      baseUrl,
     });
 
     // Add the api routes to the files to export.
@@ -482,24 +479,14 @@ export function getPathVariations(routePath: string): string[] {
 async function exportApiRoutesAsync({
   outputDir,
   server,
-  routerRoot,
-  baseUrl,
-  dev,
   ...props
-}: {
-  outputDir: string;
+}: Pick<Options, 'outputDir'> & {
   server: MetroBundlerDevServer;
-  routerRoot: string;
   manifest: ExpoRouterServerManifestV1;
-  baseUrl: string;
-  dev?: boolean;
 }): Promise<ExportAssetMap> {
   const { manifest, files } = await server.exportExpoRouterApiRoutesAsync({
-    mode: dev ? 'development' : 'production',
-    routerRoot,
     outputDir: '_expo/functions',
     prerenderManifest: props.manifest,
-    baseUrl,
   });
 
   Log.log(chalk.bold`Exporting ${files.size} API Routes.`);

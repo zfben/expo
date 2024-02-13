@@ -10,8 +10,8 @@
 
 - Add timer capability to Logger. ([#26454](https://github.com/expo/expo/pull/26454), [#26477](https://github.com/expo/expo/pull/26477) by [@wschurman](https://github.com/wschurman))
 - Add iOS support for `PlatformColor` and `DynamicColorIOS` color props. ([#26724](https://github.com/expo/expo/pull/26724) by [@dlindenkreuz](https://github.com/dlindenkreuz))
-
 - `BarCodeScannerResult` interface now declares an additional `raw` field corresponding to the barcode value as it was encoded in the barcode without parsing. Will always be undefined on iOS. ([#25391](https://github.com/expo/expo/pull/25391) by [@ajacquierbret](https://github.com/ajacquierbret))
+- [Android] Added syntactic sugar for defining a prop group. ([#27004](https://github.com/expo/expo/pull/27004) by [@lukmccall](https://github.com/lukmccall))
 
 ### 🐛 Bug fixes
 
@@ -19,6 +19,7 @@
 - Fix proguard rules so `Serializable` types are not obfuscated. ([#26545](https://github.com/expo/expo/pull/26545) by [@alanjhughes](https://github.com/alanjhughes))
 - Fixed breaking changes from React-Native 0.74. ([#26357](https://github.com/expo/expo/pull/26357), [#26587](https://github.com/expo/expo/pull/26587) by [@kudo](https://github.com/kudo))
 - [Android] Fixed activity contract registration after host destruction. ([#26881](https://github.com/expo/expo/pull/26881) by [@lukmccall](https://github.com/lukmccall))
+- [Android] Ensured that `onCreate` before `OnActivityEntersForeground` event. ([#26944](https://github.com/expo/expo/pull/26944) by [@lukmccall](https://github.com/lukmccall))
 
 ### 💡 Others
 
@@ -26,6 +27,7 @@
 - Remove most of Constants.appOwnership. ([#26313](https://github.com/expo/expo/pull/26313) by [@wschurman](https://github.com/wschurman))
 - Added an alternative way of installing the JSI bindings. ([#26691](https://github.com/expo/expo/pull/26691) by [@lukmccall](https://github.com/lukmccall))
 - `ObjectDeallocator` is now a native state instead of a host object. ([#26906](https://github.com/expo/expo/pull/26906) by [@tsapeta](https://github.com/tsapeta))
+- Moved away from `SharedObjectRegistry` being a singleton. ([#27032](https://github.com/expo/expo/pull/27032) by [@tsapeta](https://github.com/tsapeta))
 
 ## 1.11.7 - 2024-01-18
 

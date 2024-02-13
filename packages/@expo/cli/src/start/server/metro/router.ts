@@ -6,7 +6,6 @@ import resolveFrom from 'resolve-from';
 
 import { Log } from '../../../log';
 import { directoryExistsSync } from '../../../utils/dir';
-import { memoize } from '../../../utils/fn';
 import { learnMore } from '../../../utils/link';
 
 const debug = require('debug')('expo:start:server:metro:router') as typeof console.log;

@@ -32,7 +32,6 @@ type Serializer = NonNullable<ConfigT['serializer']['customSerializer']>;
 type SerializerParameters = Parameters<Serializer>;
 export type SerializeChunkOptions = {
     includeSourceMaps: boolean;
-    includeBytecode: boolean;
 } & SerializerConfigOptions;
 /** Strips the process.env polyfill in server environments to allow for accessing environment variables off the global. */
 export declare function clientManifestSerializerPlugin(entryPoint: string, preModules: readonly Module<MixedOutput>[], graph: ReadOnlyGraph, options: SerializerOptions): SerializerParameters;
@@ -61,7 +60,8 @@ export declare class Chunk {
     private getComputedPathsForAsyncDependencies;
     private getAdjustedSourceMapUrl;
     private serializeToCode;
-    serializeToAssetsAsync(serializerConfig: Partial<SerializerConfigT>, chunks: Chunk[], { includeSourceMaps, includeBytecode, unstable_beforeAssetSerializationPlugins, }: SerializeChunkOptions): Promise<SerialAsset[]>;
+    private boolishTransformOption;
+    serializeToAssetsAsync(serializerConfig: Partial<SerializerConfigT>, chunks: Chunk[], { includeSourceMaps, unstable_beforeAssetSerializationPlugins }: SerializeChunkOptions): Promise<SerialAsset[]>;
     private supportsBytecode;
     isHermesEnabled(): boolean;
 }

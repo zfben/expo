@@ -24,7 +24,7 @@
     "react": "18.3.0-canary-c5b937576-20231219",
     "react-dom": "18.3.0-canary-c5b937576-20231219",
     "react-server-dom-webpack": "18.3.0-canary-c5b937576-20231219",
-    "react-native": "0.73.2",
+    "react-native": "0.73.4",
     "react-refresh": "^0.14.0",
     "@react-navigation/native": "^6.1.6",
     "@react-navigation/core": "^6.4.9",
