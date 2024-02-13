@@ -17,6 +17,7 @@ import {
   getBaseUrlFromExpoConfig,
   getAsyncRoutesFromExpoConfig,
   createBundleUrlPathFromExpoConfig,
+  getRscPathFromExpoConfig,
 } from './metroOptions';
 import { resolveGoogleServicesFile, resolveManifestAssets } from './resolveAssets';
 import { parsePlatformHeader, RuntimePlatform } from './resolvePlatform';
@@ -175,6 +176,7 @@ export abstract class ManifestMiddleware<
       mainModuleName,
       hostname,
       engine: isHermesEnabled ? 'hermes' : undefined,
+
       baseUrl: getBaseUrlFromExpoConfig(projectConfig.exp),
       asyncRoutes: getAsyncRoutesFromExpoConfig(
         projectConfig.exp,
@@ -183,6 +185,7 @@ export abstract class ManifestMiddleware<
       ),
       routerRoot: getRouterDirectoryModuleIdWithManifest(this.projectRoot, projectConfig.exp),
       protocol,
+      rscPath: getRscPathFromExpoConfig(projectConfig.exp),
     });
 
     // Resolve all assets and set them on the manifest as URLs
@@ -239,6 +242,7 @@ export abstract class ManifestMiddleware<
     asyncRoutes,
     routerRoot,
     protocol,
+    rscPath,
   }: {
     platform: string;
     hostname?: string | null;
@@ -249,6 +253,7 @@ export abstract class ManifestMiddleware<
     isExporting?: boolean;
     routerRoot: string;
     protocol?: 'http' | 'https';
+    rscPath: string;
   }): string {
     const path = createBundleUrlPath({
       mode: this.options.mode ?? 'development',
@@ -262,6 +267,7 @@ export abstract class ManifestMiddleware<
       isExporting: !!isExporting,
       asyncRoutes,
       routerRoot,
+      rscPath,
     });
 
     return (

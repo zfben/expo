@@ -183,7 +183,6 @@ async function exportFromServerAsync(
   devServerManager: DevServerManager,
   {
     outputDir,
-    mode,
     baseUrl,
     rscPath,
     exportServer,
@@ -205,20 +204,14 @@ async function exportFromServerAsync(
   assert(devServer instanceof MetroBundlerDevServer);
 
   const [{ manifest, serverManifest, renderAsync }] = await Promise.all([
-    devServer.getStaticRenderFunctionAsync({
-      mode,
-      minify,
-      rscPath,
-      baseUrl,
-      routerRoot,
-    }),
+    devServer.getStaticRenderFunctionAsync(),
   ]);
 
   const clientBoundaries = await Promise.all(
     serverManifest.htmlRoutes.map(async (route) => {
       console.log('route', route);
       const rsc = await fetch(
-        new URL('/' + rscPath + '/' + route.file, devServer.getDevServerUrl()!)
+        new URL(rscPath + '/' + route.file, devServer.getDevServerUrl()!)
       ).then((res) => res.text());
       console.log('route.rsc', rsc);
 

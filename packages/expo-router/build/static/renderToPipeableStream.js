@@ -12,8 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.renderToPipeableStream = exports.fileURLToFilePath = void 0;
 const stream_1 = require("@remix-run/node/dist/stream");
 const path_1 = __importDefault(require("path"));
+const chalk_1 = __importDefault(require("chalk"));
 const react_1 = __importDefault(require("react"));
+const server_edge_1 = require("react-server-dom-webpack/server.edge");
 const _ctx_1 = require("../../_ctx");
+const os_1 = __importDefault(require("../../os"));
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
 const debug = require('debug')('expo:rsc');
 // NOTE: MUST MATCH THE IMPL IN ExpoMetroConfig.ts
@@ -60,7 +63,6 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, isEx
             });
         }
     }
-    const { renderToReadableStream, decodeReply } = require('react-server-dom-webpack/server.edge');
     if (!_ctx_1.ctx.keys().includes(route)) {
         throw new Error('Failed to find route: ' + route + '. Expected one of: ' + _ctx_1.ctx.keys().join(', '));
     }
@@ -137,10 +139,10 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, isEx
         if (typeof contentType === 'string' && contentType.startsWith('multipart/form-data')) {
             // XXX This doesn't support streaming unlike busboy
             const formData = parseFormData(bodyStr, contentType);
-            args = await decodeReply(formData);
+            args = await (0, server_edge_1.decodeReply)(formData);
         }
         else if (bodyStr) {
-            args = await decodeReply(bodyStr);
+            args = await (0, server_edge_1.decodeReply)(bodyStr);
         }
         const [fileId, name] = rsfId.split('#');
         let mod;
@@ -178,7 +180,9 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, isEx
         const data = await fn.apply(renderContext, args);
         const resolvedElements = await elements;
         rendered = true;
-        return renderToReadableStream({ ...resolvedElements, _value: data }, bundlerConfig);
+        return (0, server_edge_1.renderToReadableStream)({ ...resolvedElements, _value: data }, bundlerConfig, {
+            onPostpone(reason) { },
+        });
     }
     //   moduleMap
     // TODO: Populate this with Expo Router results.
@@ -200,12 +204,34 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, isEx
         return elements;
     };
     const elements = await render({}, input, url.searchParams);
-    return renderToReadableStream(elements, bundlerConfig);
-    // return rsc.pipe;
-    // }
-    // throw new Error('Failed to render server component at: ' + route);
+    const stream = (0, server_edge_1.renderToReadableStream)(elements, bundlerConfig);
+    // Logging is very useful for native platforms where the network tab isn't always available.
+    if (debug.enabled) {
+        return withDebugLogging(stream);
+    }
+    return stream;
 }
 exports.renderToPipeableStream = renderToPipeableStream;
+function withDebugLogging(stream) {
+    const textDecoder = new TextDecoder();
+    // Wrap the stream and log chunks to the terminal.
+    return new ReadableStream({
+        start(controller) {
+            stream.pipeTo(new WritableStream({
+                write(chunk) {
+                    console.log((0, chalk_1.default) `{dim ${os_1.default} [rsc]}`, textDecoder.decode(chunk));
+                    controller.enqueue(chunk);
+                },
+                close() {
+                    controller.close();
+                },
+                abort(reason) {
+                    controller.error(reason);
+                },
+            }));
+        },
+    });
+}
 // TODO is this correct? better to use a library?
 const parseFormData = (body, contentType) => {
     const boundary = contentType.split('boundary=')[1];

@@ -642,7 +642,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       // This should come after the static middleware so it doesn't serve the favicon from `public/favicon.ico`.
       middleware.use(new FaviconMiddleware(this.projectRoot).getHandler());
 
-      let rscPathPrefix = '/' + rscPath.replace(/^\/+/, '').replace(/\/+$/, '');
+      let rscPathPrefix = rscPath;
       if (rscPathPrefix !== '/') {
         rscPathPrefix += '/';
       }
@@ -719,8 +719,9 @@ export class MetroBundlerDevServer extends BundlerDevServer {
             }
           );
 
-          // wrap the response and intercept errors during stream
-          respond(res, new ExpoResponse(pipe));
+          const rscResponse = new ExpoResponse(pipe);
+
+          respond(res, rscResponse);
         } catch (error: any) {
           await logMetroError(this.projectRoot, { error });
           res.statusCode = 500;
@@ -1001,4 +1002,23 @@ export function getDeepLinkHandler(projectRoot: string): DeepLinkHandler {
       ...getDevClientProperties(projectRoot, exp),
     });
   };
+}
+
+function createDecodeTransformStream(decoder = new TextDecoder()) {
+  return new TransformStream<Uint8Array, string>({
+    transform(chunk, controller) {
+      return controller.enqueue(decoder.decode(chunk, { stream: true }));
+    },
+    flush(controller) {
+      return controller.enqueue(decoder.decode());
+    },
+  });
+}
+
+function createEncodeTransformStream(encoder = new TextEncoder()) {
+  return new TransformStream<string, Uint8Array>({
+    transform(chunk, controller) {
+      return controller.enqueue(encoder.encode(chunk));
+    },
+  });
 }

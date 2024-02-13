@@ -16,6 +16,7 @@ import type { ReactNode } from 'react';
 import RSDWClient from 'react-server-dom-webpack/client';
 
 import { encodeInput } from './renderers/utils';
+import { getDevServer } from '../getDevServer';
 
 const { createFromFetch, encodeReply } = RSDWClient;
 
@@ -25,9 +26,32 @@ declare global {
   }
 }
 
+// NOTE: Ensured to start with `/`.
 const RSC_PATH = process.env.EXPO_RSC_PATH;
 
-const BASE_PATH = '/' + `${process.env.EXPO_BASE_URL}${RSC_PATH}/`;
+let BASE_PATH = `${process.env.EXPO_BASE_URL}${RSC_PATH}`;
+
+if (!BASE_PATH.startsWith('/')) {
+  BASE_PATH = '/' + BASE_PATH;
+}
+
+if (!BASE_PATH.endsWith('/')) {
+  BASE_PATH += '/';
+}
+
+if (BASE_PATH === '/') {
+  if (typeof process.env.EXPO_RSC_PATH !== 'string') {
+    throw new Error(
+      'process.env.EXPO_RSC_PATH was not defined. This is likely a misconfigured babel.config.js. Ensure babel-preset-expo is used.'
+    );
+  }
+  throw new Error(
+    `Invalid RSC path "${BASE_PATH}". The path should not live at the project root, e.g. /RSC/. Dev server URL: ${
+      getDevServer().fullBundleUrl
+    }`
+  );
+}
+console.log('[RSC]: Base path:', BASE_PATH, { BASE_URL: process.env.EXPO_BASE_URL, RSC_PATH });
 
 const checkStatus = async (responsePromise: Promise<Response>): Promise<Response> => {
   const response = await responsePromise;

@@ -7,10 +7,13 @@
 
 import { readableStreamToString } from '@remix-run/node/dist/stream';
 import path from 'path';
+import chalk from 'chalk';
 import React from 'react';
 import type { ReactNode } from 'react';
+import { renderToReadableStream, decodeReply } from 'react-server-dom-webpack/server.edge';
 
 import { ctx } from '../../_ctx';
+import OS from '../../os';
 
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
 
@@ -101,8 +104,6 @@ export async function renderToPipeableStream(
       });
     }
   }
-
-  const { renderToReadableStream, decodeReply } = require('react-server-dom-webpack/server.edge');
 
   if (!ctx.keys().includes(route)) {
     throw new Error(
@@ -236,7 +237,9 @@ export async function renderToPipeableStream(
     const data = await fn.apply(renderContext, args);
     const resolvedElements = await elements;
     rendered = true;
-    return renderToReadableStream({ ...resolvedElements, _value: data }, bundlerConfig);
+    return renderToReadableStream({ ...resolvedElements, _value: data }, bundlerConfig, {
+      onPostpone(reason) {},
+    });
   }
 
   //   moduleMap
@@ -267,12 +270,38 @@ export async function renderToPipeableStream(
 
   const elements = await render({}, input, url.searchParams);
 
-  return renderToReadableStream(elements, bundlerConfig);
+  const stream = renderToReadableStream(elements, bundlerConfig);
 
-  // return rsc.pipe;
-  // }
+  // Logging is very useful for native platforms where the network tab isn't always available.
+  if (debug.enabled) {
+    return withDebugLogging(stream);
+  }
 
-  // throw new Error('Failed to render server component at: ' + route);
+  return stream;
+}
+
+function withDebugLogging(stream: ReadableStream) {
+  const textDecoder = new TextDecoder();
+
+  // Wrap the stream and log chunks to the terminal.
+  return new ReadableStream({
+    start(controller) {
+      stream.pipeTo(
+        new WritableStream({
+          write(chunk) {
+            console.log(chalk`{dim ${OS} [rsc]}`, textDecoder.decode(chunk));
+            controller.enqueue(chunk);
+          },
+          close() {
+            controller.close();
+          },
+          abort(reason) {
+            controller.error(reason);
+          },
+        })
+      );
+    },
+  });
 }
 
 // TODO is this correct? better to use a library?

@@ -179,7 +179,6 @@ export async function exportAppAsync(
       await unstable_exportStaticAsync(projectRoot, {
         mode,
         files,
-        dev,
         clear: !!clear,
         outputDir: outputPath,
         minify,

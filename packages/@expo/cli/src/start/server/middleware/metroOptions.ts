@@ -88,8 +88,11 @@ export function getBaseUrlFromExpoConfig(exp: ExpoConfig) {
 }
 
 export function getRscPathFromExpoConfig(exp: ExpoConfig) {
+  // @ts-expect-error: TODO: Add this setting to framework config.
+  const userDefined = exp.experiments?.rscPath?.trim().replace(/^\/+/, '').replace(/\/+$/, '');
+
   // NOTE: Default is added here...
-  return exp.experiments?.rscPath?.trim().replace(/\/+$/, '') ?? 'RSC';
+  return '/' + (userDefined ?? 'RSC');
 }
 
 export function getAsyncRoutesFromExpoConfig(exp: ExpoConfig, mode: string, platform: string) {

@@ -97,7 +97,7 @@ function getBaseUrl(caller) {
 }
 exports.getBaseUrl = getBaseUrl;
 function getRscPath(caller) {
-    return caller?.rscPath ?? 'RSC';
+    return caller?.rscPath ?? '/RSC';
 }
 exports.getRscPath = getRscPath;
 function getIsServer(caller) {
