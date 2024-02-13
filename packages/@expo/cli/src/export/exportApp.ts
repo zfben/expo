@@ -94,24 +94,27 @@ export async function exportAppAsync(
   // split. Hence, there's another separate `copyPublicFolderAsync` call below for `web`
   await copyPublicFolderAsync(publicPath, outputPath);
 
-  // Run metro bundler and create the JS bundles/source maps.
-  const bundles = await createBundlesAsync(projectRoot, projectConfig, {
-    clear: !!clear,
-    minify,
-    bytecode,
-    sourcemaps: sourceMaps,
-    platforms: useRSC
-      ? []
-      : useServerRendering
-        ? platforms.filter((platform) => platform !== 'web')
-        : platforms,
-    dev,
-    maxWorkers,
-  });
-
   // Write the JS bundles to disk, and get the bundle file names (this could change with async chunk loading support).
 
   const files: ExportAssetMap = new Map();
+
+  // Run metro bundler and create the JS bundles/source maps.
+  const bundles = await createBundlesAsync(
+    projectRoot,
+    projectConfig,
+    {
+      clear: !!clear,
+      minify,
+      bytecode,
+      sourcemaps: sourceMaps,
+      platforms: useServerRendering
+        ? platforms.filter((platform) => platform !== 'web')
+        : platforms,
+      dev,
+      maxWorkers,
+    },
+    files
+  );
 
   Object.values(bundles).forEach((bundle) => {
     getFilesFromSerialAssets(bundle.artifacts, {

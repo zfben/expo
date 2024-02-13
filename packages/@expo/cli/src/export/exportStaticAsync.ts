@@ -99,6 +99,42 @@ export async function unstable_exportStaticAsync(projectRoot: string, options: O
   }
 }
 
+export async function unstable_getDevServerForClientBoundariesAsync(
+  projectRoot: string,
+  options: Pick<Options, 'minify' | 'mode' | 'clear' | 'maxWorkers'>
+) {
+  // Useful for running parallel e2e tests in CI.
+  const port = await getFreePortAsync(8082);
+
+  // TODO: Prevent starting the watcher.
+  const devServerManager = new DevServerManager(projectRoot, {
+    minify: options.minify,
+    mode: options.mode,
+    port,
+    isExporting: true,
+    location: {},
+    resetDevServer: options.clear,
+    maxWorkers: options.maxWorkers,
+  });
+
+  await devServerManager.startAsync([
+    {
+      type: 'metro',
+      options: {
+        port,
+        mode: options.mode,
+        location: {},
+        isExporting: true,
+        minify: options.minify,
+        resetDevServer: options.clear,
+        maxWorkers: options.maxWorkers,
+      },
+    },
+  ]);
+
+  return devServerManager;
+}
+
 /** Match `(page)` -> `page` */
 function matchGroupName(name: string): string | undefined {
   return name.match(/^\(([^/]+?)\)$/)?.[1];
@@ -175,6 +211,81 @@ function makeRuntimeEntryPointsAbsolute(manifest: ExpoRouterRuntimeManifest, app
       });
     }
   });
+}
+
+async function pipeToStringAsync(pipe: ReadableStream): Promise<string> {
+  const textDecoder = new TextDecoder();
+  const res = await pipe.getReader().read();
+  return textDecoder.decode(res.value, { stream: true });
+}
+
+export async function getClientBoundariesAsync(
+  projectRoot: string,
+  devServerManager: DevServerManager,
+  { files = new Map(), platform }: { files?: ExportAssetMap; platform: string }
+) {
+  const devServer = devServerManager.getDefaultDevServer();
+  assert(devServer instanceof MetroBundlerDevServer);
+
+  const { serverManifest } = await devServer.getStaticRenderFunctionAsync();
+
+  const clientBoundaries = await Promise.all(
+    serverManifest.htmlRoutes.map(async (route) => {
+      console.log('route', route);
+
+      const pipe = await devServer.renderRscToReadableStream({
+        route: route.file,
+        method: 'GET',
+        platform,
+        url: new URL('/', devServer.getDevServerUrl()!),
+      });
+      const rsc = await pipeToStringAsync(pipe);
+
+      console.log('route.rsc', rsc);
+
+      const clientEntries = devServer.getClientModules(route.file);
+
+      // TODO: Improve this
+      const serverRoot = getMetroServerRoot(projectRoot);
+      const entryFiles = clientEntries.map((entry) => {
+        return path.join(serverRoot, entry.replace(/#.+$/, ''));
+      });
+
+      // const clientBundles = await devServer.bundleMultiEntryGraph(entryFiles, {
+      //   mainModuleName: 'TODO',
+      //   isExporting: true,
+      //   mode: 'production',
+      //   minify,
+      //   // TODO: Support all platforms
+      //   platform: 'web',
+      //   routerRoot,
+      //   asyncRoutes,
+      //   baseUrl,
+      //   engine: 'hermes',
+      //   serializerIncludeBytecode: false,
+      //   serializerIncludeMaps: true,
+      //   serializerOutput: 'static',
+      // });
+      // console.log('clientBundles', clientBundles);
+      // // TODO: Multi-entry bundle all boundaries
+
+      // console.log();
+
+      files.set(devServer.getExpoLineOptions().rscPath!.replace(/^\/+/, '') + '/index.txt', {
+        contents: rsc,
+        targetDomain: 'client',
+      });
+
+      return { route, clientBoundaries: entryFiles };
+    })
+  );
+
+  return {
+    serverManifest,
+    clientBoundaries: [
+      ...new Set(clientBoundaries.map(({ clientBoundaries }) => clientBoundaries).flat()),
+    ],
+  };
 }
 
 /** Perform all fs commits */
@@ -255,8 +366,6 @@ async function exportFromServerAsync(
   const [resources] = await Promise.all([
     devServer.getStaticResourcesAsync({
       includeSourceMaps,
-      baseUrl,
-      routerRoot,
       clientBoundaries: [
         ...new Set(clientBoundaries.map(({ clientBoundaries }) => clientBoundaries).flat()),
       ],
@@ -482,7 +591,9 @@ async function exportApiRoutesAsync({
     prerenderManifest: props.manifest,
   });
 
-  Log.log(chalk.bold`Exporting ${files.size} API Routes.`);
+  if (files.size) {
+    Log.log(chalk.bold`Exporting ${files.size} API Routes`);
+  }
 
   files.set('_expo/routes.json', {
     contents: JSON.stringify(manifest, null, 2),

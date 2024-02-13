@@ -20,9 +20,15 @@ import { loadMetroConfigAsync } from '../start/server/metro/instantiateMetro';
 import { getEntryWithServerRoot } from '../start/server/middleware/ManifestMiddleware';
 import {
   ExpoMetroBundleOptions,
+  ExpoMetroOptions,
   getMetroDirectBundleOptionsForExpoConfig,
 } from '../start/server/middleware/metroOptions';
 import { CommandError } from '../utils/errors';
+import {
+  getClientBoundariesAsync,
+  unstable_getDevServerForClientBoundariesAsync,
+} from './exportStaticAsync';
+import { ExportAssetMap } from './saveAssets';
 
 export type MetroDevServerOptions = LoadOptions;
 
@@ -74,7 +80,8 @@ export async function createBundlesAsync(
     bytecode: boolean;
     sourcemaps?: boolean;
     entryPoint?: string;
-  }
+  },
+  files: ExportAssetMap
 ): Promise<Partial<Record<Platform, BundleOutput>>> {
   if (!bundleOptions.platforms.length) {
     return {};
@@ -97,7 +104,8 @@ export async function createBundlesAsync(
       minify: bundleOptions.minify,
       bytecode: bundleOptions.bytecode,
       dev: bundleOptions.dev,
-    }))
+    })),
+    files
   );
 
   // { ios: bundle, android: bundle }
@@ -125,7 +133,8 @@ async function bundleProductionMetroClientAsync(
   projectRoot: string,
   expoConfig: ExpoConfig,
   metroOptions: MetroDevServerOptions,
-  bundles: BundleOptions[]
+  bundles: BundleOptions[],
+  files: ExportAssetMap
 ): Promise<BundleOutput[]> {
   // Assert early so the user doesn't have to wait until bundling is complete to find out that
   // Hermes won't be available.
@@ -144,12 +153,27 @@ async function bundleProductionMetroClientAsync(
     watch: false,
   });
 
+  // TODO: Just start one metro bundler instance.
+  const secondInstanceLol = await unstable_getDevServerForClientBoundariesAsync(projectRoot, {
+    clear: !!metroOptions.resetCache,
+    minify: !!bundles[0].minify,
+    mode: bundles[0].dev ? 'development' : 'production',
+    maxWorkers: metroOptions.maxWorkers,
+  });
+
   const buildAsync = async (bundle: BundleOptions): Promise<BundleOutput> => {
     const buildID = `bundle_${nextBuildID++}_${bundle.platform}`;
     const isHermes = isEnableHermesManaged(expoConfig, bundle.platform);
     if (isHermes) {
       await assertEngineMismatchAsync(projectRoot, expoConfig, bundle.platform);
     }
+
+    const { clientBoundaries } = await getClientBoundariesAsync(projectRoot, secondInstanceLol, {
+      files,
+      platform: bundle.platform,
+    });
+    console.log('Collected client boundaries:', clientBoundaries);
+
     const bundleOptions: MetroBundleOptions = {
       ...Server.DEFAULT_BUNDLE_OPTIONS,
       sourceMapUrl: bundle.sourceMapUrl,
@@ -165,6 +189,7 @@ async function bundleProductionMetroClientAsync(
         // serializerOutput: bundle.platform === 'web' ? 'static' : undefined,
         serializerOutput: 'static',
         isExporting: true,
+        clientBoundaries,
       }),
       bundleType: 'bundle',
       inlineSourceMap: false,
@@ -213,6 +238,7 @@ async function bundleProductionMetroClientAsync(
     throw error;
   } finally {
     metroServer.end();
+    secondInstanceLol.stopAsync();
   }
 }
 

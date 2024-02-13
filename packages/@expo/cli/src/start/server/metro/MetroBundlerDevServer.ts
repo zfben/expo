@@ -213,10 +213,12 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     includeSourceMaps,
     mainModuleName,
     clientBoundaries = this.instanceMetroOptions.clientBoundaries ?? [],
+    platform = 'web',
   }: {
     includeSourceMaps?: boolean;
     mainModuleName?: string;
     clientBoundaries?: string[];
+    platform?: string;
   } = {}): Promise<{ artifacts: SerialAsset[]; assets?: AssetData[] }> {
     const { mode, minify, rscPath, isExporting, baseUrl, routerRoot, asyncRoutes } =
       this.instanceMetroOptions;
@@ -229,8 +231,6 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         asyncRoutes != null,
       'The server must be started before calling getStaticPageAsync.'
     );
-
-    const platform = 'web';
 
     const devBundleUrlPathname = createBundleUrlPath({
       platform,
@@ -549,6 +549,98 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     return this.instanceMetroOptions;
   }
 
+  async renderRscToReadableStream({
+    route,
+    url,
+    method,
+    platform,
+    req,
+  }: {
+    route: string;
+    url: URL;
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    method: 'POST' | 'GET' | (string & {});
+    platform: string;
+    req?: ServerRequest;
+  }) {
+    const { baseUrl, mode, routerRoot, isExporting } = this.instanceMetroOptions;
+    assert(
+      baseUrl != null && mode != null && routerRoot != null && isExporting != null,
+      'The server must be started before calling ssrLoadModule.'
+    );
+    if (method === 'POST') {
+      assert(req, 'Server request must be provided when method is POST (server actions)');
+    }
+
+    // TODO: Extract CSS Modules / Assets from the bundler process
+    const {
+      filename: serverUrl,
+      fn: { renderToPipeableStream },
+    } = await this.ssrLoadModuleAndHmrEntry<
+      typeof import('expo-router/build/static/renderToPipeableStream')
+    >('expo-router/node/rsc.js', {
+      rsc: true,
+      platform,
+    });
+
+    const input = './index.tsx';
+
+    // TODO: Memoize this
+    const serverRoot = getMetroServerRoot(this.projectRoot);
+
+    const pipe = await renderToPipeableStream(
+      { $$route: input },
+      {
+        mode,
+        isExporting: !!isExporting,
+        serverUrl: new URL(serverUrl),
+        serverRoot,
+        url,
+        method,
+        input: route,
+        body: method === 'POST' ? createReadableStreamFromReadable(req!) : null,
+        customImport: async (relativeDevServerUrl: string): Promise<any> => {
+          const url = new URL(relativeDevServerUrl, this.getDevServerUrl()!);
+          url.searchParams.set('runModule', 'true');
+          url.searchParams.set('runModule', 'true');
+          const rsc = true;
+          url.searchParams.set('transform.rsc', String(rsc));
+          url.searchParams.set('resolver.rsc', String(rsc));
+
+          const urlString = url.toString();
+          const contents = await metroFetchAsync(this.projectRoot, urlString);
+          // console.log('Server action:');
+          // console.log(contents);
+          return evalMetro(this.projectRoot, contents.src, contents.filename);
+        },
+        onReload: (...args: any[]) => {
+          // Send reload command to client from Fast Refresh code.
+          debug('[CLI]: Reload RSC:', args);
+
+          // TODO: Target only certain platforms
+          this.broadcastMessage('reload');
+        },
+        moduleIdCallback: (moduleInfo: {
+          id: string;
+          chunks: string[];
+          name: string;
+          async: boolean;
+        }) => {
+          // Collect the client boundaries while rendering the server components.
+          // Indexed by routes.
+          let idSet = this.clientModuleMap.get(route);
+          if (!idSet) {
+            idSet = new Set();
+            this.clientModuleMap.set(route, idSet);
+          }
+          idSet.add(moduleInfo.id);
+        },
+      }
+    );
+
+    return pipe;
+  }
+
   protected async startImplementationAsync(
     options: BundlerStartOptions
   ): Promise<DevServerInstance> {
@@ -649,75 +741,16 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
       const sendResponse = async (req: ServerRequest, res: ServerResponse) => {
         const url = new URL(req.url!, this.getDevServerUrl()!);
-
         const route = url.pathname.replace(rscPathPrefix, '');
 
-        // console.log('Render route:', route, url);
-
-        const mode = options.mode ?? 'development';
         try {
-          // TODO: Extract CSS Modules / Assets from the bundler process
-          const {
-            filename: serverUrl,
-            fn: { renderToPipeableStream },
-          } = await this.ssrLoadModuleAndHmrEntry<
-            typeof import('expo-router/build/static/renderToPipeableStream')
-          >('expo-router/node/rsc.js', {
-            rsc: true,
+          const pipe = await this.renderRscToReadableStream({
+            route,
+            method: req.method!,
             platform: url.searchParams.get('platform') ?? 'web',
+            url,
+            req,
           });
-
-          const input = './index.tsx';
-
-          const pipe = await renderToPipeableStream(
-            { $$route: input },
-            {
-              mode,
-              isExporting: !!options.isExporting,
-              serverUrl: new URL(serverUrl),
-              serverRoot,
-              url,
-              method: req.method!,
-              input: route,
-              body: req.method === 'POST' ? createReadableStreamFromReadable(req) : null,
-              customImport: async (relativeDevServerUrl: string): Promise<any> => {
-                const url = new URL(relativeDevServerUrl, this.getDevServerUrl()!);
-                url.searchParams.set('runModule', 'true');
-                url.searchParams.set('runModule', 'true');
-                const rsc = true;
-                url.searchParams.set('transform.rsc', String(rsc));
-                url.searchParams.set('resolver.rsc', String(rsc));
-
-                const urlString = url.toString();
-                const contents = await metroFetchAsync(this.projectRoot, urlString);
-                // console.log('Server action:');
-                // console.log(contents);
-                return evalMetro(this.projectRoot, contents.src, contents.filename);
-              },
-              onReload: (...args: any[]) => {
-                // Send reload command to client from Fast Refresh code.
-                debug('[CLI]: Reload RSC:', args);
-
-                // TODO: Target only certain platforms
-                this.broadcastMessage('reload');
-              },
-              moduleIdCallback: (moduleInfo: {
-                id: string;
-                chunks: string[];
-                name: string;
-                async: boolean;
-              }) => {
-                // Collect the client boundaries while rendering the server components.
-                // Indexed by routes.
-                let idSet = this.clientModuleMap.get(route);
-                if (!idSet) {
-                  idSet = new Set();
-                  this.clientModuleMap.set(route, idSet);
-                }
-                idSet.add(moduleInfo.id);
-              },
-            }
-          );
 
           const rscResponse = new ExpoResponse(pipe);
 
@@ -1002,23 +1035,4 @@ export function getDeepLinkHandler(projectRoot: string): DeepLinkHandler {
       ...getDevClientProperties(projectRoot, exp),
     });
   };
-}
-
-function createDecodeTransformStream(decoder = new TextDecoder()) {
-  return new TransformStream<Uint8Array, string>({
-    transform(chunk, controller) {
-      return controller.enqueue(decoder.decode(chunk, { stream: true }));
-    },
-    flush(controller) {
-      return controller.enqueue(decoder.decode());
-    },
-  });
-}
-
-function createEncodeTransformStream(encoder = new TextEncoder()) {
-  return new TransformStream<string, Uint8Array>({
-    transform(chunk, controller) {
-      return controller.enqueue(encoder.encode(chunk));
-    },
-  });
 }
