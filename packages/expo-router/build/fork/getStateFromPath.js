@@ -21,7 +21,8 @@ function getUrlWithReactNavigationConcessions(path, baseUrl = process.env.EXPO_B
             url: null,
         };
     }
-    const pathname = parsed.pathname;
+    const pathname = stripBaseUrl(parsed.pathname, baseUrl);
+    parsed.pathname = pathname;
     // Make sure there is a trailing slash
     return {
         // The slashes are at the end, not the beginning
@@ -279,9 +280,8 @@ function getStateFromPathWithConfigs(path, configs, initialRoutes, baseUrl = pro
     // We match the whole path against the regex instead of segments
     // This makes sure matches such as wildcard will catch any unmatched routes, even if nested
     const routes = matchAgainstConfigs(formattedPaths.nonstandardPathname, configs);
-    if (routes == null) {
-        return undefined;
-    }
+    if (routes == null)
+        return;
     // This will always be empty if full path matched
     return createNestedStateObject(cleanPath, routes, configs, initialRoutes);
 }
@@ -504,7 +504,7 @@ const createStateObject = (initialRoute, route, isEmpty) => {
         routes: [{ ...route, state: { routes: [] } }],
     };
 };
-const createNestedStateObject = (path, routes, routeConfigs, initialRoutes) => {
+const createNestedStateObject = (url, routes, routeConfigs, initialRoutes) => {
     let route = routes.shift();
     const parentScreens = [];
     let initialRoute = findInitialRoute(route.name, parentScreens, initialRoutes);
@@ -542,6 +542,10 @@ const createNestedStateObject = (path, routes, routeConfigs, initialRoutes) => {
         if (Object.keys(route.params).length === 0) {
             delete route.params;
         }
+    }
+    if (url.hash) {
+        route.params ??= {};
+        route.params['#'] = url.hash.slice(1);
     }
     return state;
 };
