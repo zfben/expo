@@ -14,7 +14,7 @@
 
 ### 💡 Others
 
-- Document basic assumptions about the templating system.
+- Document basic assumptions about the templating system. ([#27071](https://github.com/expo/expo/pull/27071) by [@byCedric](https://github.com/byCedric))
 
 ## 2.1.3 — 2023-12-12
 
