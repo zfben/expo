@@ -118,7 +118,7 @@ export function getMetroDirectBundleOptionsForExpoConfig(
   return getMetroDirectBundleOptions({
     ...options,
     baseUrl: getBaseUrlFromExpoConfig(exp),
-    rscPath: getBaseUrlFromExpoConfig(exp),
+    rscPath: getRscPathFromExpoConfig(exp),
     routerRoot: getRouterDirectoryModuleIdWithManifest(projectRoot, exp),
     asyncRoutes: getAsyncRoutesFromExpoConfig(exp, options.mode, options.platform),
   });

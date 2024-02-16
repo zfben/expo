@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import OS from 'expo-router/os';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 // import { Text, View, ScrollView } from 'react-native';
 
 // import A02_Suspense from '../02-suspense/entry';
@@ -59,6 +59,7 @@ export default function App() {
   // );
   return (
     <>
+      <View style={{ paddingVertical: 54, flex: 1, }}>
       {/* <div>
       <h1>Hello world</h1> */}
       <View style={{ flex: 1, width: 256, height: 256, backgroundColor: 'darkblue' }} />
@@ -68,6 +69,9 @@ export default function App() {
         <h2>Child</h2>
       </Child> */}
       {/* </div> */}
+      <Text>env: {process.env.NODE_ENV}</Text>
+      <Text>rsc path: {process.env.EXPO_RSC_PATH}</Text>
+      </View>
     </>
   );
 }

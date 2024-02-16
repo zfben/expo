@@ -152,12 +152,12 @@ export async function createMetroServerAndBundleRequestAsync(
   );
 
   // TODO: Just start one metro bundler instance.
-  const secondInstanceLol = await unstable_getDevServerForClientBoundariesAsync(projectRoot, {
-    clear: !!options.resetCache,
-    minify: !!options.minify,
-    mode: options.dev ? 'development' : 'production',
-    maxWorkers: options.maxWorkers,
-  });
+  // const secondInstanceLol = await unstable_getDevServerForClientBoundariesAsync(projectRoot, {
+  //   clear: !!options.resetCache,
+  //   minify: !!options.minify,
+  //   mode: options.dev ? 'development' : 'production',
+  //   maxWorkers: options.maxWorkers,
+  // });
 
   const isHermes = isEnableHermesManaged(exp, options.platform);
 
@@ -166,14 +166,14 @@ export async function createMetroServerAndBundleRequestAsync(
     sourceMapUrl = path.basename(sourceMapUrl);
   }
 
-  const files = new Map();
+  // const files = new Map();
 
-  const { clientBoundaries } = await getClientBoundariesAsync(projectRoot, secondInstanceLol, {
-    files,
-    platform: options.platform,
-  });
+  // const { clientBoundaries } = await getClientBoundariesAsync(projectRoot, secondInstanceLol, {
+  //   files,
+  //   platform: options.platform,
+  // });
 
-  console.log('Collected client boundaries:', clientBoundaries);
+  // console.log('Collected client boundaries:', clientBoundaries);
 
   const bundleRequest = {
     ...Server.DEFAULT_BUNDLE_OPTIONS,
@@ -185,7 +185,7 @@ export async function createMetroServerAndBundleRequestAsync(
       engine: isHermes ? 'hermes' : undefined,
       bytecode: isHermes,
       isExporting: true,
-      clientBoundaries,
+      // clientBoundaries,
     }),
     sourceMapUrl,
     unstable_transformProfile: (options.unstableTransformProfile ||

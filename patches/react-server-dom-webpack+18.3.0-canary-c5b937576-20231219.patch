@@ -1,7 +1,16 @@
 diff --git a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js
-index f2e4646..d69976d 100644
+index f2e4646..3c9ba3e 100644
 --- a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js
 +++ b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-client.browser.development.js
+@@ -10,7 +10,7 @@
+ 
+ 'use strict';
+ 
+-if (process.env.NODE_ENV !== "production") {
++// if (process.env.NODE_ENV !== "production") {
+   (function() {
+ 'use strict';
+ 
 @@ -154,6 +154,7 @@ function preloadModule(metadata) {
  
  function requireModule(metadata) {
@@ -249,6 +258,12 @@ index f2e4646..d69976d 100644
    }, function (e) {
      reportGlobalError(response, e);
    });
+@@ -2092,4 +2236,4 @@ exports.createFromReadableStream = createFromReadableStream;
+ exports.createServerReference = createServerReference;
+ exports.encodeReply = encodeReply;
+   })();
+-}
++// }
 diff --git a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-server.node.unbundled.development.js b/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-server.node.unbundled.development.js
 index 5d78b6a..a63e228 100644
 --- a/node_modules/react-server-dom-webpack/cjs/react-server-dom-webpack-server.node.unbundled.development.js
@@ -275,3 +290,20 @@ index f52adc8..e8b924c 100644
  function zb(a,b,d,c){this.status=a;this.value=b;this.reason=d;this._response=c}zb.prototype=Object.create(Promise.prototype);zb.prototype.then=function(a,b){switch(this.status){case "resolved_model":Ab(this)}switch(this.status){case "fulfilled":a(this.value);break;case "pending":case "blocked":a&&(null===this.value&&(this.value=[]),this.value.push(a));b&&(null===this.reason&&(this.reason=[]),this.reason.push(b));break;default:b(this.reason)}};
  function Bb(a,b){for(var d=0;d<a.length;d++)(0,a[d])(b)}function Cb(a,b){if("pending"===a.status||"blocked"===a.status){var d=a.reason;a.status="rejected";a.reason=b;null!==d&&Bb(d,b)}}function Db(a,b,d,c,e,f){var g=wb(a._bundlerConfig,b);a=yb(g);if(d)d=Promise.all([d,a]).then(function(k){k=k[0];var h=W(g);return h.bind.apply(h,[null].concat(k))});else if(a)d=Promise.resolve(a).then(function(){return W(g)});else return W(g);d.then(Eb(c,e,f),Fb(c));return null}var X=null,Y=null;
  function Ab(a){var b=X,d=Y;X=a;Y=null;try{var c=JSON.parse(a.value,a._response._fromJSON);null!==Y&&0<Y.deps?(Y.value=c,a.status="blocked",a.value=null,a.reason=null):(a.status="fulfilled",a.value=c)}catch(e){a.status="rejected",a.reason=e}finally{X=b,Y=d}}function Gb(a,b){a._chunks.forEach(function(d){"pending"===d.status&&Cb(d,b)})}
+diff --git a/node_modules/react-server-dom-webpack/client.browser.js b/node_modules/react-server-dom-webpack/client.browser.js
+index 9a80cea..ac65947 100644
+--- a/node_modules/react-server-dom-webpack/client.browser.js
++++ b/node_modules/react-server-dom-webpack/client.browser.js
+@@ -1,7 +1,7 @@
+ 'use strict';
+ 
+-if (process.env.NODE_ENV === 'production') {
+-  module.exports = require('./cjs/react-server-dom-webpack-client.browser.production.min.js');
+-} else {
+-  module.exports = require('./cjs/react-server-dom-webpack-client.browser.development.js');
+-}
++// if (process.env.NODE_ENV === 'production') {
++//   module.exports = require('./cjs/react-server-dom-webpack-client.browser.production.min.js');
++// } else {
++// }
++module.exports = require('./cjs/react-server-dom-webpack-client.browser.development.js');
