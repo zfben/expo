@@ -24,6 +24,12 @@ import { profile } from '../../utils/profile';
 import { isEnableHermesManaged } from '../exportHermes';
 import { getAssets } from '../fork-bundleAsync';
 import { persistMetroAssetsAsync } from '../persistMetroAssets';
+import {
+  getClientBoundariesAsync,
+  unstable_getDevServerForClientBoundariesAsync,
+} from '../exportStaticAsync';
+import { exportAppAsync, exportAppForAssetsAsync } from '../exportApp';
+import { persistMetroFilesAsync } from '../saveAssets';
 
 const debug = require('debug')('expo:export:embed');
 
@@ -60,23 +66,57 @@ export async function exportEmbedAsync(projectRoot: string, options: Options) {
     }
   }
 
-  const { bundle, assets } = await exportEmbedBundleAndAssetsAsync(projectRoot, options);
+  // TODO: No safe way to get the binary dir at the moment.
+  const { files, metadata } = await exportAppForAssetsAsync(projectRoot, {
+    platforms: [options.platform],
+    bytecode: false,
+    clear: false,
+    // clear: options.resetCache,
+    dev: options.dev,
+    dumpAssetmap: false,
+    minify: !!options.minify,
+    maxWorkers: options.maxWorkers,
+    outputDir: options.assetsDest!,
 
-  fs.mkdirSync(path.dirname(options.bundleOutput), { recursive: true, mode: 0o755 });
+    // TODO: Source maps
+    sourceMaps: !!options.sourcemapOutput,
+  });
 
-  // Persist bundle and source maps.
-  await Promise.all([
-    output.save(bundle, options, Log.log),
-    // NOTE(EvanBacon): This may need to be adjusted in the future if want to support baseUrl on native
-    // platforms when doing production embeds (unlikely).
-    options.assetsDest
-      ? persistMetroAssetsAsync(assets, {
-          platform: options.platform,
-          outputDirectory: options.assetsDest,
-          iosAssetCatalogDirectory: options.assetCatalogDest,
-        })
-      : null,
-  ]);
+  // Write all files at the end for unified logging.
+  await persistMetroFilesAsync(files, options.assetsDest!);
+
+  if (metadata) {
+    const bundlePath = metadata.fileMetadata[options.platform].bundle;
+    const bundleContents = files.get(bundlePath)?.contents;
+    if (!bundleContents) throw new Error('No bundle contents for: ' + bundlePath);
+    await fs.promises.writeFile(options.bundleOutput, bundleContents);
+    console.log('bundlePath', metadata, bundlePath);
+
+    if (options.sourcemapOutput) {
+      const mapPath = bundlePath + '.map';
+      const mapContents = files.get(mapPath)?.contents;
+      if (!mapContents) throw new Error('No map contents for: ' + mapPath);
+      await fs.promises.writeFile(options.sourcemapOutput, mapContents);
+    }
+  }
+
+  // const { bundle, assets } = await exportEmbedBundleAndAssetsAsync(projectRoot, options);
+
+  // fs.mkdirSync(path.dirname(options.bundleOutput), { recursive: true, mode: 0o755 });
+
+  // // Persist bundle and source maps.
+  // await Promise.all([
+  //   output.save(bundle, options, Log.log),
+  //   // NOTE(EvanBacon): This may need to be adjusted in the future if want to support baseUrl on native
+  //   // platforms when doing production embeds (unlikely).
+  //   options.assetsDest
+  //     ? persistMetroAssetsAsync(assets, {
+  //         platform: options.platform,
+  //         outputDirectory: options.assetsDest,
+  //         iosAssetCatalogDirectory: options.assetCatalogDest,
+  //       })
+  //     : null,
+  // ]);
 }
 
 export async function createMetroServerAndBundleRequestAsync(
@@ -90,6 +130,7 @@ export async function createMetroServerAndBundleRequestAsync(
     | 'sourcemapUseAbsolutePath'
     | 'entryFile'
     | 'minify'
+    | 'resetCache'
     | 'dev'
     | 'unstableTransformProfile'
   >
@@ -110,12 +151,29 @@ export async function createMetroServerAndBundleRequestAsync(
     }
   );
 
+  // TODO: Just start one metro bundler instance.
+  const secondInstanceLol = await unstable_getDevServerForClientBoundariesAsync(projectRoot, {
+    clear: !!options.resetCache,
+    minify: !!options.minify,
+    mode: options.dev ? 'development' : 'production',
+    maxWorkers: options.maxWorkers,
+  });
+
   const isHermes = isEnableHermesManaged(exp, options.platform);
 
   let sourceMapUrl = options.sourcemapOutput;
   if (sourceMapUrl && !options.sourcemapUseAbsolutePath) {
     sourceMapUrl = path.basename(sourceMapUrl);
   }
+
+  const files = new Map();
+
+  const { clientBoundaries } = await getClientBoundariesAsync(projectRoot, secondInstanceLol, {
+    files,
+    platform: options.platform,
+  });
+
+  console.log('Collected client boundaries:', clientBoundaries);
 
   const bundleRequest = {
     ...Server.DEFAULT_BUNDLE_OPTIONS,
@@ -127,6 +185,7 @@ export async function createMetroServerAndBundleRequestAsync(
       engine: isHermes ? 'hermes' : undefined,
       bytecode: isHermes,
       isExporting: true,
+      clientBoundaries,
     }),
     sourceMapUrl,
     unstable_transformProfile: (options.unstableTransformProfile ||

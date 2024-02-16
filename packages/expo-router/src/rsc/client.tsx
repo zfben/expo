@@ -17,6 +17,7 @@ import RSDWClient from 'react-server-dom-webpack/client';
 
 import { encodeInput } from './renderers/utils';
 import { getDevServer } from '../getDevServer';
+import OS from '../../os';
 
 const { createFromFetch, encodeReply } = RSDWClient;
 
@@ -119,12 +120,25 @@ export const fetchRSC = (
   const prefetched = ((globalThis as any).__WAKU_PREFETCHED__ ||= {});
   const url = BASE_PATH + encodeInput(input) + (searchParamsString ? '?' + searchParamsString : '');
   console.log('fetch', url);
-  const response = prefetched[url] || fetch(url);
+  const response = prefetched[url] || fetch(getAdjustedFilePath(url));
   delete prefetched[url];
   const data = createFromFetch<Awaited<Elements>>(checkStatus(response), options);
   cache[0] = entry = [input, searchParamsString, setElements, data];
   return data;
 };
+
+import * as FS from 'expo-file-system';
+
+function getAdjustedFilePath(path: string): string {
+  if (OS === 'web' || getDevServer().bundleLoadedFromServer) {
+    return path;
+  }
+  if (OS === 'android') {
+    return 'file:///android_asset' + path;
+  }
+
+  return FS.bundleDirectory + path;
+}
 
 export const prefetchRSC = (input: string, searchParamsString: string): void => {
   const prefetched = ((globalThis as any).__WAKU_PREFETCHED__ ||= {});

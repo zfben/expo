@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRewriteRequestUrl = exports.getRouterDirectory = void 0;
+exports.getRewriteRequestUrl = exports.getRouterDirectory = exports.getRscPathFromExpoConfig = void 0;
 // Copyright 2023-present 650 Industries (Expo). All rights reserved.
 const config_1 = require("@expo/config");
 const paths_1 = require("@expo/config/paths");
@@ -35,6 +35,13 @@ function isEnableHermesManaged(expoConfig, platform) {
 function getRouterDirectoryModuleIdWithManifest(projectRoot, exp) {
     return exp.extra?.router?.root ?? getRouterDirectory(projectRoot);
 }
+function getRscPathFromExpoConfig(exp) {
+    // @ts-expect-error: TODO: Add this setting to framework config.
+    const userDefined = exp.experiments?.rscPath?.trim().replace(/^\/+/, '').replace(/\/+$/, '');
+    // NOTE: Default is added here...
+    return '/' + (userDefined ?? 'RSC');
+}
+exports.getRscPathFromExpoConfig = getRscPathFromExpoConfig;
 function getRouterDirectory(projectRoot) {
     // more specific directories first
     if (directoryExistsSync(path_1.default.join(projectRoot, 'src/app'))) {
@@ -67,6 +74,9 @@ function getRewriteRequestUrl(projectRoot) {
             // NOTE: Keep in sync with metroOptions.ts
             if (!ensured.searchParams.has('transform.routerRoot')) {
                 ensured.searchParams.set('transform.routerRoot', getRouterDirectoryModuleIdWithManifest(projectRoot, exp));
+            }
+            if (!ensured.searchParams.has('transform.rscPath')) {
+                ensured.searchParams.set('transform.rscPath', getRscPathFromExpoConfig(exp));
             }
             if (!ensured.searchParams.has('transform.engine')) {
                 const isHermesEnabled = isEnableHermesManaged(exp, platform);

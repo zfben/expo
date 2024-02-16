@@ -2,6 +2,29 @@
 /// <reference types="react/canary" />
 'use client';
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -11,6 +34,7 @@ const react_1 = require("react");
 const client_1 = __importDefault(require("react-server-dom-webpack/client"));
 const utils_1 = require("./renderers/utils");
 const getDevServer_1 = require("../getDevServer");
+const os_1 = __importDefault(require("../../os"));
 const { createFromFetch, encodeReply } = client_1.default;
 // NOTE: Ensured to start with `/`.
 const RSC_PATH = process.env.EXPO_RSC_PATH;
@@ -75,13 +99,23 @@ const fetchRSC = (input, searchParamsString, setElements, cache = fetchCache) =>
     const prefetched = (globalThis.__WAKU_PREFETCHED__ ||= {});
     const url = BASE_PATH + (0, utils_1.encodeInput)(input) + (searchParamsString ? '?' + searchParamsString : '');
     console.log('fetch', url);
-    const response = prefetched[url] || fetch(url);
+    const response = prefetched[url] || fetch(getAdjustedFilePath(url));
     delete prefetched[url];
     const data = createFromFetch(checkStatus(response), options);
     cache[0] = entry = [input, searchParamsString, setElements, data];
     return data;
 };
 exports.fetchRSC = fetchRSC;
+const FS = __importStar(require("expo-file-system"));
+function getAdjustedFilePath(path) {
+    if (os_1.default === 'web' || (0, getDevServer_1.getDevServer)().bundleLoadedFromServer) {
+        return path;
+    }
+    if (os_1.default === 'android') {
+        return 'file:///android_asset' + path;
+    }
+    return FS.bundleDirectory + path;
+}
 const prefetchRSC = (input, searchParamsString) => {
     const prefetched = (globalThis.__WAKU_PREFETCHED__ ||= {});
     const url = BASE_PATH + (0, utils_1.encodeInput)(input) + (searchParamsString ? '?' + searchParamsString : '');

@@ -37,6 +37,14 @@ function getRouterDirectoryModuleIdWithManifest(projectRoot: string, exp: ExpoCo
   return exp.extra?.router?.root ?? getRouterDirectory(projectRoot);
 }
 
+export function getRscPathFromExpoConfig(exp: ExpoConfig) {
+  // @ts-expect-error: TODO: Add this setting to framework config.
+  const userDefined = exp.experiments?.rscPath?.trim().replace(/^\/+/, '').replace(/\/+$/, '');
+
+  // NOTE: Default is added here...
+  return '/' + (userDefined ?? 'RSC');
+}
+
 export function getRouterDirectory(projectRoot: string): string {
   // more specific directories first
   if (directoryExistsSync(path.join(projectRoot, 'src/app'))) {
@@ -80,6 +88,9 @@ export function getRewriteRequestUrl(projectRoot: string) {
           'transform.routerRoot',
           getRouterDirectoryModuleIdWithManifest(projectRoot, exp)
         );
+      }
+      if (!ensured.searchParams.has('transform.rscPath')) {
+        ensured.searchParams.set('transform.rscPath', getRscPathFromExpoConfig(exp));
       }
 
       if (!ensured.searchParams.has('transform.engine')) {

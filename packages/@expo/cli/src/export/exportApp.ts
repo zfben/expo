@@ -26,6 +26,32 @@ import { createAssetMap, createSourceMapDebugHtml } from './writeContents';
 
 export async function exportAppAsync(
   projectRoot: string,
+  props: Pick<
+    Options,
+    | 'dumpAssetmap'
+    | 'sourceMaps'
+    | 'dev'
+    | 'clear'
+    | 'outputDir'
+    | 'platforms'
+    | 'minify'
+    | 'bytecode'
+    | 'maxWorkers'
+  >
+): Promise<void> {
+  setNodeEnv(props.dev ? 'development' : 'production');
+  require('@expo/env').load(projectRoot);
+
+  const outputPath = path.resolve(projectRoot, props.outputDir);
+
+  const { files } = await exportAppForAssetsAsync(projectRoot, props);
+
+  // Write all files at the end for unified logging.
+  await persistMetroFilesAsync(files, outputPath);
+}
+
+export async function exportAppForAssetsAsync(
+  projectRoot: string,
   {
     platforms,
     outputDir,
@@ -48,10 +74,7 @@ export async function exportAppAsync(
     | 'bytecode'
     | 'maxWorkers'
   >
-): Promise<void> {
-  setNodeEnv(dev ? 'development' : 'production');
-  require('@expo/env').load(projectRoot);
-
+) {
   const projectConfig = getConfig(projectRoot);
   const exp = await getPublicExpoManifestAsync(projectRoot, {
     // Web doesn't require validation.
@@ -123,6 +146,7 @@ export async function exportAppAsync(
     });
   });
 
+  let metadata: ReturnType<typeof createMetadataJson> | null = null;
   const bundleEntries = Object.entries(bundles);
   // Can be empty during web-only SSG.
   if (bundleEntries.length) {
@@ -165,6 +189,7 @@ export async function exportAppAsync(
       fileNames,
       embeddedHashSet,
     });
+    metadata = contents;
     files.set('metadata.json', { contents: JSON.stringify(contents) });
   }
 
@@ -225,6 +250,5 @@ export async function exportAppAsync(
     }
   }
 
-  // Write all files at the end for unified logging.
-  await persistMetroFilesAsync(files, outputPath);
+  return { files, metadata };
 }
