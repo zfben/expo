@@ -31,6 +31,10 @@ function App() {
     //     <Text>Hey</Text>
     //   </View>
     // );
+    // console.log('Mount')
+    // return (
+    //   <Text>HeyHeyHeyHeyHeyHey</Text>
+    // )
     return (<react_1.default.Suspense fallback={null}>
       <head_1.Head.Provider>
         {/* <Try catch={ErrorBoundary}> */}

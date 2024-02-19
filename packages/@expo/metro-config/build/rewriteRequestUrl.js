@@ -67,6 +67,7 @@ function getRewriteRequestUrl(projectRoot) {
                 platform,
                 pkg,
             });
+            // ensured.searchParams.set('dev', 'false')
             if (!entry) {
                 throw new Error((0, chalk_1.default) `The project entry file could not be resolved (platform: ${platform}, root: ${projectRoot}). Define it in the {bold package.json} "main" field.`);
             }

@@ -59,6 +59,7 @@ const checkStatus = async (responsePromise) => {
         err.statusCode = response.status;
         throw err;
     }
+    console.log('[RSC]: Fetched', response.url, response.status);
     return response;
 };
 function getCached(c, m, k) {

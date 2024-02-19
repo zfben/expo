@@ -61,6 +61,7 @@ const checkStatus = async (responsePromise: Promise<Response>): Promise<Response
     (err as any).statusCode = response.status;
     throw err;
   }
+  console.log('[RSC]: Fetched', response.url, response.status);
   return response;
 };
 

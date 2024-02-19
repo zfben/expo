@@ -12,6 +12,7 @@ import React from 'react';
 // import { ExpoRoot } from './ExpoRoot';
 import { Head } from './head';
 import { Slot, Root } from './rsc/client';
+import { Text } from 'react-native'
 
 // MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
 // import { Try } from './views/Try';
@@ -32,6 +33,10 @@ export function App() {
   //     <Text>Hey</Text>
   //   </View>
   // );
+  // console.log('Mount')
+  // return (
+  //   <Text>HeyHeyHeyHeyHeyHey</Text>
+  // )
   return (
     <React.Suspense fallback={null}>
       <Head.Provider>

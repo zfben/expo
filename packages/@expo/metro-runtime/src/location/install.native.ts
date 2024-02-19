@@ -28,7 +28,8 @@ function warnProductionOriginNotConfigured(requestUrl: string) {
 // TODO: This would be better if native and tied as close to the JS engine as possible, i.e. it should
 // reflect the exact location of the JS file that was executed.
 function getBaseUrl() {
-  if (process.env.NODE_ENV !== 'production') {
+  if (getDevServer().bundleLoadedFromServer) {
+  // if (process.env.NODE_ENV !== 'production') {
     // e.g. http://localhost:19006
     return getDevServer().url?.replace(/\/$/, '');
   }
