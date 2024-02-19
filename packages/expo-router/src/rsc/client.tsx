@@ -138,7 +138,8 @@ function getAdjustedFilePath(path: string): string {
     return 'file:///android_asset' + path;
   }
 
-  return FS.bundleDirectory + path;
+  console.log('FS.bundleDirectory', FS.bundleDirectory)
+  return 'file://' + FS.bundleDirectory + path;
 }
 
 export const prefetchRSC = (input: string, searchParamsString: string): void => {

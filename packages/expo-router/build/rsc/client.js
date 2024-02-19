@@ -115,7 +115,8 @@ function getAdjustedFilePath(path) {
     if (os_1.default === 'android') {
         return 'file:///android_asset' + path;
     }
-    return FS.bundleDirectory + path;
+    console.log('FS.bundleDirectory', FS.bundleDirectory);
+    return 'file://' + FS.bundleDirectory + path;
 }
 const prefetchRSC = (input, searchParamsString) => {
     const prefetched = (globalThis.__WAKU_PREFETCHED__ ||= {});

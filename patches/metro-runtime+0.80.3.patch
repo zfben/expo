@@ -1,0 +1,29 @@
+diff --git a/node_modules/metro-runtime/src/polyfills/require.js b/node_modules/metro-runtime/src/polyfills/require.js
+index ce67cb4..244bf11 100644
+--- a/node_modules/metro-runtime/src/polyfills/require.js
++++ b/node_modules/metro-runtime/src/polyfills/require.js
+@@ -390,16 +390,20 @@ function unknownModuleError(id) {
+   }
+   return Error(message);
+ }
++
++// NOTE(EvanBacon): Exposed for detecting if modules exist before attempting to fetch split chunks.
++// $FlowFixMe[prop-missing]
++metroRequire.getModules = () => {
++  return modules;
++};
++
+ if (__DEV__) {
+   // $FlowFixMe[prop-missing]
+   metroRequire.Systrace = {
+     beginEvent: () => {},
+     endEvent: () => {},
+   };
+-  // $FlowFixMe[prop-missing]
+-  metroRequire.getModules = () => {
+-    return modules;
+-  };
++
+ 
+   // HOT MODULE RELOADING
+   var createHotReloadingObject = function () {

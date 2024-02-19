@@ -1,9 +1,11 @@
+"use strict";
 /**
  * Copyright © 2024 650 Industries.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
+Object.defineProperty(exports, "__esModule", { value: true });
 // Runtime code for patching Webpack's require function to use Metro.
 const rscClientModuleCache = new Map();
 /** Create an `loadBundleAsync` function in the expected shape for Metro bundler. */
@@ -34,6 +36,28 @@ globalThis.__webpack_chunk_load__ = (id) => {
     const url = new URL(id, id.startsWith('/') ? 'http://e' : undefined);
     const numericMetroId = parseInt(url.hash.slice(1));
     console.log('__webpack_chunk_load__', id, numericMetroId);
+    // NOTE: `getModules` is exposed in a patch.
+    if (numericMetroId in require.getModules()) {
+        return new Promise((resolve, reject) => {
+            const m = __r(numericMetroId);
+            rscClientModuleCache.set(id, m);
+            if (!m) {
+                reject(new Error(`Module "${id}" not found`));
+            }
+            else {
+                // NOTE: DO NOT LOG MODULES AS THIS BREAKS REACT NATIVE
+                // console.log(`Remote client module "${id}" >`, m);
+                // debugger;
+                resolve(m);
+            }
+        });
+    }
+    // TODO: Support reading local split bundles here on Release native builds.
+    // - Will need the boundaries to represent the local file paths.
+    // - Will need to use `file://` paths to fetch local files.
+    // - Need some policy to indicate that the file is local and not remote.
+    // if (!getDevServer().bundleLoadedFromServer) {
+    // }
     let loadBundlePromise;
     if (prodFetcher) {
         console.log('__webpack_chunk_load__ > production:', numericMetroId);
