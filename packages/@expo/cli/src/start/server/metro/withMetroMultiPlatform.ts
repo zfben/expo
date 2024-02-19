@@ -255,6 +255,7 @@ export function withExtendedResolver(
     };
   }
 
+  const hasLogged = new Set<string>();
   // If Node.js pass-through, then remap to a module like `module.exports = $$require_external(<module>)`.
   // If module should be shimmed, remap to an empty module.
   const externals: {
@@ -273,18 +274,28 @@ export function withExtendedResolver(
         }
 
         if (context.customResolverOptions?.rsc) {
+          const isExternal =
+            /^(source-map-support(\/.*)?|@babel\/runtime\/.+|debug|metro-runtime\/src\/modules\/HMRClient|metro|acorn-loose|acorn|chalk|ws|ansi-styles|supports-color|color-convert|has-flag|utf-8-validate|color-name|react-refresh\/runtime|@remix-run\/node\/.+)$/.test(
+              moduleName
+            );
+
           // Ensure these non-react-server modules are excluded when bundling for React Server Components in development.
-          return /^(source-map-support(\/.*)?|@babel\/runtime\/.+|debug|metro|acorn-loose|acorn)$/.test(
-            moduleName
-          );
+          return isExternal;
         }
 
-        return (
-          // Extern these modules in standard Node.js environments.
-          /^(source-map-support(\/.*)?|react|react-helmet-async|@radix-ui\/.+|@babel\/runtime\/.+|react-dom(\/.+)?|debug|acorn-loose|acorn)$/.test(
+        const isExternal = // Extern these modules in standard Node.js environments.
+          /^(source-map-support(\/.*)?|react|react-helmet-async|@radix-ui\/.+|@babel\/runtime\/.+|react-dom(\/.+)?|debug|acorn-loose|acorn|css-in-js-utils\/lib\/.+|hyphenate-style-name|color|color-string|color-convert|color-name|fontfaceobserver|fast-deep-equal|query-string|escape-string-regexp|invariant|postcss-value-parser|memoize-one|nullthrows|strict-uri-encode|decode-uri-component|split-on-first|filter-obj|warn-once|simple-swizzle|is-arrayish|inline-style-prefixer\/.+)$/.test(
             moduleName
-          )
-        );
+          );
+
+        // if (!isExternal && !moduleName.match(/^[/.]/)) {
+        //   if (!hasLogged.has(moduleName)) {
+        //     console.log('>>>>', moduleName);
+        //   }
+        //   hasLogged.add(moduleName);
+        // }
+
+        return isExternal;
       },
       replace: 'node',
     },

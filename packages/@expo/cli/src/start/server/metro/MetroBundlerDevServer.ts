@@ -193,7 +193,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         'expo-router/node/render.js',
         {
           minify,
-          mode,
+          // mode: 'production',
           isExporting,
         }
       );
@@ -371,7 +371,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         typeof import('expo-router/build/static/renderStaticContent')
       >('expo-router/node/render.js', {
         minify: false,
-        mode,
+        // mode: 'production',
         isExporting,
         platform,
       });
@@ -421,6 +421,8 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       baseUrl != null && routerRoot != null && isExporting != null,
       'The server must be started before calling ssrLoadModule.'
     );
+
+    console.log('Load module:', this.projectRoot, this.getDevServerUrl()!, filePath);
 
     return await getStaticRenderFunctionsForEntry<T>(
       this.projectRoot,

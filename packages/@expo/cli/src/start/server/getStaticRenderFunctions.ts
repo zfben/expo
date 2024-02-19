@@ -16,9 +16,10 @@ import { createBundleUrlPath, ExpoMetroOptions } from './middleware/metroOptions
 import { augmentLogs } from './serverLogLikeMetro';
 import { stripAnsi } from '../../utils/ansi';
 import { delayAsync } from '../../utils/delay';
-import { SilentError } from '../../utils/errors';
+import { CommandError, SilentError } from '../../utils/errors';
 import { memoize } from '../../utils/fn';
 import { profile } from '../../utils/profile';
+import { Log } from '../../log';
 
 /** The list of input keys will become optional, everything else will remain the same. */
 export type PickPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
@@ -220,8 +221,14 @@ function evalMetroAndWrapFunctions<T = Record<string, any>>(
   script: string,
   filename: string
 ): Promise<T> {
-  // console.log('>>', script);
   const contents = evalMetro(projectRoot, script, filename);
+  if (contents == null) {
+    // Log.error(script);
+    throw new CommandError(
+      `SSR module has no exports or is nullish: "${filename}". Module: ${contents}`
+    );
+  }
+
   // wrap each function with a try/catch that uses Metro's error formatter
   return Object.keys(contents).reduce((acc, key) => {
     const fn = contents[key];

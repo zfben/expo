@@ -121,7 +121,7 @@ export function expoRouterServerComponentClientReferencesPlugin(
 ) {
   const { types: t } = api;
   const isServer = api.caller(getIsReactServer);
-  const isDev = api.caller(getIsDev);
+  // const isDev = api.caller(getIsDev);
   return {
     name: 'expo-rsc-client-references',
     visitor: {

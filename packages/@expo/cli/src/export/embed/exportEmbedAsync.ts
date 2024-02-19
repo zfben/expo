@@ -69,12 +69,15 @@ export async function exportEmbedAsync(projectRoot: string, options: Options) {
   // TODO: No safe way to get the binary dir at the moment.
   const { files, metadata } = await exportAppForAssetsAsync(projectRoot, {
     platforms: [options.platform],
+    // For debugging:
     bytecode: false,
     clear: false,
+    minify: false,
+    // dev: true,
     // clear: options.resetCache,
     dev: options.dev,
     dumpAssetmap: false,
-    minify: !!options.minify,
+    // minify: !!options.minify,
     maxWorkers: options.maxWorkers,
     outputDir: options.assetsDest!,
 

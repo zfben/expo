@@ -100,7 +100,7 @@ exports.rscForbiddenReactAPIsPlugin = rscForbiddenReactAPIsPlugin;
 function expoRouterServerComponentClientReferencesPlugin(api) {
     const { types: t } = api;
     const isServer = api.caller(common_1.getIsReactServer);
-    const isDev = api.caller(common_1.getIsDev);
+    // const isDev = api.caller(getIsDev);
     return {
         name: 'expo-rsc-client-references',
         visitor: {

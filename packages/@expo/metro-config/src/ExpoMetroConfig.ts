@@ -137,7 +137,7 @@ function stringToHash(str: string): number {
     hash = (hash << 5) - hash + char;
     hash |= 0; // Convert to 32bit integer
   }
-  return hash;
+  return Math.abs(hash);
 }
 
 export function getDefaultConfig(
@@ -249,7 +249,12 @@ export function getDefaultConfig(
     },
     serializer: {
       createModuleIdFactory: stableCreateModuleIdFactory,
-      getModulesRunBeforeMainModule: () => {
+      getModulesRunBeforeMainModule: (entryFile) => {
+        // TODO: Pass a safer option to disable `getModulesRunBeforeMainModule` for SSR modules.
+        if (entryFile.match(/expo-router[\\/]node[\\/]render\.js$/)) {
+          return [];
+        }
+
         const preModules: string[] = [
           // MUST be first
           require.resolve(path.join(reactNativePath, 'Libraries/Core/InitializeCore')),

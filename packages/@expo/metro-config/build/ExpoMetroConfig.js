@@ -119,7 +119,7 @@ function stringToHash(str) {
         hash = (hash << 5) - hash + char;
         hash |= 0; // Convert to 32bit integer
     }
-    return hash;
+    return Math.abs(hash);
 }
 function getDefaultConfig(projectRoot, { mode, isCSSEnabled = true, unstable_beforeAssetSerializationPlugins } = {}) {
     const { getDefaultConfig: getDefaultMetroConfig, mergeConfig } = (0, metro_config_1.importMetroConfig)(projectRoot);
@@ -210,7 +210,11 @@ function getDefaultConfig(projectRoot, { mode, isCSSEnabled = true, unstable_bef
         },
         serializer: {
             createModuleIdFactory: stableCreateModuleIdFactory,
-            getModulesRunBeforeMainModule: () => {
+            getModulesRunBeforeMainModule: (entryFile) => {
+                // TODO: Pass a safer option to disable `getModulesRunBeforeMainModule` for SSR modules.
+                if (entryFile.match(/expo-router[\\/]node[\\/]render\.js$/)) {
+                    return [];
+                }
                 const preModules = [
                     // MUST be first
                     require.resolve(path_1.default.join(reactNativePath, 'Libraries/Core/InitializeCore')),

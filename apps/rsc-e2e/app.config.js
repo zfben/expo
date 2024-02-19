@@ -16,7 +16,7 @@ module.exports = {
     package: 'dev.expo.routere2e',
   },
   // For testing the output bundle
-  jsEngine: process.env.E2E_ROUTER_SRC ? 'jsc' : 'hermes',
+  jsEngine: 'jsc', // process.env.E2E_ROUTER_SRC ? 'jsc' : 'hermes',
   splash: {
     image: './assets/splash.png',
     resizeMode: 'contain',

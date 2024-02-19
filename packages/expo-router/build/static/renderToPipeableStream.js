@@ -29,7 +29,7 @@ function stringToHash(str) {
         hash = (hash << 5) - hash + char;
         hash |= 0; // Convert to 32bit integer
     }
-    return hash;
+    return Math.abs(hash);
 }
 const fileURLToFilePath = (fileURL) => {
     if (!fileURL.startsWith('file://')) {
