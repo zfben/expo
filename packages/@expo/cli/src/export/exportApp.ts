@@ -87,7 +87,7 @@ export async function exportAppForAssetsAsync(
 
   const useRSC = true;
 
-  const useServerRendering = ['static', 'server'].includes(exp.web?.output ?? '');
+  const useServerRendering = useRSC || ['static', 'server'].includes(exp.web?.output ?? '');
   const baseUrl = getBaseUrlFromExpoConfig(exp);
   const rscPath = getRscPathFromExpoConfig(exp);
 

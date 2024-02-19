@@ -239,8 +239,8 @@ async function bundleProductionMetroClientAsync(
     console.log('');
     throw error;
   } finally {
-    metroServer.end();
-    secondInstanceLol.stopAsync();
+    await metroServer.end();
+    await secondInstanceLol.stopAsync();
   }
 }
 

@@ -9,7 +9,7 @@ import { Text, View } from 'react-native';
 // import A05_ClientPlatformExtensions from '../05-client-platform-extensions/entry';
 // import A06_RSCChildren from '../06-rsc-children/entry';
 // import A07_AsyncServerComponent from '../07-async-server-component/entry';
-// import A08_NodeBuiltins from '../08-node-builtins/entry';
+import A08_NodeBuiltins from '../08-node-builtins/entry';
 // import A09_CSSModules from '../09-css-modules/entry';
 // import A10_ServerActions from '../10-server-actions/entry';
 // import A11_ExpoViewsTest from '../11-expo-views/entry';
@@ -62,13 +62,14 @@ export default function App() {
       <View style={{ paddingVertical: 54, flex: 1, }}>
       {/* <div>
       <h1>Hello world</h1> */}
-      <View style={{ flex: 1, width: 256, height: 256, backgroundColor: 'darkblue' }} />
+      {/* <View style={{ flex: 1, width: 256, height: 256, backgroundColor: 'darkblue' }} /> */}
       {/* <Text>Hey</Text> */}
       {/* <LinearGradient colors={['red', 'yellow']} /> */}
       {/* <Child>
         <h2>Child</h2>
       </Child> */}
       {/* </div> */}
+      {/* <A08_NodeBuiltins /> */}
       <Text>env: {process.env.NODE_ENV}</Text>
       <Text>rsc path: {process.env.EXPO_RSC_PATH}</Text>
       </View>

@@ -187,6 +187,7 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, isEx
     //   moduleMap
     // TODO: Populate this with Expo Router results.
     const renderEntries = async (input) => {
+        // TODO: Sanitize input and use it to select a component to render.
         return {
             index: react_1.default.createElement(Component, props),
         };
@@ -204,6 +205,7 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, isEx
         return elements;
     };
     const elements = await render({}, input, url.searchParams);
+    console.log('Elements:', elements, input);
     const stream = (0, server_edge_1.renderToReadableStream)(elements, bundlerConfig);
     // Logging is very useful for native platforms where the network tab isn't always available.
     if (debug.enabled) {

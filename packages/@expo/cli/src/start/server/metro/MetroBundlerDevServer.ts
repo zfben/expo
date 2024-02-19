@@ -186,7 +186,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       'The server must be started before calling ssrLoadModule.'
     );
 
-    const url = this.getDevServerUrl()!;
+    const url = this.getDevServerUrlOrAssert();
 
     const { getStaticContent, getManifest, getBuildTimeServerManifestAsync } =
       await this.ssrLoadModule<typeof import('expo-router/build/static/renderStaticContent')>(
@@ -260,7 +260,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     });
     console.log('devBundleUrlPathname:', devBundleUrlPathname, clientBoundaries);
 
-    const bundleUrl = new URL(devBundleUrlPathname, this.getDevServerUrl()!);
+    const bundleUrl = new URL(devBundleUrlPathname, this.getDevServerUrlOrAssert());
 
     // Fetch the generated HTML from our custom Metro serializer
     const results = await fetch(bundleUrl.toString());
@@ -376,7 +376,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         platform,
       });
 
-      const location = new URL(pathname, this.getDevServerUrl()!);
+      const location = new URL(pathname, this.getDevServerUrlOrAssert());
       return await getStaticContent(location);
     };
 
@@ -422,11 +422,11 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       'The server must be started before calling ssrLoadModule.'
     );
 
-    console.log('Load module:', this.projectRoot, this.getDevServerUrl()!, filePath);
+    console.log('Load module:', this.projectRoot, this.getDevServerUrlOrAssert(), filePath);
 
     return await getStaticRenderFunctionsForEntry<T>(
       this.projectRoot,
-      this.getDevServerUrl()!,
+      this.getDevServerUrlOrAssert(),
       {
         // Bundle in Node.js mode for SSR.
         environment: 'node',
@@ -454,7 +454,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       'The server must be started before calling ssrLoadModule.'
     );
 
-    return await requireFileContentsWithMetro(this.projectRoot, this.getDevServerUrl()!, filePath, {
+    return await requireFileContentsWithMetro(this.projectRoot, this.getDevServerUrlOrAssert(), filePath, {
       // Bundle in Node.js mode for SSR.
       environment: 'node',
       platform: 'web',
@@ -543,7 +543,6 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     console.log('multiGraph:', multiGraph);
 
     // TODO
-    process.exit(0);
     return '';
   }
 
@@ -602,7 +601,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         input: route,
         body: method === 'POST' ? createReadableStreamFromReadable(req!) : null,
         customImport: async (relativeDevServerUrl: string): Promise<any> => {
-          const url = new URL(relativeDevServerUrl, this.getDevServerUrl()!);
+          const url = new URL(relativeDevServerUrl, this.getDevServerUrlOrAssert());
           url.searchParams.set('runModule', 'true');
           url.searchParams.set('runModule', 'true');
           const rsc = true;
@@ -742,7 +741,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       }
 
       const sendResponse = async (req: ServerRequest, res: ServerResponse) => {
-        const url = new URL(req.url!, this.getDevServerUrl()!);
+        const url = new URL(req.url!, this.getDevServerUrlOrAssert());
         const route = url.pathname.replace(rscPathPrefix, '');
 
         try {

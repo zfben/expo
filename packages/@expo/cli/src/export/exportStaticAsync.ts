@@ -104,7 +104,7 @@ export async function unstable_getDevServerForClientBoundariesAsync(
   options: Pick<Options, 'minify' | 'mode' | 'clear' | 'maxWorkers'>
 ) {
   // Useful for running parallel e2e tests in CI.
-  const port = await getFreePortAsync(8082);
+  const port = await getFreePortAsync(8083);
 
   // TODO: Prevent starting the watcher.
   const devServerManager = new DevServerManager(projectRoot, {
@@ -243,6 +243,7 @@ export async function getClientBoundariesAsync(
 
       console.log('route.rsc', rsc);
 
+
       const clientEntries = devServer.getClientModules(route.file);
 
       // TODO: Improve this
@@ -326,6 +327,7 @@ async function exportFromServerAsync(
       ).then((res) => res.text());
       console.log('route.rsc', rsc);
 
+      // process.exit(0)
       const clientEntries = devServer.getClientModules(route.file);
 
       // TODO: Improve this
@@ -354,7 +356,7 @@ async function exportFromServerAsync(
 
       // console.log();
 
-      files.set(rscPath.replace(/^\/+/, '') + '/index.txt', {
+      files.set(path.join(rscPath.replace(/^\/+/, ''), route.page + '.txt'), {
         contents: rsc,
         targetDomain: 'client',
       });
@@ -370,7 +372,7 @@ async function exportFromServerAsync(
         ...new Set(clientBoundaries.map(({ clientBoundaries }) => clientBoundaries).flat()),
       ],
     }),
-    devServer.getStaticRenderFunctionAsync(),
+    // devServer.getStaticRenderFunctionAsync(),
   ]);
 
   makeRuntimeEntryPointsAbsolute(manifest, appDir);

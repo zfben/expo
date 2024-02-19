@@ -246,6 +246,7 @@ export async function renderToPipeableStream(
 
   // TODO: Populate this with Expo Router results.
   const renderEntries = async (input) => {
+    // TODO: Sanitize input and use it to select a component to render.
     return {
       index: React.createElement(Component, props),
     };
@@ -269,7 +270,7 @@ export async function renderToPipeableStream(
   };
 
   const elements = await render({}, input, url.searchParams);
-
+  console.log('Elements:', elements, input)
   const stream = renderToReadableStream(elements, bundlerConfig);
 
   // Logging is very useful for native platforms where the network tab isn't always available.

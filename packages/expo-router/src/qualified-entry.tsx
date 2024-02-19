@@ -15,8 +15,8 @@ import { Slot, Root } from './rsc/client';
 import { Text } from 'react-native'
 
 // MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
-// import { Try } from './views/Try';
-// import { ErrorBoundary } from './exports';
+import { Try } from './views/Try';
+import { ErrorBoundary } from './exports';
 
 const introUrl = getDevServer().fullBundleUrl;
 // TODO: This is buggy and doesn't work well, maybe inject the query params in babel.
@@ -40,11 +40,11 @@ export function App() {
   return (
     <React.Suspense fallback={null}>
       <Head.Provider>
-        {/* <Try catch={ErrorBoundary}> */}
+        <Try catch={ErrorBoundary}>
         <Root initialSearchParamsString={searchParams}>
           <Slot id="index" />
         </Root>
-        {/* </Try> */}
+        </Try>
       </Head.Provider>
     </React.Suspense>
   );
