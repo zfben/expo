@@ -72,12 +72,12 @@ export async function exportEmbedAsync(projectRoot: string, options: Options) {
     // For debugging:
     bytecode: false,
     clear: false,
-    minify: false,
+    // minify: false,
     // dev: true,
     // clear: options.resetCache,
     dev: options.dev,
     dumpAssetmap: false,
-    // minify: !!options.minify,
+    minify: !!options.minify,
     maxWorkers: options.maxWorkers,
     outputDir: options.assetsDest!,
 
