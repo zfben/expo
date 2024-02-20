@@ -213,11 +213,23 @@ function makeRuntimeEntryPointsAbsolute(manifest: ExpoRouterRuntimeManifest, app
   });
 }
 
-async function pipeToStringAsync(pipe: ReadableStream): Promise<string> {
-  const textDecoder = new TextDecoder();
-  const res = await pipe.getReader().read();
-  return textDecoder.decode(res.value, { stream: true });
-}
+const streamToString = async (stream: ReadableStream): Promise<string> => {
+  const decoder = new TextDecoder();
+  const reader = stream.getReader();
+  const outs: string[] = [];
+  let result: ReadableStreamReadResult<unknown>;
+  do {
+    result = await reader.read();
+    if (result.value) {
+      if (!(result.value instanceof Uint8Array)) {
+        throw new Error('Unexepected buffer type');
+      }
+      outs.push(decoder.decode(result.value, { stream: true }));
+    }
+  } while (!result.done);
+  outs.push(decoder.decode());
+  return outs.join('');
+};
 
 export async function getClientBoundariesAsync(
   projectRoot: string,
@@ -227,7 +239,7 @@ export async function getClientBoundariesAsync(
   const devServer = devServerManager.getDefaultDevServer();
   assert(devServer instanceof MetroBundlerDevServer);
 
-  const { serverManifest } = await devServer.getStaticRenderFunctionAsync();
+  const { serverManifest, manifest, renderAsync } = await devServer.getStaticRenderFunctionAsync();
 
   const clientBoundaries = await Promise.all(
     serverManifest.htmlRoutes.map(async (route) => {
@@ -239,10 +251,10 @@ export async function getClientBoundariesAsync(
         platform,
         url: new URL('/', devServer.getDevServerUrl()!),
       });
-      const rsc = await pipeToStringAsync(pipe);
+
+      const rsc = await streamToString(pipe);
 
       console.log('route.rsc', rsc);
-
 
       const clientEntries = devServer.getClientModules(route.file);
 
@@ -252,30 +264,13 @@ export async function getClientBoundariesAsync(
         return path.join(serverRoot, entry.replace(/#.+$/, ''));
       });
 
-      // const clientBundles = await devServer.bundleMultiEntryGraph(entryFiles, {
-      //   mainModuleName: 'TODO',
-      //   isExporting: true,
-      //   mode: 'production',
-      //   minify,
-      //   // TODO: Support all platforms
-      //   platform: 'web',
-      //   routerRoot,
-      //   asyncRoutes,
-      //   baseUrl,
-      //   engine: 'hermes',
-      //   serializerIncludeBytecode: false,
-      //   serializerIncludeMaps: true,
-      //   serializerOutput: 'static',
-      // });
-      // console.log('clientBundles', clientBundles);
-      // // TODO: Multi-entry bundle all boundaries
-
-      // console.log();
-
-      files.set(devServer.getExpoLineOptions().rscPath!.replace(/^\/+/, '') + '/index.txt', {
-        contents: rsc,
-        targetDomain: 'client',
-      });
+      files.set(
+        path.join(devServer.getExpoLineOptions().rscPath!.replace(/^\/+/, ''), route.page + '.txt'),
+        {
+          contents: rsc,
+          targetDomain: 'client',
+        }
+      );
 
       return { route, clientBoundaries: entryFiles };
     })
@@ -286,6 +281,8 @@ export async function getClientBoundariesAsync(
     clientBoundaries: [
       ...new Set(clientBoundaries.map(({ clientBoundaries }) => clientBoundaries).flat()),
     ],
+    manifest,
+    renderAsync,
   };
 }
 
@@ -293,15 +290,7 @@ export async function getClientBoundariesAsync(
 async function exportFromServerAsync(
   projectRoot: string,
   devServerManager: DevServerManager,
-  {
-    outputDir,
-    baseUrl,
-    rscPath,
-    exportServer,
-    includeSourceMaps,
-    routerRoot,
-    files = new Map(),
-  }: Options
+  { outputDir, baseUrl, exportServer, includeSourceMaps, routerRoot, files = new Map() }: Options
 ): Promise<ExportAssetMap> {
   const platform = 'web';
   const isExporting = true;
@@ -315,65 +304,16 @@ async function exportFromServerAsync(
   const devServer = devServerManager.getDefaultDevServer();
   assert(devServer instanceof MetroBundlerDevServer);
 
-  const [{ manifest, serverManifest, renderAsync }] = await Promise.all([
-    devServer.getStaticRenderFunctionAsync(),
-  ]);
+  const { clientBoundaries, manifest, serverManifest, renderAsync } =
+    await getClientBoundariesAsync(projectRoot, devServerManager, {
+      platform,
+      files,
+    });
 
-  const clientBoundaries = await Promise.all(
-    serverManifest.htmlRoutes.map(async (route) => {
-      console.log('route', route);
-      const rsc = await fetch(
-        new URL(rscPath + '/' + route.file, devServer.getDevServerUrl()!)
-      ).then((res) => res.text());
-      console.log('route.rsc', rsc);
-
-      // process.exit(0)
-      const clientEntries = devServer.getClientModules(route.file);
-
-      // TODO: Improve this
-      const serverRoot = getMetroServerRoot(projectRoot);
-      const entryFiles = clientEntries.map((entry) => {
-        return path.join(serverRoot, entry.replace(/#.+$/, ''));
-      });
-
-      // const clientBundles = await devServer.bundleMultiEntryGraph(entryFiles, {
-      //   mainModuleName: 'TODO',
-      //   isExporting: true,
-      //   mode: 'production',
-      //   minify,
-      //   // TODO: Support all platforms
-      //   platform: 'web',
-      //   routerRoot,
-      //   asyncRoutes,
-      //   baseUrl,
-      //   engine: 'hermes',
-      //   serializerIncludeBytecode: false,
-      //   serializerIncludeMaps: true,
-      //   serializerOutput: 'static',
-      // });
-      // console.log('clientBundles', clientBundles);
-      // // TODO: Multi-entry bundle all boundaries
-
-      // console.log();
-
-      files.set(path.join(rscPath.replace(/^\/+/, ''), route.page + '.txt'), {
-        contents: rsc,
-        targetDomain: 'client',
-      });
-
-      return { route, clientBoundaries: entryFiles };
-    })
-  );
-
-  const [resources] = await Promise.all([
-    devServer.getStaticResourcesAsync({
-      includeSourceMaps,
-      clientBoundaries: [
-        ...new Set(clientBoundaries.map(({ clientBoundaries }) => clientBoundaries).flat()),
-      ],
-    }),
-    // devServer.getStaticRenderFunctionAsync(),
-  ]);
+  const resources = await devServer.getStaticResourcesAsync({
+    includeSourceMaps,
+    clientBoundaries,
+  });
 
   makeRuntimeEntryPointsAbsolute(manifest, appDir);
 

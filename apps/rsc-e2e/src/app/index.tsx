@@ -69,7 +69,7 @@ export default function App() {
         <h2>Child</h2>
       </Child> */}
       {/* </div> */}
-      {/* <A08_NodeBuiltins /> */}
+      <A08_NodeBuiltins />
       <Text>env: {process.env.NODE_ENV}</Text>
       <Text>rsc path: {process.env.EXPO_RSC_PATH}</Text>
       </View>
