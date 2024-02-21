@@ -28,6 +28,7 @@ import { learnMore } from '../utils/link';
 import { getFreePortAsync } from '../utils/port';
 import { getMetroServerRoot } from '../start/server/middleware/ManifestMiddleware';
 import { getRscPathFromExpoConfig } from '../start/server/middleware/metroOptions';
+import { streamToStringAsync } from '../utils/stream';
 
 const debug = require('debug')('expo:export:generateStaticRoutes') as typeof console.log;
 
@@ -213,24 +214,6 @@ function makeRuntimeEntryPointsAbsolute(manifest: ExpoRouterRuntimeManifest, app
   });
 }
 
-const streamToString = async (stream: ReadableStream): Promise<string> => {
-  const decoder = new TextDecoder();
-  const reader = stream.getReader();
-  const outs: string[] = [];
-  let result: ReadableStreamReadResult<unknown>;
-  do {
-    result = await reader.read();
-    if (result.value) {
-      if (!(result.value instanceof Uint8Array)) {
-        throw new Error('Unexepected buffer type');
-      }
-      outs.push(decoder.decode(result.value, { stream: true }));
-    }
-  } while (!result.done);
-  outs.push(decoder.decode());
-  return outs.join('');
-};
-
 export async function getClientBoundariesAsync(
   projectRoot: string,
   devServerManager: DevServerManager,
@@ -252,7 +235,7 @@ export async function getClientBoundariesAsync(
         url: new URL('/', devServer.getDevServerUrl()!),
       });
 
-      const rsc = await streamToString(pipe);
+      const rsc = await streamToStringAsync(pipe);
 
       console.log('route.rsc', rsc);
 
