@@ -247,18 +247,9 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       isExporting,
       routerRoot,
       clientBoundaries,
-      // ignoredModules: isExporting
-      //   ? []
-      //   : [
-      //       '@expo/server',
-      //       'source-map-support',
-      //       '@remix-run/node',
-      //       'react-native',
-      //       'react-native-web',
-      //     ],
       bytecode: false,
     });
-    console.log('devBundleUrlPathname:', devBundleUrlPathname, clientBoundaries);
+    // console.log('devBundleUrlPathname:', devBundleUrlPathname, clientBoundaries);
 
     const bundleUrl = new URL(devBundleUrlPathname, this.getDevServerUrlOrAssert());
 

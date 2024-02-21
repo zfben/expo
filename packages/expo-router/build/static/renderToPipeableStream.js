@@ -83,7 +83,8 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, isEx
             // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
             url.hash = String(metroOpaqueId);
             // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
-            return url.pathname + url.search + url.hash;
+            const id = url.pathname + url.search + url.hash;
+            return { id, url: id };
         }
         else {
             // if (!file.startsWith('@id/')) {
@@ -99,9 +100,9 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, isEx
             // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
             url.hash = String(metroOpaqueId);
             // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
-            return url.pathname + url.search + url.hash;
+            const id = '/' + url.hash;
+            return { id, url: url.pathname + url.search + url.hash };
         }
-        return url.toString();
     };
     const bundlerConfig = new Proxy({}, {
         get(_target, encodedId) {
@@ -115,10 +116,10 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, isEx
             name,] = encodedId.split('#');
             // We'll augment the file path with the incoming RSC request which will forward the metro props required to make a cache hit, e.g. platform=web&...
             // This is similar to how we handle lazy bundling.
-            const id = resolveClientEntry(file);
-            debug('Returning server module:', id, 'for', encodedId);
-            moduleIdCallback?.({ id, chunks: [id], name, async: true });
-            return { id, chunks: [id], name, async: true };
+            const entry = resolveClientEntry(file);
+            debug('Returning server module:', entry, 'for', encodedId);
+            moduleIdCallback?.({ id: entry.url, chunks: [entry.url], name, async: true });
+            return { id: entry.id, chunks: [entry.id], name, async: true };
         },
     });
     if (method === 'POST') {
@@ -148,7 +149,7 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, isEx
         let mod;
         if (!isExporting) {
             // console.log('Loading module:', fileId, name);
-            mod = await customImport(resolveClientEntry(fileId));
+            mod = await customImport(resolveClientEntry(fileId).url);
             // console.log('Loaded module:', mod);
         }
         else {
