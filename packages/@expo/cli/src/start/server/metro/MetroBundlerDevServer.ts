@@ -454,19 +454,24 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       'The server must be started before calling ssrLoadModule.'
     );
 
-    return await requireFileContentsWithMetro(this.projectRoot, this.getDevServerUrlOrAssert(), filePath, {
-      // Bundle in Node.js mode for SSR.
-      environment: 'node',
-      platform: 'web',
-      mode: 'development',
-      bytecode: false,
+    return await requireFileContentsWithMetro(
+      this.projectRoot,
+      this.getDevServerUrlOrAssert(),
+      filePath,
+      {
+        // Bundle in Node.js mode for SSR.
+        environment: 'node',
+        platform: 'web',
+        mode: 'development',
+        bytecode: false,
 
-      ...this.instanceMetroOptions,
-      baseUrl,
-      routerRoot,
-      isExporting,
-      ...specificOptions,
-    });
+        ...this.instanceMetroOptions,
+        baseUrl,
+        routerRoot,
+        isExporting,
+        ...specificOptions,
+      }
+    );
   }
 
   async watchEnvironmentVariables() {
@@ -504,8 +509,18 @@ export class MetroBundlerDevServer extends BundlerDevServer {
   private clientModuleMap = new Map<string, Set<string>>();
 
   public getClientModules(input: string) {
-    const key = input.replace(/^\.\//, '');
+    const key = (
+      require('expo-router/build/matchers') as typeof import('expo-router/build/matchers')
+    ).getNameFromFilePath(input);
+
     console.log('getClientModules:', input, key, this.clientModuleMap.keys(), this.clientModuleMap);
+    if (!this.clientModuleMap.has(key)) {
+      throw new CommandError(
+        `No client modules found for "${key}". Expected one of: ${Array.from(
+          this.clientModuleMap.keys()
+        ).join(', ')}`
+      );
+    }
     const idSet = this.clientModuleMap.get(key);
     return Array.from(idSet || []);
   }
@@ -585,7 +600,9 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     });
 
     const input = './index.tsx';
-
+    const normalizedRouteKey = (
+      require('expo-router/build/matchers') as typeof import('expo-router/build/matchers')
+    ).getNameFromFilePath(input);
     // TODO: Memoize this
     const serverRoot = getMetroServerRoot(this.projectRoot);
 
@@ -629,10 +646,10 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         }) => {
           // Collect the client boundaries while rendering the server components.
           // Indexed by routes.
-          let idSet = this.clientModuleMap.get(route);
+          let idSet = this.clientModuleMap.get(normalizedRouteKey);
           if (!idSet) {
             idSet = new Set();
-            this.clientModuleMap.set(route, idSet);
+            this.clientModuleMap.set(normalizedRouteKey, idSet);
           }
           idSet.add(moduleInfo.id);
         },

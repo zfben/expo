@@ -101,6 +101,20 @@ export class TerminalReporter extends XTerminalReporter implements TerminalRepor
    */
   bundleBuildEnded(event: TerminalReportableEvent, duration: number): void {}
 
+  // Add a custom format to logs that come from the worker threads.
+  // `| <contents>`
+  _logWorkerChunk(origin: 'stdout' | 'stderr', chunk: string): void {
+    const lines = chunk.split('\n');
+    if (lines.length >= 1 && lines[lines.length - 1] === '') {
+      lines.splice(lines.length - 1, 1);
+    }
+
+    const originTag = origin === 'stdout' ? chalk.dim('|') : chalk.yellow('|');
+    lines.forEach((line: string) => {
+      this.terminal.log(originTag, line);
+    });
+  }
+
   /**
    * This function is exclusively concerned with updating the internal state.
    * No logging or status updates should be done at this point.

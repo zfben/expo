@@ -241,6 +241,14 @@ export async function getClientBoundariesAsync(
 
       const clientEntries = devServer.getClientModules(route.file);
 
+      if (!clientEntries) {
+        // Could be a key mismatch
+        Log.warn('-----');
+        Log.warn(' NO CLIENT ENTRIES !! TECHNICALLY NOT A BUG');
+        Log.warn('-----');
+      }
+
+      console.log('clientEntries', clientEntries, route.file);
       // TODO: Improve this
       const serverRoot = getMetroServerRoot(projectRoot);
       const entryFiles = clientEntries.map((entry) => {
@@ -259,6 +267,7 @@ export async function getClientBoundariesAsync(
     })
   );
 
+  console.log('Collected clientBoundaries during RSC generation:', clientBoundaries);
   return {
     serverManifest,
     clientBoundaries: [
