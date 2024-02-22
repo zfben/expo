@@ -12,7 +12,7 @@ import React from 'react';
 // import { ExpoRoot } from './ExpoRoot';
 import { Head } from './head';
 import { Slot, Root } from './rsc/client';
-import { Text } from 'react-native'
+import { Text } from 'react-native';
 
 // MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
 import { Try } from './views/Try';
@@ -41,9 +41,9 @@ export function App() {
     <React.Suspense fallback={null}>
       <Head.Provider>
         <Try catch={ErrorBoundary}>
-        <Root initialSearchParamsString={searchParams}>
-          <Slot id="index" />
-        </Root>
+          <Root initialSearchParamsString={searchParams}>
+            <Slot id="index" />
+          </Root>
         </Try>
       </Head.Provider>
     </React.Suspense>

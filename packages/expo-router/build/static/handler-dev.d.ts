@@ -1,3 +1,4 @@
+import { ExpoResponse } from 'expo-router/server';
 export declare const CLIENT_MODULE_MAP: {
     react: any;
     'rd-server': any;
@@ -30,6 +31,6 @@ export declare function createHandler<Context, Req extends Request, Res extends 
         stream?: ReadableStream | undefined;
         moduleIdCallback?: (id: string) => void;
     }) => Promise<readonly [ReadableStream, Context]>;
-}): (req: any, res: any, next: any) => Promise<void>;
+}): (req: any) => Promise<ExpoResponse>;
 export {};
 //# sourceMappingURL=handler-dev.d.ts.map

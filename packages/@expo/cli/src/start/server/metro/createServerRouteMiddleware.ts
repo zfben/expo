@@ -15,6 +15,7 @@ import { fetchManifest } from './fetchRouterManifest';
 import { getErrorOverlayHtmlAsync, logMetroError } from './metroErrorInterface';
 import { warnInvalidWebOutput } from './router';
 import { CommandError } from '../../../utils/errors';
+import type { ExpoRequest, ExpoResponse } from '@expo/server';
 
 const debug = require('debug')('expo:start:server:metro') as typeof console.log;
 
@@ -28,6 +29,7 @@ export function createRouteHandlerMiddleware(
   options: {
     appDir: string;
     routerRoot: string;
+    getHtml?: (req: ExpoRequest) => Promise<ExpoResponse>;
     getStaticPageAsync: (pathname: string) => Promise<{ content: string }>;
     bundleApiRoute: (
       functionFilePath: string
@@ -71,6 +73,9 @@ export function createRouteHandlerMiddleware(
       },
       async getHtml(request) {
         try {
+          if (options.getHtml) {
+            return await options.getHtml(request);
+          }
           const { content } = await options.getStaticPageAsync(request.url);
           return content;
         } catch (error: any) {

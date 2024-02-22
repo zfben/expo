@@ -4,6 +4,7 @@ type ResolvedConfig = {
     rscPath: string;
 };
 export declare const renderHtml: (opts: {
+    serverRoot: string;
     config: ResolvedConfig;
     pathname: string;
     searchParams: URLSearchParams;

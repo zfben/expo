@@ -783,47 +783,6 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         return sendResponse(req, res);
       });
 
-      // middleware.use(async (req: ServerRequest, res: ServerResponse, next: ServerNext) => {
-      //   const devMiddleware = (await metroSsr.ssrLoadModule(
-      //     require.resolve('expo-router/build/static/handler-dev.js')
-      //   )) as typeof import('expo-router/build/static/handler-dev');
-
-      //   const handler = await devMiddleware.createHandler({
-      //     projectRoot: this.projectRoot,
-      //     config: {
-      //       basePath: baseUrl,
-      //       htmlHead: '',
-      //       mainJs: '',
-      //       publicDir: '',
-      //       rscPath: '/rsc',
-      //       srcDir: '',
-      //     },
-      //     async renderRscWithWorker(props) {
-      //       return null;
-      //     },
-      //     ssrLoadModule: metroSsr.ssrLoadModule,
-      //     async transformIndexHtml(pathname, data) {
-      //       const start = `<!DOCTYPE html>
-      //       <html>
-      //         <head>
-      //           <meta charset="utf-8" />
-      //           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-      //           <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover" />
-      //         </head>
-      //         <body></body>
-      //       </html>`;
-
-      //       // TODO: Run additional plugins.
-
-      //       return start;
-      //     },
-      //     env: process.env,
-      //     ssr: true,
-      //   });
-
-      //   return handler(req, res, next);
-      // });
-
       if (useServerRendering) {
         middleware.use(
           createRouteHandlerMiddleware(this.projectRoot, {
@@ -831,6 +790,86 @@ export class MetroBundlerDevServer extends BundlerDevServer {
             routerRoot,
             config,
             bundleApiRoute: (functionFilePath) => this.ssrImportApiRoute(functionFilePath),
+//             getHtml: async (req) => {
+//               const devMiddleware = (await this.ssrLoadModule(
+//                 require.resolve('expo-router/build/static/handler-dev.js'), {
+//                   rsc: true
+//                 }
+//               )) as typeof import('expo-router/build/static/handler-dev');
+
+//               const handler = await devMiddleware.createHandler({
+//                 projectRoot: this.projectRoot,
+//                 config: {
+//                   basePath: baseUrl,
+//                   htmlHead: '',
+//                   mainJs: '',
+//                   publicDir: '',
+//                   rscPath: '/rsc',
+//                   srcDir: '',
+//                 },
+//                 ssrLoadModule(fileURL) {
+//                   return this.ssrLoadModule(fileURL);
+//                 },
+//                 renderRscWithWorker: async (props) => {
+//                   // TODO: This is terrible, it should use all the `props`.
+//                   const stream = await this.renderRscToReadableStream({
+//                     route: props.input,
+//                     method: props.method,
+//                     platform: 'web',
+//                     url: new URL(req.url!, this.getDevServerUrlOrAssert()),
+//                   });
+//                   console.log("stream:", stream)
+//                   return [
+//                     stream,
+//                     // TODO: Next context
+//                     {},
+//                   ];
+//                 },
+//                 // ssrLoadModule: metroSsr.ssrLoadModule,
+//                 async transformIndexHtml(pathname, data) {
+//                   console.log('transform index:', pathname, data);
+//                   const codeToInject = `
+// globalThis.__waku_module_cache__ = new Map();
+// globalThis.__webpack_chunk_load__ = (id) => import(id).then((m) => globalThis.__waku_module_cache__.set(id, m));
+// globalThis.__webpack_require__ = (id) => globalThis.__waku_module_cache__.get(id);`;
+
+//                   //            // HACK without <base>, some relative assets don't work.
+//                   // // FIXME ideally, we should avoid this.
+//                   // { tag: 'base', attrs: { href: config.basePath } },
+//                   // {
+//                   //   tag: 'script',
+//                   //   attrs: { type: 'module', async: true },
+//                   //   children: codeToInject,
+//                   // },
+//                   // ...(config.cssAssets || []).map((href) => ({
+//                   //   tag: 'link',
+//                   //   attrs: { rel: 'stylesheet', href },
+//                   //   injectTo: 'head' as const,
+//                   // })),
+
+//                   const start = `<!DOCTYPE html>
+//                   <html>
+//                     <head>
+//                       <meta charset="utf-8" />
+//                       <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+//                       <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover" />
+//                     </head>
+//                     <body></body>
+//                   </html>`;
+
+//                   // TODO: Run additional plugins.
+
+//                   return start;
+//                 },
+//                 env: process.env,
+//                 ssr: true,
+//               });
+
+//               // TODO: Memoize this stuff.
+//               // const res = new ExpoResponse();
+
+//               return await handler(req);
+//             },
             getStaticPageAsync: (pathname) => {
               return this.getStaticPageAsync(pathname);
             },

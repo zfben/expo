@@ -13,7 +13,7 @@ import { ExpoRouterServerManifestV1FunctionRoute } from './types';
 
 // Ensure these are available for the API Routes.
 export function installGlobals() {
-  installRemixGlobals();
+  // installRemixGlobals();
 
   // @ts-expect-error
   global.Request = ExpoRequest;

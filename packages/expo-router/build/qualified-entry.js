@@ -38,9 +38,9 @@ function App() {
     return (<react_1.default.Suspense fallback={null}>
       <head_1.Head.Provider>
         <Try_1.Try catch={exports_1.ErrorBoundary}>
-        <client_1.Root initialSearchParamsString={searchParams}>
-          <client_1.Slot id="index"/>
-        </client_1.Root>
+          <client_1.Root initialSearchParamsString={searchParams}>
+            <client_1.Slot id="index"/>
+          </client_1.Root>
         </Try_1.Try>
       </head_1.Head.Provider>
     </react_1.default.Suspense>);

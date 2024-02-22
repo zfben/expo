@@ -1,15 +1,18 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createHandler = exports.CLIENT_MODULE_MAP = void 0;
-const node_stream_1 = require("node:stream");
 // import { createServer as createViteServer } from 'vite';
 // import viteReact from '@vitejs/plugin-react';
 // import type { Config } from '../../config.js';
 // import { resolveConfig } from '../config.js';
 const html_renderer_1 = require("./html-renderer");
-const utils_1 = require("./utils");
 const path_js_1 = require("../rsc/path.js");
-const stream_1 = require("../rsc/stream");
+const react_1 = __importDefault(require("react"));
+const client_1 = require("../rsc/client");
+const server_1 = require("expo-router/server");
 // import {
 //   initializeWorker,
 //   registerReloadCallback,
@@ -77,138 +80,103 @@ function createHandler(options) {
             },
         });
     };
-    return async (req, res, next) => {
-        const basePrefix = options.config.basePath + options.config.rscPath + '/';
-        const handleError = (err) => {
-            if ((0, utils_1.hasStatusCode)(err)) {
-                res.setStatus(err.statusCode);
-            }
-            else {
-                console.info('Cannot render RSC', err);
-                res.setStatus(500);
-            }
-            (0, stream_1.endStream)(res.stream, String(err));
-        };
+    return async (req) => {
+        // const res = new ExpoResponse();
+        // // const basePrefix = options.config.basePath + options.config.rscPath + '/';
+        // const handleError = (err: unknown) => {
+        //   if (hasStatusCode(err)) {
+        //     res.status
+        //     res.status = err.statusCode;
+        //   } else {
+        //     console.info('Cannot render RSC', err);
+        //     res.setStatus(500);
+        //   }
+        //   endStream(res.stream, String(err));
+        // };
         let context;
-        try {
-            //   context = unstable_prehook?.(req, res);
-        }
-        catch (e) {
-            handleError(e);
-            return;
-        }
+        // try {
+        //   //   context = unstable_prehook?.(req, res);
+        // } catch (e) {
+        //   handleError(e);
+        //   return;
+        // }
         const { config } = options;
-        if (ssr) {
-            try {
-                const readable = await (0, html_renderer_1.renderHtml)({
-                    config: config,
-                    pathname: req.url.pathname,
-                    searchParams: req.url.searchParams,
-                    htmlHead: `${options.config.htmlHead}
+        // if (ssr) {
+        // try {
+        const readable = await (0, html_renderer_1.renderHtml)({
+            config: config,
+            serverRoot: options.projectRoot,
+            pathname: req.url.pathname,
+            searchParams: req.url.searchParams,
+            htmlHead: `${options.config.htmlHead}
 <script src="${options.config.basePath}${options.config.srcDir}/${options.config.mainJs}" async type="module"></script>`,
-                    renderRscForHtml: async (input, searchParams) => {
-                        const [readable, nextCtx] = await options.renderRscWithWorker({
-                            input,
-                            searchParamsString: searchParams.toString(),
-                            method: 'GET',
-                            contentType: undefined,
-                            config: options.config,
-                            context,
-                        });
-                        context = nextCtx;
-                        return readable;
-                    },
-                    getSsrConfigForHtml: (pathname, options) => getSsrConfigWithWorker(config, pathname, options),
-                    loadClientModule: (key) => exports.CLIENT_MODULE_MAP[key],
-                    isDev: true,
-                    rootDir: options.projectRoot,
-                    loadServerFile,
-                });
-                if (readable) {
-                    //   unstable_posthook?.(req, res, context as Context);
-                    res.setHeader('content-type', 'text/html; charset=utf-8');
-                    readable.pipeThrough(await transformIndexHtml(req.url.pathname)).pipeTo(res.stream);
-                    return;
-                }
-            }
-            catch (e) {
-                handleError(e);
-                return;
-            }
-        }
-        if (req.url.pathname.startsWith(basePrefix)) {
-            const { method, contentType } = req;
-            if (method !== 'GET' && method !== 'POST') {
-                throw new Error(`Unsupported method '${method}'`);
-            }
-            try {
-                const input = (0, utils_1.decodeInput)(req.url.pathname.slice(basePrefix.length));
+            renderRscForHtml: async (input, searchParams) => {
+                console.log('renderRscForHtml>', input, searchParams);
                 const [readable, nextCtx] = await options.renderRscWithWorker({
                     input,
-                    searchParamsString: req.url.searchParams.toString(),
-                    method,
-                    contentType,
+                    searchParamsString: searchParams?.toString() ?? "",
+                    method: 'GET',
+                    contentType: undefined,
                     config: options.config,
                     context,
-                    stream: req.stream,
                 });
-                // unstable_posthook?.(req, res, nextCtx as Context);
-                readable.pipeTo(res.stream);
-            }
-            catch (e) {
-                handleError(e);
-            }
-            return;
-        }
-        // HACK re-export "?v=..." URL to avoid dual module hazard.
-        const viteUrl = req.url.toString().slice(req.url.origin.length);
-        // const fname = viteUrl.startsWith(options.config.basePath + '@fs/')
-        //   ? decodeFilePathFromAbsolute(
-        //       viteUrl.slice(options.config.basePath.length + '@fs'.length),
-        //     )
-        //   : joinPath(options.projectRoot, viteUrl);
-        // for (const item of vite.moduleGraph.idToModuleMap.values()) {
-        //   if (
-        //     item.file === fname &&
-        //     item.url !== viteUrl &&
-        //     !item.url.includes('?html-proxy')
-        //   ) {
-        //     const { code } = (await vite.transformRequest(item.url))!;
-        //     res.setHeader('Content-Type', 'application/javascript');
-        //     res.setStatus(200);
-        //     let exports = `export * from "${item.url}";`;
-        //     // `export *` does not re-export `default`
-        //     if (code.includes('export default')) {
-        //       exports += `export { default } from "${item.url}";`;
-        //     }
-        //     endStream(res.stream, exports);
-        //     return;
-        //   }
-        // }
-        const viteReq = node_stream_1.Readable.fromWeb(req.stream);
-        viteReq.method = req.method;
-        viteReq.url = viteUrl;
-        viteReq.headers = { 'content-type': req.contentType };
-        const viteRes = node_stream_1.Writable.fromWeb(res.stream);
-        Object.defineProperty(viteRes, 'statusCode', {
-            set(code) {
-                res.setStatus(code);
+                context = nextCtx;
+                return readable;
+            },
+            async getSsrConfigForHtml(pathname, options) {
+                console.log('getSsrConfigForHtml>', pathname, options);
+                return {
+                    input: '',
+                    body: react_1.default.createElement(client_1.Slot, { id: 'index' }),
+                };
+            },
+            //getSsrConfigWithWorker(config, pathname, options),
+            // loadClientModule: (key) => CLIENT_MODULE_MAP[key],
+            isDev: true,
+            rootDir: options.projectRoot,
+            loadServerFile,
+        });
+        const res = new server_1.ExpoResponse(readable, {
+            status: 200,
+            headers: {
+                'content-type': 'text/html; charset=utf-8',
             },
         });
-        const headers = new Map();
-        viteRes.setHeader = (name, value) => {
-            headers.set(name, value);
-            res.setHeader(name, value);
-        };
-        viteRes.getHeader = (name) => headers.get(name);
-        viteRes.writeHead = (code, headers) => {
-            res.setStatus(code);
-            for (const [name, value] of Object.entries(headers || {})) {
-                viteRes.setHeader(name, value);
-            }
-        };
-        // vite.middlewares(viteReq, viteRes, next);
-        // TODO: End request
+        if (readable) {
+            //   unstable_posthook?.(req, res, context as Context);
+            // res.setHeader('content-type', 'text/html; charset=utf-8');
+            readable.pipeThrough(await transformIndexHtml(req.url.pathname)).pipeTo(res.body);
+        }
+        return res;
+        // } catch (e) {
+        //   handleError(e);
+        //   return;
+        // }
+        // }
+        // if (req.url.pathname.startsWith(basePrefix)) {
+        //   const { method, contentType } = req;
+        //   if (method !== 'GET' && method !== 'POST') {
+        //     throw new Error(`Unsupported method '${method}'`);
+        //   }
+        //   try {
+        //     const input = decodeInput(req.url.pathname.slice(basePrefix.length));
+        //     const [readable, nextCtx] = await options.renderRscWithWorker({
+        //       input,
+        //       searchParamsString: req.url.searchParams.toString(),
+        //       method,
+        //       contentType,
+        //       config: options.config,
+        //       context,
+        //       stream: req.stream,
+        //     });
+        //     // unstable_posthook?.(req, res, nextCtx as Context);
+        //     readable.pipeTo(res.stream);
+        //   } catch (e) {
+        //     handleError(e);
+        //   }
+        //   return;
+        // }
+        // throw new Error('Unhandled request: ' + req.url.pathname);
     };
 }
 exports.createHandler = createHandler;

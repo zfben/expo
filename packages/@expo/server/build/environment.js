@@ -5,7 +5,7 @@ const node_1 = require("@remix-run/node");
 const node_url_1 = require("node:url");
 // Ensure these are available for the API Routes.
 function installGlobals() {
-    (0, node_1.installGlobals)();
+    // installRemixGlobals();
     // @ts-expect-error
     global.Request = ExpoRequest;
     // @ts-expect-error
