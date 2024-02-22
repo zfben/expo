@@ -20,11 +20,20 @@ import type {
   MouseEvent,
 } from 'react';
 
-import { getComponentIds, getInputString, PARAM_KEY_SKIP, SHOULD_SKIP_ID } from './common';
-import type { RouteProps, ShouldSkip } from './common';
-import { prefetchRSC, Root, Slot, useRefetch } from '../client';
+import { prefetchRSC, Root, Slot, useRefetch } from '../client.js';
+import { getComponentIds, getInputString, PARAM_KEY_SKIP, SHOULD_SKIP_ID } from './common.js';
+import type { RouteProps, ShouldSkip } from './common.js';
+
+declare global {
+  interface ImportMeta {
+    readonly env: Record<string, string>;
+  }
+}
 
 const parseLocation = (): RouteProps => {
+  if ((globalThis as any).__WAKU_ROUTER_404__) {
+    return { path: '/404', searchParams: new URLSearchParams() };
+  }
   const { pathname, search } = window.location;
   const searchParams = new URLSearchParams(search);
   if (searchParams.has(PARAM_KEY_SKIP)) {
@@ -36,7 +45,9 @@ const parseLocation = (): RouteProps => {
 type ChangeLocation = (
   path?: string,
   searchParams?: URLSearchParams,
-  mode?: 'push' | 'replace' | false
+  hash?: string,
+  method?: 'pushState' | 'replaceState' | false,
+  scrollTo?: ScrollToOptions | false
 ) => void;
 
 type PrefetchLocation = (path: string, searchParams: URLSearchParams) => void;
@@ -102,7 +113,7 @@ export function Link({
     if (url.href !== window.location.href) {
       prefetchLocation(url.pathname, url.searchParams);
       startTransition(() => {
-        changeLocation(url.pathname, url.searchParams);
+        changeLocation(url.pathname, url.searchParams, url.hash);
       });
     }
     props.onClick?.(event);
@@ -159,6 +170,21 @@ const getSkipList = (
   });
 };
 
+const equalRouteProps = (a: RouteProps, b: RouteProps) => {
+  if (a.path !== b.path) {
+    return false;
+  }
+  if (a.searchParams.size !== b.searchParams.size) {
+    return false;
+  }
+  if (
+    Array.from(a.searchParams.entries()).some(([key, value]) => value !== b.searchParams.get(key))
+  ) {
+    return false;
+  }
+  return true;
+};
+
 function InnerRouter() {
   const refetch = useRefetch();
 
@@ -174,25 +200,38 @@ function InnerRouter() {
   }, [cached]);
 
   const changeLocation: ChangeLocation = useCallback(
-    (path, searchParams, mode = 'push') => {
+    (path, searchParams, hash, method = 'pushState', scrollTo = { top: 0, left: 0 }) => {
       const url = new URL(window.location.href);
-      if (path) {
+      if (typeof path === 'string') {
         url.pathname = path;
       }
       if (searchParams) {
         url.search = '?' + searchParams.toString();
       }
-      if (mode === 'replace') {
-        window.history.replaceState(window.history.state, '', url);
-      } else if (mode === 'push') {
-        window.history.pushState(window.history.state, '', url);
+      if (typeof hash === 'string') {
+        url.hash = hash;
+      }
+      if (method) {
+        window.history[method](window.history.state, '', url);
       }
       const loc = parseLocation();
       setLoc(loc);
+      if (scrollTo) {
+        window.scrollTo(scrollTo);
+      }
       const componentIds = getComponentIds(loc.path);
+      if (
+        !method &&
+        componentIds.every((id) => {
+          const cachedLoc = cachedRef.current[id];
+          return cachedLoc && equalRouteProps(cachedLoc, loc);
+        })
+      ) {
+        return; // everything is cached
+      }
       const skip = getSkipList(componentIds, loc, cachedRef.current);
       if (componentIds.every((id) => skip.includes(id))) {
-        return; // everything is cached
+        return; // everything is skipped
       }
       const input = getInputString(loc.path);
       refetch(
@@ -229,12 +268,11 @@ function InnerRouter() {
   useEffect(() => {
     const callback = () => {
       const loc = parseLocation();
-      prefetchLocation(loc.path, loc.searchParams);
-      changeLocation(loc.path, loc.searchParams, false);
+      changeLocation(loc.path, loc.searchParams, '', false, false);
     };
     window.addEventListener('popstate', callback);
     return () => window.removeEventListener('popstate', callback);
-  }, [changeLocation, prefetchLocation]);
+  }, [changeLocation]);
 
   const children = componentIds.reduceRight(
     (acc: ReactNode, id) => createElement(Slot, { id, fallback: acc }, acc),

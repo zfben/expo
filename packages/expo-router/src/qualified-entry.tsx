@@ -17,6 +17,9 @@ import { Text } from 'react-native';
 // MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
 import { Try } from './views/Try';
 import { ErrorBoundary } from './exports';
+import { Router } from './rsc/router/client';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import ContextNavigator from './rsc-navigator';
 
 const introUrl = getDevServer().fullBundleUrl;
 // TODO: This is buggy and doesn't work well, maybe inject the query params in babel.
@@ -37,16 +40,20 @@ export function App() {
   // return (
   //   <Text>HeyHeyHeyHeyHeyHey</Text>
   // )
-  console.log('>', window.location.pathname);
-  const input = window.location.pathname; //.replace(/^\//, '') || 'index';
+
   return (
     <React.Suspense fallback={null}>
       <Head.Provider>
-        <Try catch={ErrorBoundary}>
-          <Root initialInput={input} initialSearchParamsString={searchParams}>
-            <Slot id={input} />
-          </Root>
-        </Try>
+        <SafeAreaProvider>
+          <ContextNavigator>
+            <Try catch={ErrorBoundary}>
+              <Router />
+              {/* <Root initialSearchParamsString={searchParams}> */}
+              {/* <Slot id={input} /> */}
+              {/* </Root> */}
+            </Try>
+          </ContextNavigator>
+        </SafeAreaProvider>
       </Head.Provider>
     </React.Suspense>
   );

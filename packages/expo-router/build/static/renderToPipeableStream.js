@@ -19,6 +19,7 @@ const _ctx_1 = require("../../_ctx");
 const os_1 = __importDefault(require("../../os"));
 const getRoutes_1 = require("../getRoutes");
 const getServerManifest_1 = require("../getServerManifest");
+const common_1 = require("../rsc/router/common");
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
 const debug = require('debug')('expo:rsc');
 // NOTE: MUST MATCH THE IMPL IN ExpoMetroConfig.ts
@@ -59,15 +60,25 @@ async function getRouteNodeForPathname(pathname) {
     return matchedNode;
 }
 exports.getRouteNodeForPathname = getRouteNodeForPathname;
+const ShoudSkipComponent = ({ shouldSkip }) => react_1.default.createElement('meta', {
+    name: 'waku-should-skip',
+    content: JSON.stringify(shouldSkip),
+});
 async function renderRouteWithContextKey(contextKey, props) {
     const { default: Component } = await (0, _ctx_1.ctx)(contextKey);
     if (!Component) {
         throw new Error('No default export found for: ' + contextKey);
     }
-    return react_1.default.createElement(Component, props);
+    const entries = [];
+    entries.push([contextKey, react_1.default.createElement(Component, props)]);
+    const shouldSkip = false;
+    entries.push([common_1.SHOULD_SKIP_ID, react_1.default.createElement(ShoudSkipComponent, { shouldSkip })]);
+    return Object.fromEntries(entries);
 }
 exports.renderRouteWithContextKey = renderRouteWithContextKey;
-async function renderToPipeableStream({ mode, elements, isExporting, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, moduleIdCallback, }
+async function renderToPipeableStream({ mode, entries, 
+// elements,
+searchParams, isExporting, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, moduleIdCallback, context, }
 // moduleMap: WebpackManifest
 ) {
     if (!isExporting) {
@@ -92,6 +103,7 @@ async function renderToPipeableStream({ mode, elements, isExporting, url, server
             });
         }
     }
+    const { default: { renderEntries }, loadModule, } = entries;
     if (!isExporting) {
         url.searchParams.set('modulesOnly', 'true');
         url.searchParams.set('runModule', 'false');
@@ -188,7 +200,7 @@ async function renderToPipeableStream({ mode, elements, isExporting, url, server
         const elements = Promise.resolve({});
         let rendered = false;
         // TODO: Define context
-        const context = {};
+        // const context = {};
         const rerender = (input, searchParams = new URLSearchParams()) => {
             if (rendered) {
                 throw new Error('already rendered');
@@ -257,8 +269,28 @@ async function renderToPipeableStream({ mode, elements, isExporting, url, server
     //   }
     //   return elements;
     // };
+    const render = async (renderContext, input, searchParams) => {
+        const elements = await renderEntries.call(renderContext, input, searchParams);
+        if (elements === null) {
+            const err = new Error('No function component found');
+            err.statusCode = 404; // HACK our convention for NotFound
+            throw err;
+        }
+        if (Object.keys(elements).some((key) => key.startsWith('_'))) {
+            throw new Error('"_" prefix is reserved');
+        }
+        return elements;
+    };
     // const elements = await render({}, input, url.searchParams);
-    console.log('Elements:', elements, input);
+    // console.log('Elements:', elements, input);
+    // method === 'GET'
+    const renderContext = {
+        rerender: () => {
+            throw new Error('Cannot rerender');
+        },
+        context,
+    };
+    const elements = await render(renderContext, input, searchParams);
     const stream = (0, server_edge_1.renderToReadableStream)(elements, bundlerConfig);
     // Logging is very useful for native platforms where the network tab isn't always available.
     if (debug.enabled) {

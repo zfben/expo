@@ -14,10 +14,12 @@ const getDevServer_1 = __importDefault(require("@expo/metro-runtime/build/getDev
 const react_1 = __importDefault(require("react"));
 // import { ExpoRoot } from './ExpoRoot';
 const head_1 = require("./head");
-const client_1 = require("./rsc/client");
 // MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
 const Try_1 = require("./views/Try");
 const exports_1 = require("./exports");
+const client_1 = require("./rsc/router/client");
+const react_native_safe_area_context_1 = require("react-native-safe-area-context");
+const rsc_navigator_1 = __importDefault(require("./rsc-navigator"));
 const introUrl = (0, getDevServer_1.default)().fullBundleUrl;
 // TODO: This is buggy and doesn't work well, maybe inject the query params in babel.
 const searchParams = introUrl ? new URL(introUrl).searchParams.toString() : '';
@@ -35,15 +37,18 @@ function App() {
     // return (
     //   <Text>HeyHeyHeyHeyHeyHey</Text>
     // )
-    console.log('>', window.location.pathname);
-    const input = window.location.pathname; //.replace(/^\//, '') || 'index';
     return (<react_1.default.Suspense fallback={null}>
       <head_1.Head.Provider>
-        <Try_1.Try catch={exports_1.ErrorBoundary}>
-          <client_1.Root initialInput={input} initialSearchParamsString={searchParams}>
-            <client_1.Slot id={input}/>
-          </client_1.Root>
-        </Try_1.Try>
+        <react_native_safe_area_context_1.SafeAreaProvider>
+          <rsc_navigator_1.default>
+            <Try_1.Try catch={exports_1.ErrorBoundary}>
+              <client_1.Router />
+              {/* <Root initialSearchParamsString={searchParams}> */}
+              {/* <Slot id={input} /> */}
+              {/* </Root> */}
+            </Try_1.Try>
+          </rsc_navigator_1.default>
+        </react_native_safe_area_context_1.SafeAreaProvider>
       </head_1.Head.Provider>
     </react_1.default.Suspense>);
 }

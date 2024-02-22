@@ -1,6 +1,11 @@
 import type { ReactNode, AnchorHTMLAttributes, ReactElement } from 'react';
-import type { RouteProps } from './common';
-type ChangeLocation = (path?: string, searchParams?: URLSearchParams, mode?: 'push' | 'replace' | false) => void;
+import type { RouteProps } from './common.js';
+declare global {
+    interface ImportMeta {
+        readonly env: Record<string, string>;
+    }
+}
+type ChangeLocation = (path?: string, searchParams?: URLSearchParams, hash?: string, method?: 'pushState' | 'replaceState' | false, scrollTo?: ScrollToOptions | false) => void;
 export declare function useChangeLocation(): ChangeLocation;
 export declare function useLocation(): RouteProps;
 export type LinkProps = {

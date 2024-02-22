@@ -187,7 +187,11 @@ export function getQualifiedRouteComponent(value: RouteNode) {
       }>;
     });
   } else {
-    const res = value.loadRoute();
+    const res = value.loadRoute
+      ? value.loadRoute()
+      : (() => {
+          throw new Error(`Route "${value.route}" has no loadRoute method.`);
+        })();
     const Component = fromImport(res).default as React.ComponentType<any>;
     ScreenComponent = React.forwardRef((props, ref) => {
       return <Component {...props} ref={ref} />;

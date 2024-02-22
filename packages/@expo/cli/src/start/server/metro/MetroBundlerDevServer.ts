@@ -556,6 +556,17 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     return this.instanceMetroOptions;
   }
 
+  private async getExpoRouterRscEntriesGetterAsync() {
+    // NOTE: In waku, this would be user-defined via entries.js
+    const getRscEntries = await this.ssrLoadModule<
+      typeof import('expo-router/build/rsc/router/expo-definedRouter')
+    >('expo-router/build/rsc/router/expo-definedRouter.js', {
+      rsc: true,
+    });
+
+    return getRscEntries;
+  }
+
   async renderRscToReadableStream({
     route,
     url,
@@ -592,24 +603,28 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
     console.log('>', route);
 
-    const routeNode = await getRouteNodeForPathname(route);
+    // const routeNode = await getRouteNodeForPathname(route);
 
-    const elements = await renderRouteWithContextKey(routeNode.file, {
-      //TODO: Props for RSC.
-    });
+    // const elements = await renderRouteWithContextKey(routeNode.file, {
+    //   //TODO: Props for RSC.
+    // });
 
     // const input = './index.tsx';
-    const normalizedRouteKey = (
-      require('expo-router/build/matchers') as typeof import('expo-router/build/matchers')
-    ).getNameFromFilePath(routeNode.file);
+    const normalizedRouteKey = 'TODO';
+    // const normalizedRouteKey = (
+    //   require('expo-router/build/matchers') as typeof import('expo-router/build/matchers')
+    // ).getNameFromFilePath(routeNode.file);
     // TODO: Memoize this
     const serverRoot = getMetroServerRoot(this.projectRoot);
 
     const pipe = await renderToPipeableStream({
       mode,
-      elements: {
-        [route]: elements,
-      },
+      entries: await this.getExpoRouterRscEntriesGetterAsync(),
+      searchParams: url.searchParams,
+      context: {},
+      // elements: {
+      //   [route]: elements,
+      // },
       isExporting: !!isExporting,
       serverUrl: new URL(serverUrl),
       serverRoot,

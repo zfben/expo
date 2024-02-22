@@ -16,6 +16,8 @@ import { ctx } from '../../_ctx';
 import OS from '../../os';
 import { getRoutes } from '../getRoutes';
 import { getServerManifest } from '../getServerManifest';
+import { SHOULD_SKIP_ID, ShouldSkip } from '../rsc/router/common';
+import { EntriesDev, EntriesPrd } from '../rsc/server';
 
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
 
@@ -75,6 +77,12 @@ export async function getRouteNodeForPathname(pathname: string) {
   return matchedNode;
 }
 
+const ShoudSkipComponent = ({ shouldSkip }: { shouldSkip: ShouldSkip }) =>
+  React.createElement('meta', {
+    name: 'waku-should-skip',
+    content: JSON.stringify(shouldSkip),
+  });
+
 export async function renderRouteWithContextKey(
   contextKey: string,
   props: Record<string, unknown>
@@ -85,13 +93,23 @@ export async function renderRouteWithContextKey(
     throw new Error('No default export found for: ' + contextKey);
   }
 
-  return React.createElement(Component, props);
+  const entries: [string, any][] = [];
+
+  entries.push([contextKey, React.createElement(Component, props)]);
+
+  const shouldSkip = false;
+
+  entries.push([SHOULD_SKIP_ID, React.createElement(ShoudSkipComponent, { shouldSkip }) as any]);
+
+  return Object.fromEntries(entries);
 }
 
 export async function renderToPipeableStream(
   {
     mode,
-    elements,
+    entries,
+    // elements,
+    searchParams,
     isExporting,
     url,
     serverUrl,
@@ -103,8 +121,12 @@ export async function renderToPipeableStream(
     customImport,
     onReload,
     moduleIdCallback,
+    context,
   }: {
-    elements: Record<string, ReactNode>;
+    context: unknown;
+    entries: EntriesDev;
+    searchParams: URLSearchParams;
+    // elements: Record<string, ReactNode>;
     isExporting: boolean;
     mode: string;
     serverRoot: string;
@@ -150,6 +172,11 @@ export async function renderToPipeableStream(
       });
     }
   }
+
+  const {
+    default: { renderEntries },
+    loadModule,
+  } = entries as (EntriesDev & { loadModule: undefined }) | EntriesPrd;
 
   if (!isExporting) {
     url.searchParams.set('modulesOnly', 'true');
@@ -259,7 +286,7 @@ export async function renderToPipeableStream(
     let rendered = false;
 
     // TODO: Define context
-    const context = {};
+    // const context = {};
     const rerender = (input: string, searchParams = new URLSearchParams()) => {
       if (rendered) {
         throw new Error('already rendered');
@@ -338,8 +365,35 @@ export async function renderToPipeableStream(
   //   return elements;
   // };
 
+  const render = async (
+    renderContext: RenderContext,
+    input: string,
+    searchParams: URLSearchParams
+  ) => {
+    const elements = await renderEntries.call(renderContext, input, searchParams);
+    if (elements === null) {
+      const err = new Error('No function component found');
+      (err as any).statusCode = 404; // HACK our convention for NotFound
+      throw err;
+    }
+    if (Object.keys(elements).some((key) => key.startsWith('_'))) {
+      throw new Error('"_" prefix is reserved');
+    }
+    return elements;
+  };
+
   // const elements = await render({}, input, url.searchParams);
-  console.log('Elements:', elements, input);
+  // console.log('Elements:', elements, input);
+
+  // method === 'GET'
+  const renderContext: RenderContext = {
+    rerender: () => {
+      throw new Error('Cannot rerender');
+    },
+    context,
+  };
+  const elements = await render(renderContext, input, searchParams);
+
   const stream = renderToReadableStream(elements, bundlerConfig);
 
   // Logging is very useful for native platforms where the network tab isn't always available.
