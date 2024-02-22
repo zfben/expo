@@ -114,6 +114,7 @@ export declare function useNavigatorContext(): {
         }>>): void;
         goBack(): void;
         isFocused(): boolean;
+        /** Used to configure route settings. */
         canGoBack(): boolean;
         getId(): string | undefined;
         getParent<T = import("@react-navigation/native").NavigationHelpers<import("@react-navigation/native").ParamListBase, {}> | undefined>(id?: string | undefined): T;

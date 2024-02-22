@@ -1,3 +1,4 @@
+'use client';
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import React from 'react';
 import {

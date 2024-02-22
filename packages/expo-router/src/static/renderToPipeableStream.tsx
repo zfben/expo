@@ -14,6 +14,8 @@ import { renderToReadableStream, decodeReply } from 'react-server-dom-webpack/se
 
 import { ctx } from '../../_ctx';
 import OS from '../../os';
+import { getRoutes } from '../getRoutes';
+import { getServerManifest } from '../getServerManifest';
 
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
 
@@ -43,10 +45,53 @@ export const fileURLToFilePath = (fileURL: string) => {
   return decodeURI(fileURL.slice('file://'.length));
 };
 
+export async function getRouteNodeForPathname(pathname: string) {
+  // TODO: Populate this with Expo Router results.
+
+  const routes = getRoutes(ctx, {
+    importMode: 'lazy',
+  });
+  console.log('serverManifest.htmlRoutes', routes);
+  const serverManifest = await getServerManifest(routes);
+
+  console.log('serverManifest.htmlRoutes', serverManifest.htmlRoutes);
+  const matchedNode = serverManifest.htmlRoutes.find((file) =>
+    new RegExp(file.namedRegex).test(pathname)
+  );
+  if (!matchedNode) {
+    throw new Error(
+      'No matching route found for: ' + pathname + '. Expected: ' + ctx.keys().join(', ')
+    );
+  }
+
+  const contextKey = matchedNode.file;
+
+  if (!ctx.keys().includes(contextKey)) {
+    throw new Error(
+      'Failed to find route: ' + contextKey + '. Expected one of: ' + ctx.keys().join(', ')
+    );
+  }
+
+  return matchedNode;
+}
+
+export async function renderRouteWithContextKey(
+  contextKey: string,
+  props: Record<string, unknown>
+) {
+  const { default: Component } = await ctx(contextKey);
+
+  if (!Component) {
+    throw new Error('No default export found for: ' + contextKey);
+  }
+
+  return React.createElement(Component, props);
+}
+
 export async function renderToPipeableStream(
-  { $$route: route, ...props }: { $$route: string },
   {
     mode,
+    elements,
     isExporting,
     url,
     serverUrl,
@@ -59,6 +104,7 @@ export async function renderToPipeableStream(
     onReload,
     moduleIdCallback,
   }: {
+    elements: Record<string, ReactNode>;
     isExporting: boolean;
     mode: string;
     serverRoot: string;
@@ -104,14 +150,6 @@ export async function renderToPipeableStream(
       });
     }
   }
-
-  if (!ctx.keys().includes(route)) {
-    throw new Error(
-      'Failed to find route: ' + route + '. Expected one of: ' + ctx.keys().join(', ')
-    );
-  }
-
-  const { default: Component } = await ctx(route);
 
   if (!isExporting) {
     url.searchParams.set('modulesOnly', 'true');
@@ -247,31 +285,60 @@ export async function renderToPipeableStream(
   //   moduleMap
 
   // TODO: Populate this with Expo Router results.
-  const renderEntries = async (input) => {
-    // TODO: Sanitize input and use it to select a component to render.
-    return {
-      index: React.createElement(Component, props),
-    };
-  };
+  // const renderEntries = async (input: string) => {
+  //   const routes = getRoutes(ctx, {
+  //     importMode: 'lazy',
+  //   });
+  //   console.log('serverManifest.htmlRoutes', routes);
+  //   const serverManifest = await getServerManifest(routes);
 
-  const render = async (
-    renderContext: RenderContext,
-    input: string,
-    searchParams: URLSearchParams
-  ) => {
-    const elements = await renderEntries.call(renderContext, input, searchParams);
-    if (elements === null) {
-      const err = new Error('No function component found');
-      (err as any).statusCode = 404; // HACK our convention for NotFound
-      throw err;
-    }
-    if (Object.keys(elements).some((key) => key.startsWith('_'))) {
-      throw new Error('"_" prefix is reserved');
-    }
-    return elements;
-  };
+  //   console.log('serverManifest.htmlRoutes', serverManifest.htmlRoutes);
+  //   const matchedNode = serverManifest.htmlRoutes.find((file) =>
+  //     new RegExp(file.namedRegex).test(input)
+  //   );
+  //   if (!matchedNode) {
+  //     throw new Error(
+  //       'No matching route found for: ' + input + '. Expected: ' + ctx.keys().join(', ')
+  //     );
+  //   }
 
-  const elements = await render({}, input, url.searchParams);
+  //   const contextKey = matchedNode.file;
+
+  //   if (!ctx.keys().includes(contextKey)) {
+  //     throw new Error(
+  //       'Failed to find route: ' + contextKey + '. Expected one of: ' + ctx.keys().join(', ')
+  //     );
+  //   }
+
+  //   const { default: Component } = await ctx(contextKey);
+
+  //   if (!Component) {
+  //     throw new Error('No default export found for: ' + contextKey);
+  //   }
+
+  //   console.log('Render entry>', contextKey);
+  //   // TODO: Sanitize input and use it to select a component to render.
+  //   return React.createElement(Component, props);
+  // };
+
+  // const render = async (
+  //   renderContext: RenderContext,
+  //   input: string,
+  //   searchParams: URLSearchParams
+  // ) => {
+  //   const elements = await renderEntries.call(renderContext, input, searchParams);
+  //   if (elements === null) {
+  //     const err = new Error('No function component found');
+  //     (err as any).statusCode = 404; // HACK our convention for NotFound
+  //     throw err;
+  //   }
+  //   if (Object.keys(elements).some((key) => key.startsWith('_'))) {
+  //     throw new Error('"_" prefix is reserved');
+  //   }
+  //   return elements;
+  // };
+
+  // const elements = await render({}, input, url.searchParams);
   console.log('Elements:', elements, input);
   const stream = renderToReadableStream(elements, bundlerConfig);
 

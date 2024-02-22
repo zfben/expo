@@ -35,11 +35,13 @@ function App() {
     // return (
     //   <Text>HeyHeyHeyHeyHeyHey</Text>
     // )
+    console.log('>', window.location.pathname);
+    const input = window.location.pathname; //.replace(/^\//, '') || 'index';
     return (<react_1.default.Suspense fallback={null}>
       <head_1.Head.Provider>
         <Try_1.Try catch={exports_1.ErrorBoundary}>
-          <client_1.Root initialSearchParamsString={searchParams}>
-            <client_1.Slot id="index"/>
+          <client_1.Root initialInput={input} initialSearchParamsString={searchParams}>
+            <client_1.Slot id={input}/>
           </client_1.Root>
         </Try_1.Try>
       </head_1.Head.Provider>

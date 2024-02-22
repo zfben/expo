@@ -1,3 +1,4 @@
+'use client';
 import { createURL } from 'expo-linking';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';

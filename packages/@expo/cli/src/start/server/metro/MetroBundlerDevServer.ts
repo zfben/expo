@@ -69,7 +69,7 @@ import {
 import { prependMiddleware } from '../middleware/mutations';
 import { ServerNext, ServerRequest, ServerResponse } from '../middleware/server.types';
 import { startTypescriptTypeGenerationAsync } from '../type-generation/startTypescriptTypeGeneration';
-
+import { decodeInput } from 'expo-router/build/rsc/renderers/utils';
 export type ExpoRouterRuntimeManifest = Awaited<
   ReturnType<typeof import('expo-router/build/static/renderStaticContent').getManifest>
 >;
@@ -582,7 +582,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     // TODO: Extract CSS Modules / Assets from the bundler process
     const {
       filename: serverUrl,
-      fn: { renderToPipeableStream },
+      fn: { renderToPipeableStream, renderRouteWithContextKey, getRouteNodeForPathname },
     } = await this.ssrLoadModuleAndHmrEntry<
       typeof import('expo-router/build/static/renderToPipeableStream')
     >('expo-router/node/rsc.js', {
@@ -590,62 +590,70 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       platform,
     });
 
-    const input = './index.tsx';
+    console.log('>', route);
+
+    const routeNode = await getRouteNodeForPathname(route);
+
+    const elements = await renderRouteWithContextKey(routeNode.file, {
+      //TODO: Props for RSC.
+    });
+
+    // const input = './index.tsx';
     const normalizedRouteKey = (
       require('expo-router/build/matchers') as typeof import('expo-router/build/matchers')
-    ).getNameFromFilePath(input);
+    ).getNameFromFilePath(routeNode.file);
     // TODO: Memoize this
     const serverRoot = getMetroServerRoot(this.projectRoot);
 
-    const pipe = await renderToPipeableStream(
-      { $$route: input },
-      {
-        mode,
-        isExporting: !!isExporting,
-        serverUrl: new URL(serverUrl),
-        serverRoot,
-        url,
-        method,
-        input: route,
-        body: method === 'POST' ? createReadableStreamFromReadable(req!) : null,
-        customImport: async (relativeDevServerUrl: string): Promise<any> => {
-          const url = new URL(relativeDevServerUrl, this.getDevServerUrlOrAssert());
-          url.searchParams.set('runModule', 'true');
-          url.searchParams.set('runModule', 'true');
-          const rsc = true;
-          url.searchParams.set('transform.rsc', String(rsc));
-          url.searchParams.set('resolver.rsc', String(rsc));
+    const pipe = await renderToPipeableStream({
+      mode,
+      elements: {
+        [route]: elements,
+      },
+      isExporting: !!isExporting,
+      serverUrl: new URL(serverUrl),
+      serverRoot,
+      url,
+      method,
+      input: route,
+      body: method === 'POST' ? createReadableStreamFromReadable(req!) : null,
+      customImport: async (relativeDevServerUrl: string): Promise<any> => {
+        const url = new URL(relativeDevServerUrl, this.getDevServerUrlOrAssert());
+        url.searchParams.set('runModule', 'true');
+        url.searchParams.set('runModule', 'true');
+        const rsc = true;
+        url.searchParams.set('transform.rsc', String(rsc));
+        url.searchParams.set('resolver.rsc', String(rsc));
 
-          const urlString = url.toString();
-          const contents = await metroFetchAsync(this.projectRoot, urlString);
-          // console.log('Server action:');
-          // console.log(contents);
-          return evalMetro(this.projectRoot, contents.src, contents.filename);
-        },
-        onReload: (...args: any[]) => {
-          // Send reload command to client from Fast Refresh code.
-          debug('[CLI]: Reload RSC:', args);
+        const urlString = url.toString();
+        const contents = await metroFetchAsync(this.projectRoot, urlString);
+        // console.log('Server action:');
+        // console.log(contents);
+        return evalMetro(this.projectRoot, contents.src, contents.filename);
+      },
+      onReload: (...args: any[]) => {
+        // Send reload command to client from Fast Refresh code.
+        debug('[CLI]: Reload RSC:', args);
 
-          // TODO: Target only certain platforms
-          this.broadcastMessage('reload');
-        },
-        moduleIdCallback: (moduleInfo: {
-          id: string;
-          chunks: string[];
-          name: string;
-          async: boolean;
-        }) => {
-          // Collect the client boundaries while rendering the server components.
-          // Indexed by routes.
-          let idSet = this.clientModuleMap.get(normalizedRouteKey);
-          if (!idSet) {
-            idSet = new Set();
-            this.clientModuleMap.set(normalizedRouteKey, idSet);
-          }
-          idSet.add(moduleInfo.id);
-        },
-      }
-    );
+        // TODO: Target only certain platforms
+        this.broadcastMessage('reload');
+      },
+      moduleIdCallback: (moduleInfo: {
+        id: string;
+        chunks: string[];
+        name: string;
+        async: boolean;
+      }) => {
+        // Collect the client boundaries while rendering the server components.
+        // Indexed by routes.
+        let idSet = this.clientModuleMap.get(normalizedRouteKey);
+        if (!idSet) {
+          idSet = new Set();
+          this.clientModuleMap.set(normalizedRouteKey, idSet);
+        }
+        idSet.add(moduleInfo.id);
+      },
+    });
 
     return pipe;
   }
@@ -750,7 +758,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
       const sendResponse = async (req: ServerRequest, res: ServerResponse) => {
         const url = new URL(req.url!, this.getDevServerUrlOrAssert());
-        const route = url.pathname.replace(rscPathPrefix, '');
+        const route = decodeInput(url.pathname.replace(rscPathPrefix, '')) || '/';
 
         try {
           const pipe = await this.renderRscToReadableStream({
@@ -790,86 +798,86 @@ export class MetroBundlerDevServer extends BundlerDevServer {
             routerRoot,
             config,
             bundleApiRoute: (functionFilePath) => this.ssrImportApiRoute(functionFilePath),
-//             getHtml: async (req) => {
-//               const devMiddleware = (await this.ssrLoadModule(
-//                 require.resolve('expo-router/build/static/handler-dev.js'), {
-//                   rsc: true
-//                 }
-//               )) as typeof import('expo-router/build/static/handler-dev');
+            //             getHtml: async (req) => {
+            //               const devMiddleware = (await this.ssrLoadModule(
+            //                 require.resolve('expo-router/build/static/handler-dev.js'), {
+            //                   rsc: true
+            //                 }
+            //               )) as typeof import('expo-router/build/static/handler-dev');
 
-//               const handler = await devMiddleware.createHandler({
-//                 projectRoot: this.projectRoot,
-//                 config: {
-//                   basePath: baseUrl,
-//                   htmlHead: '',
-//                   mainJs: '',
-//                   publicDir: '',
-//                   rscPath: '/rsc',
-//                   srcDir: '',
-//                 },
-//                 ssrLoadModule(fileURL) {
-//                   return this.ssrLoadModule(fileURL);
-//                 },
-//                 renderRscWithWorker: async (props) => {
-//                   // TODO: This is terrible, it should use all the `props`.
-//                   const stream = await this.renderRscToReadableStream({
-//                     route: props.input,
-//                     method: props.method,
-//                     platform: 'web',
-//                     url: new URL(req.url!, this.getDevServerUrlOrAssert()),
-//                   });
-//                   console.log("stream:", stream)
-//                   return [
-//                     stream,
-//                     // TODO: Next context
-//                     {},
-//                   ];
-//                 },
-//                 // ssrLoadModule: metroSsr.ssrLoadModule,
-//                 async transformIndexHtml(pathname, data) {
-//                   console.log('transform index:', pathname, data);
-//                   const codeToInject = `
-// globalThis.__waku_module_cache__ = new Map();
-// globalThis.__webpack_chunk_load__ = (id) => import(id).then((m) => globalThis.__waku_module_cache__.set(id, m));
-// globalThis.__webpack_require__ = (id) => globalThis.__waku_module_cache__.get(id);`;
+            //               const handler = await devMiddleware.createHandler({
+            //                 projectRoot: this.projectRoot,
+            //                 config: {
+            //                   basePath: baseUrl,
+            //                   htmlHead: '',
+            //                   mainJs: '',
+            //                   publicDir: '',
+            //                   rscPath: '/rsc',
+            //                   srcDir: '',
+            //                 },
+            //                 ssrLoadModule(fileURL) {
+            //                   return this.ssrLoadModule(fileURL);
+            //                 },
+            //                 renderRscWithWorker: async (props) => {
+            //                   // TODO: This is terrible, it should use all the `props`.
+            //                   const stream = await this.renderRscToReadableStream({
+            //                     route: props.input,
+            //                     method: props.method,
+            //                     platform: 'web',
+            //                     url: new URL(req.url!, this.getDevServerUrlOrAssert()),
+            //                   });
+            //                   console.log("stream:", stream)
+            //                   return [
+            //                     stream,
+            //                     // TODO: Next context
+            //                     {},
+            //                   ];
+            //                 },
+            //                 // ssrLoadModule: metroSsr.ssrLoadModule,
+            //                 async transformIndexHtml(pathname, data) {
+            //                   console.log('transform index:', pathname, data);
+            //                   const codeToInject = `
+            // globalThis.__waku_module_cache__ = new Map();
+            // globalThis.__webpack_chunk_load__ = (id) => import(id).then((m) => globalThis.__waku_module_cache__.set(id, m));
+            // globalThis.__webpack_require__ = (id) => globalThis.__waku_module_cache__.get(id);`;
 
-//                   //            // HACK without <base>, some relative assets don't work.
-//                   // // FIXME ideally, we should avoid this.
-//                   // { tag: 'base', attrs: { href: config.basePath } },
-//                   // {
-//                   //   tag: 'script',
-//                   //   attrs: { type: 'module', async: true },
-//                   //   children: codeToInject,
-//                   // },
-//                   // ...(config.cssAssets || []).map((href) => ({
-//                   //   tag: 'link',
-//                   //   attrs: { rel: 'stylesheet', href },
-//                   //   injectTo: 'head' as const,
-//                   // })),
+            //                   //            // HACK without <base>, some relative assets don't work.
+            //                   // // FIXME ideally, we should avoid this.
+            //                   // { tag: 'base', attrs: { href: config.basePath } },
+            //                   // {
+            //                   //   tag: 'script',
+            //                   //   attrs: { type: 'module', async: true },
+            //                   //   children: codeToInject,
+            //                   // },
+            //                   // ...(config.cssAssets || []).map((href) => ({
+            //                   //   tag: 'link',
+            //                   //   attrs: { rel: 'stylesheet', href },
+            //                   //   injectTo: 'head' as const,
+            //                   // })),
 
-//                   const start = `<!DOCTYPE html>
-//                   <html>
-//                     <head>
-//                       <meta charset="utf-8" />
-//                       <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-//                       <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover" />
-//                     </head>
-//                     <body></body>
-//                   </html>`;
+            //                   const start = `<!DOCTYPE html>
+            //                   <html>
+            //                     <head>
+            //                       <meta charset="utf-8" />
+            //                       <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+            //                       <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover" />
+            //                     </head>
+            //                     <body></body>
+            //                   </html>`;
 
-//                   // TODO: Run additional plugins.
+            //                   // TODO: Run additional plugins.
 
-//                   return start;
-//                 },
-//                 env: process.env,
-//                 ssr: true,
-//               });
+            //                   return start;
+            //                 },
+            //                 env: process.env,
+            //                 ssr: true,
+            //               });
 
-//               // TODO: Memoize this stuff.
-//               // const res = new ExpoResponse();
+            //               // TODO: Memoize this stuff.
+            //               // const res = new ExpoResponse();
 
-//               return await handler(req);
-//             },
+            //               return await handler(req);
+            //             },
             getStaticPageAsync: (pathname) => {
               return this.getStaticPageAsync(pathname);
             },

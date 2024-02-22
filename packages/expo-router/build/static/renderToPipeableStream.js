@@ -9,7 +9,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.renderToPipeableStream = exports.fileURLToFilePath = void 0;
+exports.renderToPipeableStream = exports.renderRouteWithContextKey = exports.getRouteNodeForPathname = exports.fileURLToFilePath = void 0;
 const stream_1 = require("@remix-run/node/dist/stream");
 const path_1 = __importDefault(require("path"));
 const chalk_1 = __importDefault(require("chalk"));
@@ -17,6 +17,8 @@ const react_1 = __importDefault(require("react"));
 const server_edge_1 = require("react-server-dom-webpack/server.edge");
 const _ctx_1 = require("../../_ctx");
 const os_1 = __importDefault(require("../../os"));
+const getRoutes_1 = require("../getRoutes");
+const getServerManifest_1 = require("../getServerManifest");
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
 const debug = require('debug')('expo:rsc');
 // NOTE: MUST MATCH THE IMPL IN ExpoMetroConfig.ts
@@ -38,7 +40,34 @@ const fileURLToFilePath = (fileURL) => {
     return decodeURI(fileURL.slice('file://'.length));
 };
 exports.fileURLToFilePath = fileURLToFilePath;
-async function renderToPipeableStream({ $$route: route, ...props }, { mode, isExporting, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, moduleIdCallback, }
+async function getRouteNodeForPathname(pathname) {
+    // TODO: Populate this with Expo Router results.
+    const routes = (0, getRoutes_1.getRoutes)(_ctx_1.ctx, {
+        importMode: 'lazy',
+    });
+    console.log('serverManifest.htmlRoutes', routes);
+    const serverManifest = await (0, getServerManifest_1.getServerManifest)(routes);
+    console.log('serverManifest.htmlRoutes', serverManifest.htmlRoutes);
+    const matchedNode = serverManifest.htmlRoutes.find((file) => new RegExp(file.namedRegex).test(pathname));
+    if (!matchedNode) {
+        throw new Error('No matching route found for: ' + pathname + '. Expected: ' + _ctx_1.ctx.keys().join(', '));
+    }
+    const contextKey = matchedNode.file;
+    if (!_ctx_1.ctx.keys().includes(contextKey)) {
+        throw new Error('Failed to find route: ' + contextKey + '. Expected one of: ' + _ctx_1.ctx.keys().join(', '));
+    }
+    return matchedNode;
+}
+exports.getRouteNodeForPathname = getRouteNodeForPathname;
+async function renderRouteWithContextKey(contextKey, props) {
+    const { default: Component } = await (0, _ctx_1.ctx)(contextKey);
+    if (!Component) {
+        throw new Error('No default export found for: ' + contextKey);
+    }
+    return react_1.default.createElement(Component, props);
+}
+exports.renderRouteWithContextKey = renderRouteWithContextKey;
+async function renderToPipeableStream({ mode, elements, isExporting, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, moduleIdCallback, }
 // moduleMap: WebpackManifest
 ) {
     if (!isExporting) {
@@ -63,10 +92,6 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, isEx
             });
         }
     }
-    if (!_ctx_1.ctx.keys().includes(route)) {
-        throw new Error('Failed to find route: ' + route + '. Expected one of: ' + _ctx_1.ctx.keys().join(', '));
-    }
-    const { default: Component } = await (0, _ctx_1.ctx)(route);
     if (!isExporting) {
         url.searchParams.set('modulesOnly', 'true');
         url.searchParams.set('runModule', 'false');
@@ -187,25 +212,52 @@ async function renderToPipeableStream({ $$route: route, ...props }, { mode, isEx
     }
     //   moduleMap
     // TODO: Populate this with Expo Router results.
-    const renderEntries = async (input) => {
-        // TODO: Sanitize input and use it to select a component to render.
-        return {
-            index: react_1.default.createElement(Component, props),
-        };
-    };
-    const render = async (renderContext, input, searchParams) => {
-        const elements = await renderEntries.call(renderContext, input, searchParams);
-        if (elements === null) {
-            const err = new Error('No function component found');
-            err.statusCode = 404; // HACK our convention for NotFound
-            throw err;
-        }
-        if (Object.keys(elements).some((key) => key.startsWith('_'))) {
-            throw new Error('"_" prefix is reserved');
-        }
-        return elements;
-    };
-    const elements = await render({}, input, url.searchParams);
+    // const renderEntries = async (input: string) => {
+    //   const routes = getRoutes(ctx, {
+    //     importMode: 'lazy',
+    //   });
+    //   console.log('serverManifest.htmlRoutes', routes);
+    //   const serverManifest = await getServerManifest(routes);
+    //   console.log('serverManifest.htmlRoutes', serverManifest.htmlRoutes);
+    //   const matchedNode = serverManifest.htmlRoutes.find((file) =>
+    //     new RegExp(file.namedRegex).test(input)
+    //   );
+    //   if (!matchedNode) {
+    //     throw new Error(
+    //       'No matching route found for: ' + input + '. Expected: ' + ctx.keys().join(', ')
+    //     );
+    //   }
+    //   const contextKey = matchedNode.file;
+    //   if (!ctx.keys().includes(contextKey)) {
+    //     throw new Error(
+    //       'Failed to find route: ' + contextKey + '. Expected one of: ' + ctx.keys().join(', ')
+    //     );
+    //   }
+    //   const { default: Component } = await ctx(contextKey);
+    //   if (!Component) {
+    //     throw new Error('No default export found for: ' + contextKey);
+    //   }
+    //   console.log('Render entry>', contextKey);
+    //   // TODO: Sanitize input and use it to select a component to render.
+    //   return React.createElement(Component, props);
+    // };
+    // const render = async (
+    //   renderContext: RenderContext,
+    //   input: string,
+    //   searchParams: URLSearchParams
+    // ) => {
+    //   const elements = await renderEntries.call(renderContext, input, searchParams);
+    //   if (elements === null) {
+    //     const err = new Error('No function component found');
+    //     (err as any).statusCode = 404; // HACK our convention for NotFound
+    //     throw err;
+    //   }
+    //   if (Object.keys(elements).some((key) => key.startsWith('_'))) {
+    //     throw new Error('"_" prefix is reserved');
+    //   }
+    //   return elements;
+    // };
+    // const elements = await render({}, input, url.searchParams);
     console.log('Elements:', elements, input);
     const stream = (0, server_edge_1.renderToReadableStream)(elements, bundlerConfig);
     // Logging is very useful for native platforms where the network tab isn't always available.

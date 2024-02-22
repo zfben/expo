@@ -1,3 +1,4 @@
+'use client';
 import { RouterFactory, StackRouter, useNavigationBuilder } from '@react-navigation/native';
 import * as React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
