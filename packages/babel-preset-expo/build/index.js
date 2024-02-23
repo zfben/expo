@@ -115,6 +115,7 @@ function babelPresetExpo(api, options = {}) {
     if (isReactServer) {
         extraPlugins.push(client_module_proxy_plugin_1.rscForbiddenReactAPIsPlugin);
     }
+    extraPlugins.push(client_module_proxy_plugin_1.environmentRestrictedImportsPlugin);
     if (isFastRefreshEnabled) {
         extraPlugins.push([
             require('react-refresh/babel'),

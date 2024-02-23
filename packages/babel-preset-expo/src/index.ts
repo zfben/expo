@@ -1,6 +1,7 @@
 import { ConfigAPI, PluginItem, TransformOptions } from '@babel/core';
 
 import {
+  environmentRestrictedImportsPlugin,
   expoRouterServerComponentClientReferencesPlugin,
   rscForbiddenReactAPIsPlugin,
 } from './client-module-proxy-plugin';
@@ -182,6 +183,8 @@ function babelPresetExpo(api: ConfigAPI, options: BabelPresetExpoOptions = {}): 
   if (isReactServer) {
     extraPlugins.push(rscForbiddenReactAPIsPlugin);
   }
+
+  extraPlugins.push(environmentRestrictedImportsPlugin);
 
   if (isFastRefreshEnabled) {
     extraPlugins.push([
