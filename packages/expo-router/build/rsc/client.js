@@ -87,6 +87,9 @@ const fetchRSC = (input, searchParamsString, setElements, cache = fetchCache) =>
             const response = fetch(BASE_PATH + (0, utils_1.encodeInput)(encodeURIComponent(actionId)), {
                 method: 'POST',
                 body: await encodeReply(args),
+                headers: {
+                    'expo-platform': os_1.default,
+                }
             });
             const data = createFromFetch(checkStatus(response), options);
             const setElements = entry[2];
@@ -100,7 +103,11 @@ const fetchRSC = (input, searchParamsString, setElements, cache = fetchCache) =>
     const prefetched = (globalThis.__WAKU_PREFETCHED__ ||= {});
     const url = BASE_PATH + (0, utils_1.encodeInput)(input) + (searchParamsString ? '?' + searchParamsString : '');
     console.log('fetch', url);
-    const response = prefetched[url] || fetch(getAdjustedFilePath(url));
+    const response = prefetched[url] || fetch(getAdjustedFilePath(url), {
+        headers: {
+            'expo-platform': os_1.default,
+        }
+    });
     delete prefetched[url];
     const data = createFromFetch(checkStatus(response), options);
     cache[0] = entry = [input, searchParamsString, setElements, data];
@@ -122,7 +129,11 @@ const prefetchRSC = (input, searchParamsString) => {
     const prefetched = (globalThis.__WAKU_PREFETCHED__ ||= {});
     const url = BASE_PATH + (0, utils_1.encodeInput)(input) + (searchParamsString ? '?' + searchParamsString : '');
     if (!(url in prefetched)) {
-        prefetched[url] = fetch(url);
+        prefetched[url] = fetch(url, {
+            headers: {
+                'expo-platform': os_1.default,
+            }
+        });
     }
 };
 exports.prefetchRSC = prefetchRSC;

@@ -149,9 +149,9 @@ async function bundleProductionMetroClientAsync(
 
   assertMetroConfig(config);
 
-  const metroServer = await Metro.runMetro(config, {
-    watch: false,
-  });
+  // const metroServer = await Metro.runMetro(config, {
+  //   watch: false,
+  // });
 
   // TODO: Just start one metro bundler instance.
   const secondInstanceLol = await unstable_getDevServerForClientBoundariesAsync(projectRoot, {
@@ -159,6 +159,7 @@ async function bundleProductionMetroClientAsync(
     minify: !!bundles[0].minify,
     mode: bundles[0].dev ? 'development' : 'production',
     maxWorkers: metroOptions.maxWorkers,
+    
   });
 
   const buildAsync = async (bundle: BundleOptions): Promise<BundleOutput> => {
@@ -216,7 +217,7 @@ async function bundleProductionMetroClientAsync(
       bundleDetails,
     });
     try {
-      const artifacts = await forkMetroBuildAsync(metroServer, bundleOptions);
+      const artifacts = await forkMetroBuildAsync(secondInstanceLol.getMetroInstance()!, bundleOptions);
       reporter.update({
         buildID,
         type: 'bundle_build_done',
@@ -239,8 +240,8 @@ async function bundleProductionMetroClientAsync(
     console.log('');
     throw error;
   } finally {
-    await metroServer.end();
-    await secondInstanceLol.stopAsync();
+    // await metroServer.end();
+    // await secondInstanceLol.stopAsync();
   }
 }
 

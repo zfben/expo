@@ -87,7 +87,7 @@ export async function exportAppForAssetsAsync(
 
   const useRSC = true;
 
-  const useServerRendering = useRSC || ['static', 'server'].includes(exp.web?.output ?? '');
+  const useServerRendering = false // useRSC  || ['static', 'server'].includes(exp.web?.output ?? '');
   const baseUrl = getBaseUrlFromExpoConfig(exp);
   const rscPath = getRscPathFromExpoConfig(exp);
 
@@ -196,7 +196,7 @@ export async function exportAppForAssetsAsync(
   // Additional web-only steps...
 
   if (platforms.includes('web')) {
-    if (useServerRendering || useRSC) {
+    if (useServerRendering) {
       const exportServer = useRSC ?? exp.web?.output === 'server';
 
       if (exportServer) {

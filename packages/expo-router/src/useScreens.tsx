@@ -210,12 +210,13 @@ export function getQualifiedRouteComponent(value: RouteNode) {
   ScreenComponent = React.forwardRef((props, ref) => {
     // const prefetch = usePrefetchLocation();
 
-    let rscServerId = window.location.pathname;
+
+    let rscServerId = typeof window === 'undefined' ? "TODO" : window.location.pathname;
     if (value.type === 'route') {
       rscServerId += '/page';
     }
 
-    if (i > 12) {
+    if (i > 20) {
       debugger;
       throw new Error('Too many iterations');
     }

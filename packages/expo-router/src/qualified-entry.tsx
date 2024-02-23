@@ -17,10 +17,11 @@ import { Text } from 'react-native';
 // MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
 import { Try } from './views/Try';
 import { ErrorBoundary } from './exports';
-import { Router } from './rsc/router/client';
+// import { Router } from './rsc/router/client';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import ContextNavigator from './rsc-navigator';
-import { ExpoRoot } from './ExpoRoot';
+import { Router } from './rsc/router/client';
+// import ContextNavigator from './rsc-navigator';
+// import { ExpoRoot } from './ExpoRoot';
 
 const introUrl = getDevServer().fullBundleUrl;
 // TODO: This is buggy and doesn't work well, maybe inject the query params in babel.
@@ -47,14 +48,29 @@ export function App() {
       <Head.Provider>
         <SafeAreaProvider>
           <Try catch={ErrorBoundary}>
-            <Root initialSearchParamsString={searchParams}>
-              <Slot id={'page'} />
-            </Root>
+            <Router />
           </Try>
         </SafeAreaProvider>
       </Head.Provider>
     </React.Suspense>
   );
+  
+
+  // return (
+  //   <React.Suspense fallback={null}>
+  //     <Head.Provider>
+  //       <SafeAreaProvider>
+  //         <Try catch={ErrorBoundary}>
+  //           <Root initialInput='layout' initialSearchParamsString={searchParams}>
+  //             <Slot id={'layout'} />
+  //           </Root>
+  //         </Try>
+  //       </SafeAreaProvider>
+  //     </Head.Provider>
+  //   </React.Suspense>
+  // );
+
+
   // return (
   //   <React.Suspense fallback={null}>
   //     <Head.Provider>
@@ -71,15 +87,15 @@ export function App() {
   //     </Head.Provider>
   //   </React.Suspense>
   // );
-  return (
-    <React.Suspense fallback={null}>
-      <Head.Provider>
-        <Try catch={ErrorBoundary}>
-          <Router>
-            <ExpoRoot context={ctx} />
-          </Router>
-        </Try>
-      </Head.Provider>
-    </React.Suspense>
-  );
+  // return (
+  //   <React.Suspense fallback={null}>
+  //     <Head.Provider>
+  //       <Try catch={ErrorBoundary}>
+  //         <Router>
+  //           <ExpoRoot context={ctx} />
+  //         </Router>
+  //       </Try>
+  //     </Head.Provider>
+  //   </React.Suspense>
+  // );
 }

@@ -11,9 +11,6 @@ export interface RenderContext<T = unknown> {
 }
 export declare const fileURLToFilePath: (fileURL: string) => string;
 export declare function getRouteNodeForPathname(pathname: string): Promise<import("../getServerManifest").ExpoRouterServerManifestV1Route<string>>;
-export declare function renderRouteWithContextKey(contextKey: string, props: Record<string, unknown>): Promise<{
-    [k: string]: any;
-}>;
 export declare function renderToPipeableStream({ mode, entries, searchParams, isExporting, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, moduleIdCallback, context, }: {
     context: unknown;
     entries: EntriesDev;

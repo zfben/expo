@@ -5,7 +5,7 @@
 import React, { lazy, createElement } from 'react';
 // import { glob } from 'glob';
 import { defineRouter } from './defineRouter';
-
+import { View } from 'react-native';
 import { ctx } from 'expo-router/_ctx';
 import { getRoutes } from '../../getRoutes';
 import { getServerManifest } from '../../getServerManifest';
@@ -72,22 +72,22 @@ function wakuRouteIdToExpoRoute(route: RouteNode, routeId: string) {
 
     console.log('1.', part);
     if (i === parts.length - 1) {
-      if (part === 'layout' && currentRoute.type === 'layout') {
+      if (part === 'layout' && currentRoute?.type === 'layout') {
         return null;
         // return route;
       } else if (part === 'page') {
         console.log('2.', part);
-        if (route.type === 'layout') {
+        if (currentRoute?.type === 'layout') {
           console.log('3.', part);
           // TODO: Obviously not right, doesn't account for nested index or groups.
-          return route.children.find((child) => child.type === 'route' && child.route === 'index');
+          return currentRoute.children?.find((child) => child.type === 'route' && child.route === 'index');
         }
-        return route;
+        return currentRoute;
       } else {
         return null;
       }
     }
-    currentRoute = currentRoute.children.find((child) => child.route === part);
+    currentRoute = currentRoute?.children?.find((child) => child.route === part);
   }
 
   return currentRoute;
@@ -100,43 +100,52 @@ export default defineRouter(
   async (id, unstable_setShouldSkip) => {
     unstable_setShouldSkip({}); // always skip if possible
 
-    const route = wakuRouteIdToExpoRoute(routes, id);
-    console.log('getComponent', id, route);
-    if (!route) {
-      console.error('No route found for', id, ctx.keys());
-      return null;
+    // const route = wakuRouteIdToExpoRoute(routes, id);
+    // NOTE: Hack to test other stuff
+    if (id.includes('page')) {
+      console.log('getComponent', id);
+      return props => createElement(ctx('./index.tsx').default, props);
+    } else {
+      return props => createElement(View, props);
     }
 
-    // const result = await getMappingAndItems(id);
-    // if (result === null) {
+
+
+    // if (!route) {
+    //   console.error('No route found for', id, ctx.keys());
     //   return null;
     // }
 
-    const { loadRoute, children, ...rest } = route;
+    // // const result = await getMappingAndItems(id);
+    // // if (result === null) {
+    // //   return null;
+    // // }
 
-    // const { mapping, items } = result;
-    const RouteNode = lazy(async () => {
-      const value = await loadRoute();
-      return value;
-    });
+    // const { loadRoute, children, ...rest } = route;
 
-    console.log('Loading route:', RouteNode);
+    // // const { mapping, items } = result;
+    // const RouteNode = lazy(async () => {
+    //   const value = await loadRoute();
+    //   return value;
+    // });
 
-    // const Route = ctx(id); // getRoute(items);
-    const Component = (props: Record<string, unknown>) =>
-      createElement(RouteNode, {
-        ...props,
-        // ...mapping,
-      });
-    // const Component = (props: Record<string, unknown>) => (
-    //   <Route node={stripFunctions(route)}>
-    //     {createElement(RouteNode, {
-    //       ...props,
-    //       // ...mapping,
-    //     })}
-    //   </Route>
-    // );
-    return Component;
+    // console.log('Loading route:', RouteNode);
+
+    // // const Route = ctx(id); // getRoute(items);
+    // const Component = (props: Record<string, unknown>) =>
+    //   createElement(RouteNode, {
+    //     ...props,
+    //     // ...mapping,
+    //   });
+    // // const Component = (props: Record<string, unknown>) => (
+    // //   <Route node={stripFunctions(route)}>
+    // //     {createElement(RouteNode, {
+    // //       ...props,
+    // //       // ...mapping,
+    // //     })}
+    // //   </Route>
+    // // );
+    // return Component;
   }
 );
 

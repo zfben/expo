@@ -283,10 +283,10 @@ function InnerRouter(props) {
     return () => window.removeEventListener('popstate', callback);
   }, [changeLocation]);
 
-  // const children = componentIds.reduceRight(
-  //   (acc: ReactNode, id) => createElement(Slot, { id, fallback: acc }, acc),
-  //   null
-  // );
+  const children = componentIds.reduceRight(
+    (acc: ReactNode, id) => createElement(Slot, { id, fallback: acc }, acc),
+    null
+  );
 
   return createElement(
     Fragment,
@@ -295,8 +295,8 @@ function InnerRouter(props) {
     createElement(
       RouterContext.Provider,
       { value: { loc, changeLocation, prefetchLocation } },
-      props.children
-      // children
+      // props.children
+      children
     )
   );
 }

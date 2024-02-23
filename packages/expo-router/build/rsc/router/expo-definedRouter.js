@@ -7,6 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const react_1 = require("react");
 // import { glob } from 'glob';
 const defineRouter_1 = require("./defineRouter");
+const react_native_1 = require("react-native");
 const _ctx_1 = require("expo-router/_ctx");
 const getRoutes_1 = require("../../getRoutes");
 // const routesDir = path.join(
@@ -63,24 +64,24 @@ function wakuRouteIdToExpoRoute(route, routeId) {
         const part = parts[i];
         console.log('1.', part);
         if (i === parts.length - 1) {
-            if (part === 'layout' && currentRoute.type === 'layout') {
+            if (part === 'layout' && currentRoute?.type === 'layout') {
                 return null;
                 // return route;
             }
             else if (part === 'page') {
                 console.log('2.', part);
-                if (route.type === 'layout') {
+                if (currentRoute?.type === 'layout') {
                     console.log('3.', part);
                     // TODO: Obviously not right, doesn't account for nested index or groups.
-                    return route.children.find((child) => child.type === 'route' && child.route === 'index');
+                    return currentRoute.children?.find((child) => child.type === 'route' && child.route === 'index');
                 }
-                return route;
+                return currentRoute;
             }
             else {
                 return null;
             }
         }
-        currentRoute = currentRoute.children.find((child) => child.route === part);
+        currentRoute = currentRoute?.children?.find((child) => child.route === part);
     }
     return currentRoute;
 }
@@ -90,37 +91,45 @@ exports.default = (0, defineRouter_1.defineRouter)(
 // getComponent (id is "**/layout" or "**/page")
 async (id, unstable_setShouldSkip) => {
     unstable_setShouldSkip({}); // always skip if possible
-    const route = wakuRouteIdToExpoRoute(routes, id);
-    console.log('getComponent', id, route);
-    if (!route) {
-        console.error('No route found for', id, _ctx_1.ctx.keys());
-        return null;
+    // const route = wakuRouteIdToExpoRoute(routes, id);
+    // NOTE: Hack to test other stuff
+    if (id.includes('page')) {
+        console.log('getComponent', id);
+        return props => (0, react_1.createElement)((0, _ctx_1.ctx)('./index.tsx').default, props);
     }
-    // const result = await getMappingAndItems(id);
-    // if (result === null) {
+    else {
+        return props => (0, react_1.createElement)(react_native_1.View, props);
+    }
+    // if (!route) {
+    //   console.error('No route found for', id, ctx.keys());
     //   return null;
     // }
-    const { loadRoute, children, ...rest } = route;
-    // const { mapping, items } = result;
-    const RouteNode = (0, react_1.lazy)(async () => {
-        const value = await loadRoute();
-        return value;
-    });
-    console.log('Loading route:', RouteNode);
-    // const Route = ctx(id); // getRoute(items);
-    const Component = (props) => (0, react_1.createElement)(RouteNode, {
-        ...props,
-        // ...mapping,
-    });
-    // const Component = (props: Record<string, unknown>) => (
-    //   <Route node={stripFunctions(route)}>
-    //     {createElement(RouteNode, {
-    //       ...props,
-    //       // ...mapping,
-    //     })}
-    //   </Route>
-    // );
-    return Component;
+    // // const result = await getMappingAndItems(id);
+    // // if (result === null) {
+    // //   return null;
+    // // }
+    // const { loadRoute, children, ...rest } = route;
+    // // const { mapping, items } = result;
+    // const RouteNode = lazy(async () => {
+    //   const value = await loadRoute();
+    //   return value;
+    // });
+    // console.log('Loading route:', RouteNode);
+    // // const Route = ctx(id); // getRoute(items);
+    // const Component = (props: Record<string, unknown>) =>
+    //   createElement(RouteNode, {
+    //     ...props,
+    //     // ...mapping,
+    //   });
+    // // const Component = (props: Record<string, unknown>) => (
+    // //   <Route node={stripFunctions(route)}>
+    // //     {createElement(RouteNode, {
+    // //       ...props,
+    // //       // ...mapping,
+    // //     })}
+    // //   </Route>
+    // // );
+    // return Component;
 });
 function stripFunctions(routeNode) {
     return {

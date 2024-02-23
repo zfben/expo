@@ -133,7 +133,10 @@ export async function unstable_getDevServerForClientBoundariesAsync(
     },
   ]);
 
-  return devServerManager;
+  const devServer = devServerManager.getDefaultDevServer();
+  assert(devServer instanceof MetroBundlerDevServer);
+
+  return devServer
 }
 
 /** Match `(page)` -> `page` */
@@ -216,11 +219,9 @@ function makeRuntimeEntryPointsAbsolute(manifest: ExpoRouterRuntimeManifest, app
 
 export async function getClientBoundariesAsync(
   projectRoot: string,
-  devServerManager: DevServerManager,
+  devServer: MetroBundlerDevServer,
   { files = new Map(), platform }: { files?: ExportAssetMap; platform: string }
 ) {
-  const devServer = devServerManager.getDefaultDevServer();
-  assert(devServer instanceof MetroBundlerDevServer);
 
   const { serverManifest, manifest, renderAsync } = await devServer.getStaticRenderFunctionAsync();
 
@@ -239,7 +240,7 @@ export async function getClientBoundariesAsync(
 
       console.log('route.rsc', rsc);
 
-      const clientEntries = devServer.getClientModules(route.file);
+      const clientEntries = devServer.getClientModules(platform, route.file);
 
       if (!clientEntries) {
         // Could be a key mismatch
@@ -256,7 +257,7 @@ export async function getClientBoundariesAsync(
       });
 
       files.set(
-        path.join(devServer.getExpoLineOptions().rscPath!.replace(/^\/+/, ''), route.page + '.txt'),
+        path.join(devServer.getExpoLineOptions().rscPath!.replace(/^\/+/, ''), route.page.replace(/\/index$/, '') + '/page.txt'),
         {
           contents: rsc,
           targetDomain: 'client',
@@ -297,7 +298,7 @@ async function exportFromServerAsync(
   assert(devServer instanceof MetroBundlerDevServer);
 
   const { clientBoundaries, manifest, serverManifest, renderAsync } =
-    await getClientBoundariesAsync(projectRoot, devServerManager, {
+    await getClientBoundariesAsync(projectRoot, devServer, {
       platform,
       files,
     });

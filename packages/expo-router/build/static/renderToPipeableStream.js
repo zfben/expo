@@ -9,17 +9,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.renderToPipeableStream = exports.renderRouteWithContextKey = exports.getRouteNodeForPathname = exports.fileURLToFilePath = void 0;
+exports.renderToPipeableStream = exports.getRouteNodeForPathname = exports.fileURLToFilePath = void 0;
 const stream_1 = require("@remix-run/node/dist/stream");
 const path_1 = __importDefault(require("path"));
 const chalk_1 = __importDefault(require("chalk"));
-const react_1 = __importDefault(require("react"));
 const server_edge_1 = require("react-server-dom-webpack/server.edge");
 const _ctx_1 = require("../../_ctx");
 const os_1 = __importDefault(require("../../os"));
 const getRoutes_1 = require("../getRoutes");
 const getServerManifest_1 = require("../getServerManifest");
-const common_1 = require("../rsc/router/common");
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
 const debug = require('debug')('expo:rsc');
 // NOTE: MUST MATCH THE IMPL IN ExpoMetroConfig.ts
@@ -60,22 +58,6 @@ async function getRouteNodeForPathname(pathname) {
     return matchedNode;
 }
 exports.getRouteNodeForPathname = getRouteNodeForPathname;
-const ShoudSkipComponent = ({ shouldSkip }) => react_1.default.createElement('meta', {
-    name: 'waku-should-skip',
-    content: JSON.stringify(shouldSkip),
-});
-async function renderRouteWithContextKey(contextKey, props) {
-    const { default: Component } = await (0, _ctx_1.ctx)(contextKey);
-    if (!Component) {
-        throw new Error('No default export found for: ' + contextKey);
-    }
-    const entries = [];
-    entries.push([contextKey, react_1.default.createElement(Component, props)]);
-    const shouldSkip = false;
-    entries.push([common_1.SHOULD_SKIP_ID, react_1.default.createElement(ShoudSkipComponent, { shouldSkip })]);
-    return Object.fromEntries(entries);
-}
-exports.renderRouteWithContextKey = renderRouteWithContextKey;
 async function renderToPipeableStream({ mode, entries, 
 // elements,
 searchParams, isExporting, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, moduleIdCallback, context, }
@@ -143,7 +125,7 @@ searchParams, isExporting, url, serverUrl, serverRoot, method, input, body, cont
     };
     const bundlerConfig = new Proxy({}, {
         get(_target, encodedId) {
-            debug('Get manifest entry:', encodedId);
+            console.log('Get manifest entry:', encodedId);
             // const [file, name] = encodedId.split('#') as [string, string];
             // return moduleMap[encodedId];
             const [
@@ -154,7 +136,7 @@ searchParams, isExporting, url, serverUrl, serverRoot, method, input, body, cont
             // We'll augment the file path with the incoming RSC request which will forward the metro props required to make a cache hit, e.g. platform=web&...
             // This is similar to how we handle lazy bundling.
             const entry = resolveClientEntry(file);
-            debug('Returning server module:', entry, 'for', encodedId);
+            console.log('Returning server module:', entry, 'for', encodedId);
             moduleIdCallback?.({ id: entry.url, chunks: [entry.url], name, async: true });
             return { id: entry.id, chunks: [entry.id], name, async: true };
         },

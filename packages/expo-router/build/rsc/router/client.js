@@ -202,13 +202,10 @@ function InnerRouter(props) {
         window.addEventListener('popstate', callback);
         return () => window.removeEventListener('popstate', callback);
     }, [changeLocation]);
-    // const children = componentIds.reduceRight(
-    //   (acc: ReactNode, id) => createElement(Slot, { id, fallback: acc }, acc),
-    //   null
-    // );
-    return (0, react_1.createElement)(react_1.Fragment, null, (0, react_1.createElement)(client_js_1.Slot, { id: common_js_1.SHOULD_SKIP_ID }), (0, react_1.createElement)(RouterContext.Provider, { value: { loc, changeLocation, prefetchLocation } }, props.children
-    // children
-    ));
+    const children = componentIds.reduceRight((acc, id) => (0, react_1.createElement)(client_js_1.Slot, { id, fallback: acc }, acc), null);
+    return (0, react_1.createElement)(react_1.Fragment, null, (0, react_1.createElement)(client_js_1.Slot, { id: common_js_1.SHOULD_SKIP_ID }), (0, react_1.createElement)(RouterContext.Provider, { value: { loc, changeLocation, prefetchLocation } }, 
+    // props.children
+    children));
 }
 function Router({ children }) {
     const loc = parseLocation();

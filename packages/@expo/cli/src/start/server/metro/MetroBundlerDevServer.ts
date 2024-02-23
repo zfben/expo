@@ -465,6 +465,10 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     );
   }
 
+  getMetroInstance() {
+    return this.metro;
+  }
+
   async watchEnvironmentVariables() {
     if (!this.instance) {
       throw new Error(
@@ -497,22 +501,32 @@ export class MetroBundlerDevServer extends BundlerDevServer {
   }
 
   /** RSC Client boundaries */
-  private clientModuleMap = new Map<string, Set<string>>();
+  private clientModuleMap = new Map<string, Map<string, Set<string>>>();
 
-  public getClientModules(input: string) {
+  public getClientModules(platform: string, input: string) {
     const key = (
       require('expo-router/build/matchers') as typeof import('expo-router/build/matchers')
     ).getNameFromFilePath(input);
 
     console.log('getClientModules:', input, key, this.clientModuleMap.keys(), this.clientModuleMap);
-    if (!this.clientModuleMap.has(key)) {
+
+    const platformSet = this.clientModuleMap.get(platform);
+    if (!platformSet) {
       throw new CommandError(
-        `No client modules found for "${key}". Expected one of: ${Array.from(
+        `No client modules found for platform "${platform}". Expected one of: ${Array.from(
           this.clientModuleMap.keys()
         ).join(', ')}`
       );
     }
-    const idSet = this.clientModuleMap.get(key);
+
+    if (!platformSet.has(key)) {
+      throw new CommandError(
+        `No client modules found for "${key}". Expected one of: ${Array.from(
+          platformSet.keys()
+        ).join(', ')}`
+      );
+    }
+    const idSet = platformSet.get(key);
     return Array.from(idSet || []);
   }
 
@@ -594,7 +608,9 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     // TODO: Extract CSS Modules / Assets from the bundler process
     const {
       filename: serverUrl,
-      fn: { renderToPipeableStream, renderRouteWithContextKey, getRouteNodeForPathname },
+      fn: { renderToPipeableStream, 
+        // renderRouteWithContextKey, getRouteNodeForPathname 
+      },
     } = await this.ssrLoadModuleAndHmrEntry<
       typeof import('expo-router/build/static/renderToPipeableStream')
     >('expo-router/node/rsc.js', {
@@ -611,10 +627,11 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     // });
 
     // const input = './index.tsx';
-    const normalizedRouteKey = 'TODO';
-    // const normalizedRouteKey = (
-    //   require('expo-router/build/matchers') as typeof import('expo-router/build/matchers')
-    // ).getNameFromFilePath(routeNode.file);
+    // const normalizedRouteKey = 'TODO';
+    //TODO: This isn't right
+    const normalizedRouteKey = (
+      require('expo-router/build/matchers') as typeof import('expo-router/build/matchers')
+    ).getNameFromFilePath(route);
     // TODO: Memoize this
     const serverRoot = getMetroServerRoot(this.projectRoot);
 
@@ -654,19 +671,24 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         // TODO: Target only certain platforms
         this.broadcastMessage('reload');
       },
-      // TODO: Add platform info to cache.
       moduleIdCallback: (moduleInfo: {
         id: string;
         chunks: string[];
         name: string;
         async: boolean;
       }) => {
+        console.log('moduleIdCallback:', moduleInfo.id, moduleInfo.name, moduleInfo.async);
+        let platformSet = this.clientModuleMap.get(platform);
+        if (!platformSet) {
+          platformSet = new Map();
+          this.clientModuleMap.set(platform, platformSet);
+        }
         // Collect the client boundaries while rendering the server components.
         // Indexed by routes.
-        let idSet = this.clientModuleMap.get(normalizedRouteKey);
+        let idSet = platformSet.get(normalizedRouteKey);
         if (!idSet) {
           idSet = new Set();
-          this.clientModuleMap.set(normalizedRouteKey, idSet);
+          platformSet.set(normalizedRouteKey, idSet);
         }
         idSet.add(moduleInfo.id);
       },
@@ -777,7 +799,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         const url = new URL(req.url!, this.getDevServerUrlOrAssert());
         const route = decodeInput(url.pathname.replace(rscPathPrefix, '')) || '/';
 
-        const platform = url.searchParams.get('platform');
+        const platform = url.searchParams.get('platform') ?? req.headers['expo-platform'];
         console.log('sendResponse>', platform, url, req.headers);
 
         try {

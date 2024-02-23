@@ -77,33 +77,6 @@ export async function getRouteNodeForPathname(pathname: string) {
   return matchedNode;
 }
 
-const ShoudSkipComponent = ({ shouldSkip }: { shouldSkip: ShouldSkip }) =>
-  React.createElement('meta', {
-    name: 'waku-should-skip',
-    content: JSON.stringify(shouldSkip),
-  });
-
-export async function renderRouteWithContextKey(
-  contextKey: string,
-  props: Record<string, unknown>
-) {
-  const { default: Component } = await ctx(contextKey);
-
-  if (!Component) {
-    throw new Error('No default export found for: ' + contextKey);
-  }
-
-  const entries: [string, any][] = [];
-
-  entries.push([contextKey, React.createElement(Component, props)]);
-
-  const shouldSkip = false;
-
-  entries.push([SHOULD_SKIP_ID, React.createElement(ShoudSkipComponent, { shouldSkip }) as any]);
-
-  return Object.fromEntries(entries);
-}
-
 export async function renderToPipeableStream(
   {
     mode,
@@ -225,7 +198,7 @@ export async function renderToPipeableStream(
     {},
     {
       get(_target, encodedId: string) {
-        debug('Get manifest entry:', encodedId);
+        console.log('Get manifest entry:', encodedId);
         // const [file, name] = encodedId.split('#') as [string, string];
         // return moduleMap[encodedId];
 
@@ -239,7 +212,7 @@ export async function renderToPipeableStream(
         // We'll augment the file path with the incoming RSC request which will forward the metro props required to make a cache hit, e.g. platform=web&...
         // This is similar to how we handle lazy bundling.
         const entry = resolveClientEntry(file);
-        debug('Returning server module:', entry, 'for', encodedId);
+        console.log('Returning server module:', entry, 'for', encodedId);
         moduleIdCallback?.({ id: entry.url, chunks: [entry.url], name, async: true });
 
         return { id: entry.id, chunks: [entry.id], name, async: true };
