@@ -556,12 +556,13 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     return this.instanceMetroOptions;
   }
 
-  private async getExpoRouterRscEntriesGetterAsync() {
+  private async getExpoRouterRscEntriesGetterAsync({ platform }: { platform: string }) {
     // NOTE: In waku, this would be user-defined via entries.js
     const getRscEntries = await this.ssrLoadModule<
       typeof import('expo-router/build/rsc/router/expo-definedRouter')
     >('expo-router/build/rsc/router/expo-definedRouter.js', {
       rsc: true,
+      platform,
     });
 
     return getRscEntries;
@@ -601,7 +602,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       platform,
     });
 
-    console.log('>', route);
+    console.log('>', route, platform);
 
     // const routeNode = await getRouteNodeForPathname(route);
 
@@ -619,7 +620,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
     const pipe = await renderToPipeableStream({
       mode,
-      entries: await this.getExpoRouterRscEntriesGetterAsync(),
+      entries: await this.getExpoRouterRscEntriesGetterAsync({ platform }),
       searchParams: url.searchParams,
       context: {},
       // elements: {
@@ -653,6 +654,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         // TODO: Target only certain platforms
         this.broadcastMessage('reload');
       },
+      // TODO: Add platform info to cache.
       moduleIdCallback: (moduleInfo: {
         id: string;
         chunks: string[];
@@ -775,11 +777,18 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         const url = new URL(req.url!, this.getDevServerUrlOrAssert());
         const route = decodeInput(url.pathname.replace(rscPathPrefix, '')) || '/';
 
+        const platform = url.searchParams.get('platform');
+        console.log('sendResponse>', platform, url, req.headers);
+
         try {
+          if (!platform) {
+            throw new Error('platform query parameter is required for RSC rendering.');
+          }
+
           const pipe = await this.renderRscToReadableStream({
             route,
             method: req.method!,
-            platform: url.searchParams.get('platform') ?? 'web',
+            platform,
             url,
             req,
           });

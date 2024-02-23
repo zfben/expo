@@ -1,11 +1,12 @@
 import React from 'react';
+import { View, Text } from 'react-native';
 
 const App = () => {
   return (
-    <div>
-      <h1>Second</h1>
-      <a href="/">Back</a>
-    </div>
+    <View>
+      <Text>Second</Text>
+      {/* <a href="/">Back</a> */}
+    </View>
   );
 };
 

@@ -42,6 +42,19 @@ export function App() {
   //   <Text>HeyHeyHeyHeyHeyHey</Text>
   // )
 
+  return (
+    <React.Suspense fallback={null}>
+      <Head.Provider>
+        <SafeAreaProvider>
+          <Try catch={ErrorBoundary}>
+            <Root initialSearchParamsString={searchParams}>
+              <Slot id={'page'} />
+            </Root>
+          </Try>
+        </SafeAreaProvider>
+      </Head.Provider>
+    </React.Suspense>
+  );
   // return (
   //   <React.Suspense fallback={null}>
   //     <Head.Provider>
