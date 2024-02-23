@@ -63,12 +63,12 @@ interface JSFile extends BaseFile {
   readonly type: JSFileType;
   readonly functionMap: FBSourceFunctionMap | null;
   // Added by `babel-preset-expo` for server components.
-  clientReferences:
-    | {
-        entryPoint: string;
-        exports: string[];
-      }[]
-    | null;
+  // clientReferences:
+  //   | {
+  //       entryPoint: string;
+  //       exports: string[];
+  //     }[]
+  //   | null;
 }
 
 interface JSONFile extends BaseFile {
@@ -439,7 +439,7 @@ async function transformJS(
         code,
         lineCount: countLines(code),
         map,
-        clientReferences: file.clientReferences,
+        // clientReferences: file.clientReferences,
         functionMap: file.functionMap,
       },
       type: file.type,
@@ -471,7 +471,7 @@ async function transformAsset(
     type: 'js/module/asset',
     ast: result.ast,
     functionMap: null,
-    clientReferences: null,
+    // clientReferences: null,
   };
 
   return transformJS(jsFile, context);
@@ -496,7 +496,7 @@ async function transformJSWithBabel(
   const jsFile: JSFile = {
     ...file,
     ast: transformResult.ast,
-    clientReferences: transformResult.metadata?.clientReferences ?? null,
+    // clientReferences: transformResult.metadata?.clientReferences ?? null,
     functionMap:
       transformResult.metadata?.metro?.functionMap ??
       // Fallback to deprecated explicitly-generated `functionMap`
@@ -535,7 +535,9 @@ async function transformJSON(
 
   const output: JsOutput[] = [
     {
-      data: { code, lineCount: countLines(code), map, functionMap: null, clientReferences: null },
+      data: { code, lineCount: countLines(code), map, functionMap: null, 
+        // clientReferences: null 
+      },
       type: jsType,
     },
   ];
@@ -623,7 +625,7 @@ export async function transform(
     inputFileSize: data.length,
     code: sourceCode,
     type: options.type === 'script' ? 'js/script' : 'js/module',
-    clientReferences: null,
+    // clientReferences: null,
     functionMap: null,
   };
 

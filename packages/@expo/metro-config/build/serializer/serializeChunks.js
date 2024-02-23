@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSortedModules = exports.Chunk = exports.graphToSerialAssetsAsync = exports.clientManifestSerializerPlugin = void 0;
+exports.getSortedModules = exports.Chunk = exports.graphToSerialAssetsAsync = void 0;
 /**
  * Copyright © 2023 650 Industries.
  *
@@ -11,11 +11,9 @@ exports.getSortedModules = exports.Chunk = exports.graphToSerialAssetsAsync = ex
  * LICENSE file in the root directory of this source tree.
  */
 const assert_1 = __importDefault(require("assert"));
-const jsc_safe_url_1 = __importDefault(require("jsc-safe-url"));
 const sourceMapString_1 = __importDefault(require("metro/src/DeltaBundler/Serializers/sourceMapString"));
 const bundleToString_1 = __importDefault(require("metro/src/lib/bundleToString"));
 const path_1 = __importDefault(require("path"));
-const url_1 = require("url");
 const debugId_1 = require("./debugId");
 const exportHermes_1 = require("./exportHermes");
 const exportPath_1 = require("./exportPath");
@@ -32,92 +30,99 @@ function pathToRegex(path) {
     return new RegExp('^' + regexSafePath + '$');
 }
 /** Strips the process.env polyfill in server environments to allow for accessing environment variables off the global. */
-function clientManifestSerializerPlugin(entryPoint, preModules, graph, options) {
-    // NOTE: Partially replicates the Webpack version.
-    // https://github.com/facebook/react/blob/6c7b41da3de12be2d95c60181b3fe896f824f13a/packages/react-server-dom-webpack/src/ReactFlightWebpackPlugin.js#L387
-    const rscClientReferenceManifest = {};
-    // Create client reference manifest for server components
-    graph.dependencies.forEach((module) => {
-        module.output.forEach((output) => {
-            // @ts-expect-error
-            const clientReferences = output.data.clientReferences;
-            if (clientReferences) {
-                const entry = '/' + path_1.default.relative(options.serverRoot ?? options.projectRoot, module.path);
-                const currentUrl = new URL(jsc_safe_url_1.default.toNormalUrl(options.sourceUrl));
-                // NOTE: This is a hack to find the opaque module ID for usage later when loading the bundle on the client.
-                const opaqueId = options.createModuleId(module.path);
-                // console.log('options.sourceUrl', options.sourceUrl, opaqueId);
-                currentUrl.pathname = entry.replace(/\.([tj]sx?|[mc]js)$/, '.bundle');
-                currentUrl.searchParams.delete('serializer.output');
-                currentUrl.searchParams.set('modulesOnly', 'true');
-                // TODO: Add params to indicate that `module.exports = __r()` should be used as the run module statement.
-                currentUrl.searchParams.set('runModule', 'false');
-                const outputKey = (0, url_1.pathToFileURL)(module.path).href;
-                // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/NoteEditor.js": {
-                //   "id": "./src/NoteEditor.js",
-                //   "chunks": [
-                //     "vendors-node_modules_sanitize-html_index_js-node_modules_marked_lib_marked_esm_js",
-                //     "client1"
-                //   ],
-                //   "name": "*"
-                // },
-                // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/NoteEditor.js#": {
-                //   "id": "./src/NoteEditor.js",
-                //   "chunks": [
-                //     "vendors-node_modules_sanitize-html_index_js-node_modules_marked_lib_marked_esm_js",
-                //     "client1"
-                //   ],
-                //   "name": ""
-                // },
-                const pushRef = (exp) => {
-                    const key = `${outputKey}${exp === '*' ? '' : `#${exp}`}`;
-                    const chunk = options.dev
-                        ? currentUrl.toString() + `#${opaqueId}`
-                        : 'TODO-PRODUCTION-CHUNK-NAMES';
-                    rscClientReferenceManifest[key] = {
-                        // TODO: Make this the opaque Metro ID
-                        id: chunk,
-                        // id: entry,
-                        chunks: [
-                            // TODO: This should be the URL where the chunk can be requested from.
-                            chunk,
-                        ],
-                        name: exp,
-                    };
-                };
-                // NOTE: These come from the demo, not sure why we need them.
-                pushRef('*');
-                pushRef('');
-                clientReferences.exports.forEach((exp) => {
-                    pushRef(exp);
-                });
-            }
-        });
-    });
-    // const rscManifestChunkTemplate = preModules.find((module) =>
-    //   module.path.endsWith('.expo/metro/react-client-manifest.js')
-    // );
-    // // let rscAsset: SerialAsset | null = null;
-    // if (rscManifestChunkTemplate) {
-    //   rscManifestChunkTemplate.output.forEach((output) => {
-    //     output.data.code = output.data.code.replace(
-    //       /\$\$expo_rsc_manifest\s?=\s?{}/,
-    //       `$$$expo_rsc_manifest = ${JSON.stringify(rscClientReferenceManifest)} /* registered */`
-    //     );
-    //     // @ts-expect-error
-    //     output.data.lineCount = countLines(output.data.code);
-    //   });
-    //   // rscAsset = {
-    //   //   filename: '/dist/_expo/react-client-manifest.js',
-    //   //   metadata: {},
-    //   //   originFilename: '/react-client-manifest.js',
-    //   //   source: JSON.stringify(rscClientReferenceManifest),
-    //   //   type: 'json',
-    //   // };
-    // }
-    return [entryPoint, preModules, graph, options];
-}
-exports.clientManifestSerializerPlugin = clientManifestSerializerPlugin;
+// export function clientManifestSerializerPlugin(
+//   entryPoint: string,
+//   preModules: readonly Module<MixedOutput>[],
+//   graph: ReadOnlyGraph,
+//   options: SerializerOptions
+// ): SerializerParameters {
+//   // NOTE: Partially replicates the Webpack version.
+//   // https://github.com/facebook/react/blob/6c7b41da3de12be2d95c60181b3fe896f824f13a/packages/react-server-dom-webpack/src/ReactFlightWebpackPlugin.js#L387
+//   const rscClientReferenceManifest: RscManifest = {};
+//   // Create client reference manifest for server components
+//   graph.dependencies.forEach((module) => {
+//     module.output.forEach((output) => {
+//       // @ts-expect-error
+//       const clientReferences = output.data.clientReferences as unknown as {
+//         entryPoint: string;
+//         exports: string[];
+//       } | null;
+//       if (clientReferences) {
+//         const entry = '/' + path.relative(options.serverRoot ?? options.projectRoot, module.path);
+//         const currentUrl = new URL(jscSafeUrl.toNormalUrl(options.sourceUrl!));
+//         // NOTE: This is a hack to find the opaque module ID for usage later when loading the bundle on the client.
+//         const opaqueId = options.createModuleId(module.path);
+//         // console.log('options.sourceUrl', options.sourceUrl, opaqueId);
+//         currentUrl.pathname = entry.replace(/\.([tj]sx?|[mc]js)$/, '.bundle');
+//         currentUrl.searchParams.delete('serializer.output');
+//         currentUrl.searchParams.set('modulesOnly', 'true');
+//         // TODO: Add params to indicate that `module.exports = __r()` should be used as the run module statement.
+//         currentUrl.searchParams.set('runModule', 'false');
+//         const outputKey = pathToFileURL(module.path).href;
+//         // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/NoteEditor.js": {
+//         //   "id": "./src/NoteEditor.js",
+//         //   "chunks": [
+//         //     "vendors-node_modules_sanitize-html_index_js-node_modules_marked_lib_marked_esm_js",
+//         //     "client1"
+//         //   ],
+//         //   "name": "*"
+//         // },
+//         // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/NoteEditor.js#": {
+//         //   "id": "./src/NoteEditor.js",
+//         //   "chunks": [
+//         //     "vendors-node_modules_sanitize-html_index_js-node_modules_marked_lib_marked_esm_js",
+//         //     "client1"
+//         //   ],
+//         //   "name": ""
+//         // },
+//         const pushRef = (exp: string) => {
+//           const key = `${outputKey}${exp === '*' ? '' : `#${exp}`}`;
+//           const chunk = options.dev
+//             ? currentUrl.toString() + `#${opaqueId}`
+//             : 'TODO-PRODUCTION-CHUNK-NAMES';
+//           rscClientReferenceManifest[key] = {
+//             // TODO: Make this the opaque Metro ID
+//             id: chunk,
+//             // id: entry,
+//             chunks: [
+//               // TODO: This should be the URL where the chunk can be requested from.
+//               chunk,
+//             ],
+//             name: exp,
+//           };
+//         };
+//         // NOTE: These come from the demo, not sure why we need them.
+//         pushRef('*');
+//         pushRef('');
+//         clientReferences.exports.forEach((exp) => {
+//           pushRef(exp);
+//         });
+//       }
+//     });
+//   });
+//   // const rscManifestChunkTemplate = preModules.find((module) =>
+//   //   module.path.endsWith('.expo/metro/react-client-manifest.js')
+//   // );
+//   // // let rscAsset: SerialAsset | null = null;
+//   // if (rscManifestChunkTemplate) {
+//   //   rscManifestChunkTemplate.output.forEach((output) => {
+//   //     output.data.code = output.data.code.replace(
+//   //       /\$\$expo_rsc_manifest\s?=\s?{}/,
+//   //       `$$$expo_rsc_manifest = ${JSON.stringify(rscClientReferenceManifest)} /* registered */`
+//   //     );
+//   //     // @ts-expect-error
+//   //     output.data.lineCount = countLines(output.data.code);
+//   //   });
+//   //   // rscAsset = {
+//   //   //   filename: '/dist/_expo/react-client-manifest.js',
+//   //   //   metadata: {},
+//   //   //   originFilename: '/react-client-manifest.js',
+//   //   //   source: JSON.stringify(rscClientReferenceManifest),
+//   //   //   type: 'json',
+//   //   // };
+//   // }
+//   return [entryPoint, preModules, graph, options];
+// }
 async function graphToSerialAssetsAsync(config, serializeChunkOptions, ...props) {
     const [entryFile, preModules, graph, options] = props;
     const cssDeps = (0, getCssDeps_1.getCssSerialAssets)(graph.dependencies, {
@@ -126,55 +131,58 @@ async function graphToSerialAssetsAsync(config, serializeChunkOptions, ...props)
     });
     // NOTE: Partially replicates the Webpack version.
     // https://github.com/facebook/react/blob/6c7b41da3de12be2d95c60181b3fe896f824f13a/packages/react-server-dom-webpack/src/ReactFlightWebpackPlugin.js#L387
-    const rscClientReferenceManifest = {};
-    // Create client reference manifest for server components
-    props[2].dependencies.forEach((module) => {
-        module.output.forEach((output) => {
-            // @ts-expect-error
-            const clientReferences = output.data.clientReferences;
-            if (clientReferences) {
-                const entry = '/' + path_1.default.relative(options.serverRoot ?? options.projectRoot, module.path);
-                const currentUrl = new URL(jsc_safe_url_1.default.toNormalUrl(options.sourceUrl));
-                // console.log('options.sourceUrl', options.sourceUrl);
-                currentUrl.pathname = entry.replace(/\.([tj]sx?|[mc]js)$/, '.bundle');
-                currentUrl.searchParams.delete('serializer.output');
-                currentUrl.searchParams.set('modulesOnly', 'true');
-                // TODO: Add params to indicate that `module.exports = __r()` should be used as the run module statement.
-                currentUrl.searchParams.set('runModule', 'false');
-                const outputKey = (0, url_1.pathToFileURL)(module.path).href;
-                // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/NoteEditor.js": {
-                //   "id": "./src/NoteEditor.js",
-                //   "chunks": [
-                //     "vendors-node_modules_sanitize-html_index_js-node_modules_marked_lib_marked_esm_js",
-                //     "client1"
-                //   ],
-                //   "name": "*"
-                // },
-                // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/NoteEditor.js#": {
-                //   "id": "./src/NoteEditor.js",
-                //   "chunks": [
-                //     "vendors-node_modules_sanitize-html_index_js-node_modules_marked_lib_marked_esm_js",
-                //     "client1"
-                //   ],
-                //   "name": ""
-                // },
-                const pushRef = (exp) => {
-                    const key = `${outputKey}${exp === '*' ? '' : `#${exp}`}`;
-                    rscClientReferenceManifest[key] = {
-                        id: entry,
-                        chunks: [options.dev ? currentUrl.toString() : 'TODO-PRODUCTION-CHUNK-NAMES'],
-                        name: exp,
-                    };
-                };
-                // NOTE: These come from the demo, not sure why we need them.
-                pushRef('*');
-                pushRef('');
-                clientReferences.exports.forEach((exp) => {
-                    pushRef(exp);
-                });
-            }
-        });
-    });
+    // const rscClientReferenceManifest: RscManifest = {};
+    // // Create client reference manifest for server components
+    // props[2].dependencies.forEach((module) => {
+    //   module.output.forEach((output) => {
+    //     // @ts-expect-error
+    //     const clientReferences = output.data.clientReferences as unknown as {
+    //       entryPoint: string;
+    //       exports: string[];
+    //     } | null;
+    //     if (clientReferences) {
+    //       const entry = '/' + path.relative(options.serverRoot ?? options.projectRoot, module.path);
+    //       const currentUrl = new URL(jscSafeUrl.toNormalUrl(options.sourceUrl!));
+    //       // console.log('options.sourceUrl', options.sourceUrl);
+    //       currentUrl.pathname = entry.replace(/\.([tj]sx?|[mc]js)$/, '.bundle');
+    //       currentUrl.searchParams.delete('serializer.output');
+    //       currentUrl.searchParams.set('modulesOnly', 'true');
+    //       // TODO: Add params to indicate that `module.exports = __r()` should be used as the run module statement.
+    //       currentUrl.searchParams.set('runModule', 'false');
+    //       const outputKey = pathToFileURL(module.path).href;
+    //       // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/NoteEditor.js": {
+    //       //   "id": "./src/NoteEditor.js",
+    //       //   "chunks": [
+    //       //     "vendors-node_modules_sanitize-html_index_js-node_modules_marked_lib_marked_esm_js",
+    //       //     "client1"
+    //       //   ],
+    //       //   "name": "*"
+    //       // },
+    //       // "file:///Users/evanbacon/Documents/GitHub/server-components-demo/src/NoteEditor.js#": {
+    //       //   "id": "./src/NoteEditor.js",
+    //       //   "chunks": [
+    //       //     "vendors-node_modules_sanitize-html_index_js-node_modules_marked_lib_marked_esm_js",
+    //       //     "client1"
+    //       //   ],
+    //       //   "name": ""
+    //       // },
+    //       const pushRef = (exp: string) => {
+    //         const key = `${outputKey}${exp === '*' ? '' : `#${exp}`}`;
+    //         rscClientReferenceManifest[key] = {
+    //           id: entry,
+    //           chunks: [options.dev ? currentUrl.toString() : 'TODO-PRODUCTION-CHUNK-NAMES'],
+    //           name: exp,
+    //         };
+    //       };
+    //       // NOTE: These come from the demo, not sure why we need them.
+    //       pushRef('*');
+    //       pushRef('');
+    //       clientReferences.exports.forEach((exp) => {
+    //         pushRef(exp);
+    //       });
+    //     }
+    //   });
+    // });
     // const rscManifestChunkTemplate = preModules.find((module) =>
     //   module.path.endsWith('.expo/metro/react-client-manifest.js')
     // );
@@ -286,7 +294,7 @@ async function graphToSerialAssetsAsync(config, serializeChunkOptions, ...props)
             ...cssDeps,
             // rscAsset
         ].filter(Boolean),
-        rscManifest: rscClientReferenceManifest,
+        // rscManifest: rscClientReferenceManifest,
         assets: metroAssets,
     };
 }

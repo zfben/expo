@@ -305,7 +305,7 @@ export function parseModule(
         data: {
           code: output,
           lineCount: countLines(output),
-          clientReferences: file?.metadata?.clientReferences,
+          // clientReferences: file?.metadata?.clientReferences,
         },
         type: 'js/module',
       },
