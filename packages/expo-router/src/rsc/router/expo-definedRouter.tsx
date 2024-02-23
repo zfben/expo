@@ -66,13 +66,22 @@ function wakuRouteIdToExpoRoute(route: RouteNode, routeId: string) {
   const parts = routeId.split('/');
 
   let currentRoute = route;
-  for (let i = 0; i < parts.length - 1; i++) {
+  console.log('0.', parts);
+  for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
 
+    console.log('1.', part);
     if (i === parts.length - 1) {
       if (part === 'layout' && currentRoute.type === 'layout') {
-        return route;
-      } else if (part === 'page' && currentRoute.type === 'route') {
+        return null;
+        // return route;
+      } else if (part === 'page') {
+        console.log('2.', part);
+        if (route.type === 'layout') {
+          console.log('3.', part);
+          // TODO: Obviously not right, doesn't account for nested index or groups.
+          return route.children.find((child) => child.type === 'route' && child.route === 'index');
+        }
         return route;
       } else {
         return null;
@@ -114,14 +123,19 @@ export default defineRouter(
     console.log('Loading route:', RouteNode);
 
     // const Route = ctx(id); // getRoute(items);
-    const Component = (props: Record<string, unknown>) => (
-      <Route node={stripFunctions(route)}>
-        {createElement(RouteNode, {
-          ...props,
-          // ...mapping,
-        })}
-      </Route>
-    );
+    const Component = (props: Record<string, unknown>) =>
+      createElement(RouteNode, {
+        ...props,
+        // ...mapping,
+      });
+    // const Component = (props: Record<string, unknown>) => (
+    //   <Route node={stripFunctions(route)}>
+    //     {createElement(RouteNode, {
+    //       ...props,
+    //       // ...mapping,
+    //     })}
+    //   </Route>
+    // );
     return Component;
   }
 );

@@ -20,6 +20,9 @@ import { Screen } from './primitives';
 import { EmptyRoute } from './views/EmptyRoute';
 import { SuspenseFallback } from './views/SuspenseFallback';
 import { Try } from './views/Try';
+import { Slot, useRefetch } from './rsc/client';
+import { ctx } from '../_ctx';
+import { usePrefetchLocation } from './rsc/router/client';
 
 export type ScreenProps<
   TOptions extends Record<string, any> = Record<string, any>,
@@ -154,7 +157,7 @@ function fromLoadedRoute(res: LoadedRoute) {
 // TODO: Maybe there's a more React-y way to do this?
 // Without this store, the process enters a recursive loop.
 const qualifiedStore = new WeakMap<RouteNode, React.ComponentType<any>>();
-
+let i = 0;
 /** Wrap the component with various enhancements and add access to child routes. */
 export function getQualifiedRouteComponent(value: RouteNode) {
   if (qualifiedStore.has(value)) {
@@ -179,37 +182,96 @@ export function getQualifiedRouteComponent(value: RouteNode) {
   // );
 
   // TODO: This ensures sync doesn't use React.lazy, but it's not ideal.
-  if (EXPO_ROUTER_IMPORT_MODE === 'lazy') {
-    ScreenComponent = React.lazy(async () => {
-      const res = value.loadRoute();
-      return fromLoadedRoute(res) as Promise<{
-        default: React.ComponentType<any>;
-      }>;
-    });
-  } else {
-    const res = value.loadRoute
-      ? value.loadRoute()
-      : (() => {
-          throw new Error(`Route "${value.route}" has no loadRoute method.`);
-        })();
-    const Component = fromImport(res).default as React.ComponentType<any>;
-    ScreenComponent = React.forwardRef((props, ref) => {
-      return <Component {...props} ref={ref} />;
-    });
-  }
+  // if (EXPO_ROUTER_IMPORT_MODE === 'lazy') {
+  //   ScreenComponent = React.lazy(async () => {
+  //     const res = value.loadRoute();
+  //     return fromLoadedRoute(res) as Promise<{
+  //       default: React.ComponentType<any>;
+  //     }>;
+  //   });
+  // } else {
+  //   const res = value.loadRoute
+  //     ? value.loadRoute()
+  //     : (() => {
+  //         throw new Error(`Route "${value.route}" has no loadRoute method.`);
+  //       })();
+  //   const Component = fromImport(res).default as React.ComponentType<any>;
+  //   ScreenComponent = React.forwardRef((props, ref) => {
+  //     return <Component {...props} ref={ref} />;
+  //   });
+  // }
+  // const res = value.route
+  //   ? value.loadRoute()
+  //   : (() => {
+  //       throw new Error(`Route "${value.route}" has no loadRoute method.`);
+  //     })();
+  // const Component = fromImport(res).default as React.ComponentType<any>;
+
+  ScreenComponent = React.forwardRef((props, ref) => {
+    // const prefetch = usePrefetchLocation();
+
+    let rscServerId = window.location.pathname;
+    if (value.type === 'route') {
+      rscServerId += '/page';
+    }
+
+    if (i > 12) {
+      debugger;
+      throw new Error('Too many iterations');
+    }
+    i++;
+    rscServerId = rscServerId.replace(/^\/+/, '');
+    console.log('Slot>>', rscServerId, i);
+    // debugger;
+    // const refetch = useRefetch();
+
+    React.useEffect(() => {
+      // refetch(value.contextKey);
+      // refetch(rscServerId);
+    }, [rscServerId]);
+
+    return React.useMemo(() => {
+      console.log('Slot.2>>', rscServerId);
+
+      if (value.type === 'layout') {
+        // const res = ctx(value.route)
+        //   ? value.loadRoute()
+        //   : (() => {
+        //       throw new Error(`Route "${value.route}" has no loadRoute method.`);
+        //     })();
+        console.log();
+        if (ctx.keys().includes(value.contextKey)) {
+          const Component = ctx(value.contextKey).default as React.ComponentType<any>;
+          return <Component {...props} ref={ref} />;
+        } else {
+          console.log('Falling back on missing component', value.contextKey);
+          const Navigator = require('./views/Navigator').DefaultNavigator;
+          return <Navigator {...props} ref={ref} />;
+        }
+      }
+      return (
+        <Slot
+          id={rscServerId}
+          fallback={
+            <div>
+              RSC Slot Fallback ({rscServerId} - {value.contextKey})
+            </div>
+          }
+        />
+      );
+    }, []);
+  });
 
   const getLoadable = (props: any, ref: any) => (
-    <React.Suspense fallback={<SuspenseFallback route={value} />}>
-      <ScreenComponent
-        {...{
-          ...props,
-          ref,
-          // Expose the template segment path, e.g. `(home)`, `[foo]`, `index`
-          // the intention is to make it possible to deduce shared routes.
-          segment: value.route,
-        }}
-      />
-    </React.Suspense>
+    <ScreenComponent
+      {...{
+        ...props,
+        ref,
+        // Expose the template segment path, e.g. `(home)`, `[foo]`, `index`
+        // the intention is to make it possible to deduce shared routes.
+        segment: value.route,
+      }}
+    />
   );
 
   const QualifiedRoute = React.forwardRef(
@@ -225,7 +287,7 @@ export function getQualifiedRouteComponent(value: RouteNode) {
       }: any,
       ref: any
     ) => {
-      const loadable = getLoadable(props, ref);
+      const loadable = React.useMemo(() => getLoadable(props, ref), []);
 
       return <Route node={value}>{loadable}</Route>;
     }

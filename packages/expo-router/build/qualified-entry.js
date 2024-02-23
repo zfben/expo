@@ -11,6 +11,7 @@ exports.App = void 0;
 // This has to be the string "expo-router/_ctx" as we resolve the exact string to
 // a different file in a custom resolver for bundle splitting in Node.js.
 const getDevServer_1 = __importDefault(require("@expo/metro-runtime/build/getDevServer"));
+const _ctx_1 = require("expo-router/_ctx");
 const react_1 = __importDefault(require("react"));
 // import { ExpoRoot } from './ExpoRoot';
 const head_1 = require("./head");
@@ -18,8 +19,7 @@ const head_1 = require("./head");
 const Try_1 = require("./views/Try");
 const exports_1 = require("./exports");
 const client_1 = require("./rsc/router/client");
-const react_native_safe_area_context_1 = require("react-native-safe-area-context");
-const rsc_navigator_1 = __importDefault(require("./rsc-navigator"));
+const ExpoRoot_1 = require("./ExpoRoot");
 const introUrl = (0, getDevServer_1.default)().fullBundleUrl;
 // TODO: This is buggy and doesn't work well, maybe inject the query params in babel.
 const searchParams = introUrl ? new URL(introUrl).searchParams.toString() : '';
@@ -37,18 +37,29 @@ function App() {
     // return (
     //   <Text>HeyHeyHeyHeyHeyHey</Text>
     // )
+    // return (
+    //   <React.Suspense fallback={null}>
+    //     <Head.Provider>
+    //       <SafeAreaProvider>
+    //         <ContextNavigator>
+    //           <Try catch={ErrorBoundary}>
+    //             <Router />
+    //             {/* <Root initialSearchParamsString={searchParams}> */}
+    //             {/* <Slot id={input} /> */}
+    //             {/* </Root> */}
+    //           </Try>
+    //         </ContextNavigator>
+    //       </SafeAreaProvider>
+    //     </Head.Provider>
+    //   </React.Suspense>
+    // );
     return (<react_1.default.Suspense fallback={null}>
       <head_1.Head.Provider>
-        <react_native_safe_area_context_1.SafeAreaProvider>
-          <rsc_navigator_1.default>
-            <Try_1.Try catch={exports_1.ErrorBoundary}>
-              <client_1.Router />
-              {/* <Root initialSearchParamsString={searchParams}> */}
-              {/* <Slot id={input} /> */}
-              {/* </Root> */}
-            </Try_1.Try>
-          </rsc_navigator_1.default>
-        </react_native_safe_area_context_1.SafeAreaProvider>
+        <Try_1.Try catch={exports_1.ErrorBoundary}>
+          <client_1.Router>
+            <ExpoRoot_1.ExpoRoot context={_ctx_1.ctx}/>
+          </client_1.Router>
+        </Try_1.Try>
       </head_1.Head.Provider>
     </react_1.default.Suspense>);
 }

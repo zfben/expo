@@ -1,3 +1,4 @@
+'use client';
 import { NavigationAction } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import { StatusBar } from 'expo-status-bar';

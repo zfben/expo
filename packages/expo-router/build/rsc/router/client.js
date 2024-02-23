@@ -1,7 +1,7 @@
 'use client';
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Router = exports.Link = exports.useLocation = exports.useChangeLocation = void 0;
+exports.Router = exports.Link = exports.useLocation = exports.usePrefetchLocation = exports.useChangeLocation = void 0;
 const react_1 = require("react");
 const client_js_1 = require("../client.js");
 const common_js_1 = require("./common.js");
@@ -27,6 +27,16 @@ function useChangeLocation() {
     return value.changeLocation;
 }
 exports.useChangeLocation = useChangeLocation;
+function usePrefetchLocation() {
+    const value = (0, react_1.useContext)(RouterContext);
+    if (!value) {
+        return () => {
+            throw new Error('Missing Router');
+        };
+    }
+    return value.prefetchLocation;
+}
+exports.usePrefetchLocation = usePrefetchLocation;
 function useLocation() {
     const value = (0, react_1.useContext)(RouterContext);
     if (!value) {
@@ -117,7 +127,7 @@ const equalRouteProps = (a, b) => {
     }
     return true;
 };
-function InnerRouter() {
+function InnerRouter(props) {
     const refetch = (0, client_js_1.useRefetch)();
     const [loc, setLoc] = (0, react_1.useState)(parseLocation);
     const componentIds = (0, common_js_1.getComponentIds)(loc.path);
@@ -192,14 +202,19 @@ function InnerRouter() {
         window.addEventListener('popstate', callback);
         return () => window.removeEventListener('popstate', callback);
     }, [changeLocation]);
-    const children = componentIds.reduceRight((acc, id) => (0, react_1.createElement)(client_js_1.Slot, { id, fallback: acc }, acc), null);
-    return (0, react_1.createElement)(react_1.Fragment, null, (0, react_1.createElement)(client_js_1.Slot, { id: common_js_1.SHOULD_SKIP_ID }), (0, react_1.createElement)(RouterContext.Provider, { value: { loc, changeLocation, prefetchLocation } }, children));
+    // const children = componentIds.reduceRight(
+    //   (acc: ReactNode, id) => createElement(Slot, { id, fallback: acc }, acc),
+    //   null
+    // );
+    return (0, react_1.createElement)(react_1.Fragment, null, (0, react_1.createElement)(client_js_1.Slot, { id: common_js_1.SHOULD_SKIP_ID }), (0, react_1.createElement)(RouterContext.Provider, { value: { loc, changeLocation, prefetchLocation } }, props.children
+    // children
+    ));
 }
-function Router() {
+function Router({ children }) {
     const loc = parseLocation();
     const initialInput = (0, common_js_1.getInputString)(loc.path);
     const initialSearchParamsString = loc.searchParams.toString();
-    return (0, react_1.createElement)(client_js_1.Root, { initialInput, initialSearchParamsString }, (0, react_1.createElement)(InnerRouter));
+    return (0, react_1.createElement)(client_js_1.Root, { initialInput, initialSearchParamsString }, (0, react_1.createElement)(InnerRouter, { children }));
 }
 exports.Router = Router;
 //# sourceMappingURL=client.js.map

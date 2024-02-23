@@ -20,6 +20,7 @@ import { ErrorBoundary } from './exports';
 import { Router } from './rsc/router/client';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import ContextNavigator from './rsc-navigator';
+import { ExpoRoot } from './ExpoRoot';
 
 const introUrl = getDevServer().fullBundleUrl;
 // TODO: This is buggy and doesn't work well, maybe inject the query params in babel.
@@ -41,19 +42,30 @@ export function App() {
   //   <Text>HeyHeyHeyHeyHeyHey</Text>
   // )
 
+  // return (
+  //   <React.Suspense fallback={null}>
+  //     <Head.Provider>
+  //       <SafeAreaProvider>
+  //         <ContextNavigator>
+  //           <Try catch={ErrorBoundary}>
+  //             <Router />
+  //             {/* <Root initialSearchParamsString={searchParams}> */}
+  //             {/* <Slot id={input} /> */}
+  //             {/* </Root> */}
+  //           </Try>
+  //         </ContextNavigator>
+  //       </SafeAreaProvider>
+  //     </Head.Provider>
+  //   </React.Suspense>
+  // );
   return (
     <React.Suspense fallback={null}>
       <Head.Provider>
-        <SafeAreaProvider>
-          <ContextNavigator>
-            <Try catch={ErrorBoundary}>
-              <Router />
-              {/* <Root initialSearchParamsString={searchParams}> */}
-              {/* <Slot id={input} /> */}
-              {/* </Root> */}
-            </Try>
-          </ContextNavigator>
-        </SafeAreaProvider>
+        <Try catch={ErrorBoundary}>
+          <Router>
+            <ExpoRoot context={ctx} />
+          </Router>
+        </Try>
       </Head.Provider>
     </React.Suspense>
   );

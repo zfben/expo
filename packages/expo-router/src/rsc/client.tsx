@@ -138,7 +138,7 @@ function getAdjustedFilePath(path: string): string {
     return 'file:///android_asset' + path;
   }
 
-  console.log('FS.bundleDirectory', FS.bundleDirectory)
+  console.log('FS.bundleDirectory', FS.bundleDirectory);
   return 'file://' + FS.bundleDirectory + path;
 }
 

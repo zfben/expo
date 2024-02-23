@@ -67,6 +67,15 @@ export function useChangeLocation() {
   }
   return value.changeLocation;
 }
+export function usePrefetchLocation() {
+  const value = useContext(RouterContext);
+  if (!value) {
+    return () => {
+      throw new Error('Missing Router');
+    };
+  }
+  return value.prefetchLocation;
+}
 
 export function useLocation() {
   const value = useContext(RouterContext);
@@ -185,7 +194,7 @@ const equalRouteProps = (a: RouteProps, b: RouteProps) => {
   return true;
 };
 
-function InnerRouter() {
+function InnerRouter(props) {
   const refetch = useRefetch();
 
   const [loc, setLoc] = useState(parseLocation);
@@ -274,10 +283,10 @@ function InnerRouter() {
     return () => window.removeEventListener('popstate', callback);
   }, [changeLocation]);
 
-  const children = componentIds.reduceRight(
-    (acc: ReactNode, id) => createElement(Slot, { id, fallback: acc }, acc),
-    null
-  );
+  // const children = componentIds.reduceRight(
+  //   (acc: ReactNode, id) => createElement(Slot, { id, fallback: acc }, acc),
+  //   null
+  // );
 
   return createElement(
     Fragment,
@@ -286,18 +295,19 @@ function InnerRouter() {
     createElement(
       RouterContext.Provider,
       { value: { loc, changeLocation, prefetchLocation } },
-      children
+      props.children
+      // children
     )
   );
 }
 
-export function Router() {
+export function Router({ children }) {
   const loc = parseLocation();
   const initialInput = getInputString(loc.path);
   const initialSearchParamsString = loc.searchParams.toString();
   return createElement(
     Root as FunctionComponent<Omit<ComponentProps<typeof Root>, 'children'>>,
     { initialInput, initialSearchParamsString },
-    createElement(InnerRouter)
+    createElement(InnerRouter, { children })
   );
 }

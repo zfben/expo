@@ -1,38 +1,14 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 // import { fileURLToPath } from 'node:url';
 // import path from 'node:path';
 // import { existsSync } from 'node:fs';
 // import fsPromises from 'node:fs/promises';
-const react_1 = __importStar(require("react"));
+const react_1 = require("react");
 // import { glob } from 'glob';
 const defineRouter_1 = require("./defineRouter");
 const _ctx_1 = require("expo-router/_ctx");
 const getRoutes_1 = require("../../getRoutes");
-const Route_1 = require("../../Route");
 // const routesDir = path.join(
 //   path.dirname(fileURLToPath(import.meta.url)),
 //   'routes',
@@ -82,13 +58,22 @@ function wakuRouteIdToExpoRoute(route, routeId) {
     // Route like `second/layout` or `second/page` to match `second/_layout` or `second`
     const parts = routeId.split('/');
     let currentRoute = route;
-    for (let i = 0; i < parts.length - 1; i++) {
+    console.log('0.', parts);
+    for (let i = 0; i < parts.length; i++) {
         const part = parts[i];
+        console.log('1.', part);
         if (i === parts.length - 1) {
             if (part === 'layout' && currentRoute.type === 'layout') {
-                return route;
+                return null;
+                // return route;
             }
-            else if (part === 'page' && currentRoute.type === 'route') {
+            else if (part === 'page') {
+                console.log('2.', part);
+                if (route.type === 'layout') {
+                    console.log('3.', part);
+                    // TODO: Obviously not right, doesn't account for nested index or groups.
+                    return route.children.find((child) => child.type === 'route' && child.route === 'index');
+                }
                 return route;
             }
             else {
@@ -123,12 +108,18 @@ async (id, unstable_setShouldSkip) => {
     });
     console.log('Loading route:', RouteNode);
     // const Route = ctx(id); // getRoute(items);
-    const Component = (props) => (<Route_1.Route node={stripFunctions(route)}>
-        {(0, react_1.createElement)(RouteNode, {
-            ...props,
-            // ...mapping,
-        })}
-      </Route_1.Route>);
+    const Component = (props) => (0, react_1.createElement)(RouteNode, {
+        ...props,
+        // ...mapping,
+    });
+    // const Component = (props: Record<string, unknown>) => (
+    //   <Route node={stripFunctions(route)}>
+    //     {createElement(RouteNode, {
+    //       ...props,
+    //       // ...mapping,
+    //     })}
+    //   </Route>
+    // );
     return Component;
 });
 function stripFunctions(routeNode) {
