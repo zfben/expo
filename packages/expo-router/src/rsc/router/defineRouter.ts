@@ -1,9 +1,6 @@
 import { createElement, Fragment } from 'react';
 import type { FunctionComponent, ReactNode } from 'react';
 
-import { defineEntries } from '../server.js';
-import type { RenderEntries, GetBuildConfig, GetSsrConfig } from '../server.js';
-import { Children, Slot } from '../client.js';
 import {
   getComponentIds,
   getInputString,
@@ -12,7 +9,10 @@ import {
   SHOULD_SKIP_ID,
 } from './common.js';
 import type { RouteProps, ShouldSkip } from './common.js';
+import { Children, Slot } from '../client.js';
 import { getPathMapping, PathSpec } from '../path.js';
+import type { RenderEntries, GetBuildConfig, GetSsrConfig } from '../server.js';
+import { defineEntries } from '../server.js';
 
 const ShoudSkipComponent = ({ shouldSkip }: { shouldSkip: ShouldSkip }) =>
   createElement('meta', {

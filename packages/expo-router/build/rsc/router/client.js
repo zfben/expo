@@ -3,8 +3,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Router = exports.Link = exports.useLocation = exports.usePrefetchLocation = exports.useChangeLocation = void 0;
 const react_1 = require("react");
-const client_js_1 = require("../client.js");
 const common_js_1 = require("./common.js");
+const client_js_1 = require("../client.js");
 const parseLocation = () => {
     if (globalThis.__WAKU_ROUTER_404__) {
         return { path: '/404', searchParams: new URLSearchParams() };

@@ -80,10 +80,6 @@ export function getIsNodeModule(caller: any): boolean {
   return caller?.isNodeModule ?? false;
 }
 
-export function getIsReactServer(caller: any): boolean {
-  return caller?.isReactServer ?? false;
-}
-
 export function getBaseUrl(caller: any): string {
   return caller?.baseUrl ?? '';
 }

@@ -4,11 +4,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // import path from 'node:path';
 // import { existsSync } from 'node:fs';
 // import fsPromises from 'node:fs/promises';
+const _ctx_1 = require("expo-router/_ctx");
 const react_1 = require("react");
 // import { glob } from 'glob';
-const defineRouter_1 = require("./defineRouter");
 const react_native_1 = require("react-native");
-const _ctx_1 = require("expo-router/_ctx");
+const defineRouter_1 = require("./defineRouter");
 const getRoutes_1 = require("../../getRoutes");
 // const routesDir = path.join(
 //   path.dirname(fileURLToPath(import.meta.url)),
@@ -95,10 +95,10 @@ async (id, unstable_setShouldSkip) => {
     // NOTE: Hack to test other stuff
     if (id.includes('page')) {
         console.log('getComponent', id);
-        return props => (0, react_1.createElement)((0, _ctx_1.ctx)('./index.tsx').default, props);
+        return (props) => (0, react_1.createElement)((0, _ctx_1.ctx)('./index.tsx').default, props);
     }
     else {
-        return props => (0, react_1.createElement)(react_native_1.View, props);
+        return (props) => (0, react_1.createElement)(react_native_1.View, props);
     }
     // if (!route) {
     //   console.error('No route found for', id, ctx.keys());

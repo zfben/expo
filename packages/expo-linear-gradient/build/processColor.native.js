@@ -9,12 +9,8 @@
  */
 'use strict';
 // import type {ColorValue, NativeColorValue} from './StyleSheet';
-import { Platform } from 'expo-modules-core';
-// const Platform = require('../Utilities/Platform');
-// const normalizeColor = require('./normalizeColor');
-// import type {ProcessedColorValue} from './processColor';
-// import type {ColorValue} from './StyleSheet';
 import _normalizeColor from '@react-native/normalize-colors';
+import { Platform } from 'expo-modules-core';
 function normalizeColor(color) {
     //   if (typeof color === 'object' && color != null) {
     //     const {normalizeColorObject} = require('./PlatformColorValueTypes');

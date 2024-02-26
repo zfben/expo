@@ -17,12 +17,12 @@ import {
 } from './Route';
 import EXPO_ROUTER_IMPORT_MODE from './import-mode';
 import { Screen } from './primitives';
+import { Slot, useRefetch } from './rsc/client';
+import { usePrefetchLocation } from './rsc/router/client';
 import { EmptyRoute } from './views/EmptyRoute';
 import { SuspenseFallback } from './views/SuspenseFallback';
 import { Try } from './views/Try';
-import { Slot, useRefetch } from './rsc/client';
 import { ctx } from '../_ctx';
-import { usePrefetchLocation } from './rsc/router/client';
 
 export type ScreenProps<
   TOptions extends Record<string, any> = Record<string, any>,
@@ -210,8 +210,7 @@ export function getQualifiedRouteComponent(value: RouteNode) {
   ScreenComponent = React.forwardRef((props, ref) => {
     // const prefetch = usePrefetchLocation();
 
-
-    let rscServerId = typeof window === 'undefined' ? "TODO" : window.location.pathname;
+    let rscServerId = typeof window === 'undefined' ? 'TODO' : window.location.pathname;
     if (value.type === 'route') {
       rscServerId += '/page';
     }

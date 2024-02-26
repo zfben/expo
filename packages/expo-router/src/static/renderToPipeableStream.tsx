@@ -6,8 +6,8 @@
  */
 
 import { readableStreamToString } from '@remix-run/node/dist/stream';
-import path from 'path';
 import chalk from 'chalk';
+import path from 'path';
 import React from 'react';
 import type { ReactNode } from 'react';
 import { renderToReadableStream, decodeReply } from 'react-server-dom-webpack/server.edge';

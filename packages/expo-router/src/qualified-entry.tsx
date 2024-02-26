@@ -10,16 +10,17 @@ import { ctx } from 'expo-router/_ctx';
 import React from 'react';
 
 // import { ExpoRoot } from './ExpoRoot';
+import { Text } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { ErrorBoundary } from './exports';
 import { Head } from './head';
 import { Slot, Root } from './rsc/client';
-import { Text } from 'react-native';
 
 // MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
-import { Try } from './views/Try';
-import { ErrorBoundary } from './exports';
-// import { Router } from './rsc/router/client';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Router } from './rsc/router/client';
+import { Try } from './views/Try';
+// import { Router } from './rsc/router/client';
 // import ContextNavigator from './rsc-navigator';
 // import { ExpoRoot } from './ExpoRoot';
 
@@ -54,7 +55,6 @@ export function App() {
       </Head.Provider>
     </React.Suspense>
   );
-  
 
   // return (
   //   <React.Suspense fallback={null}>
@@ -69,7 +69,6 @@ export function App() {
   //     </Head.Provider>
   //   </React.Suspense>
   // );
-
 
   // return (
   //   <React.Suspense fallback={null}>

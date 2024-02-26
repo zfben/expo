@@ -1,7 +1,7 @@
 import type { FunctionComponent, ReactNode } from 'react';
-import { defineEntries } from '../server.js';
 import type { RouteProps, ShouldSkip } from './common.js';
 import { PathSpec } from '../path.js';
+import { defineEntries } from '../server.js';
 export declare function defineRouter(getPathConfig: () => Promise<Iterable<{
     path: PathSpec;
     isStatic?: boolean;

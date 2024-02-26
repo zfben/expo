@@ -535,8 +535,12 @@ async function transformJSON(
 
   const output: JsOutput[] = [
     {
-      data: { code, lineCount: countLines(code), map, functionMap: null, 
-        // clientReferences: null 
+      data: {
+        code,
+        lineCount: countLines(code),
+        map,
+        functionMap: null,
+        // clientReferences: null
       },
       type: jsType,
     },

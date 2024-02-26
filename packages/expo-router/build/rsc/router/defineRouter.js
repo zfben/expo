@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defineRouter = void 0;
 const react_1 = require("react");
-const client_js_1 = require("../client.js");
 const common_js_1 = require("./common.js");
+const client_js_1 = require("../client.js");
 const path_js_1 = require("../path.js");
 const ShoudSkipComponent = ({ shouldSkip }) => (0, react_1.createElement)('meta', {
     name: 'waku-should-skip',

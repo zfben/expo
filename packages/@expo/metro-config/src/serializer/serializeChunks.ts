@@ -204,9 +204,11 @@ export async function graphToSerialAssetsAsync(
   config: MetroConfig,
   serializeChunkOptions: SerializeChunkOptions,
   ...props: SerializerParameters
-): Promise<{ artifacts: SerialAsset[] | null; 
-  // rscManifest: RscManifest; 
-  assets: AssetData[] }> {
+): Promise<{
+  artifacts: SerialAsset[] | null;
+  // rscManifest: RscManifest;
+  assets: AssetData[];
+}> {
   const [entryFile, preModules, graph, options] = props;
 
   const cssDeps = getCssSerialAssets<MixedOutput>(graph.dependencies, {

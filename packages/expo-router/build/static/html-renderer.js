@@ -272,7 +272,9 @@ const renderHtml = async (opts) => {
     // const body: Promise<ReactNode> = createFromReadableStream(ssrConfig.body, {
     //   ssrManifest: { moduleMap, moduleLoading: null },
     // });
-    const readable = (await (0, server_edge_1.renderToReadableStream)(buildHtml(react_1.createElement, htmlHead, (0, react_1.createElement)(client_1.ServerRoot, { elements })), {
+    const readable = (await (0, server_edge_1.renderToReadableStream)(buildHtml(react_1.createElement, htmlHead, (0, react_1.createElement)(client_1.ServerRoot, { elements }
+    // body as any
+    )), {
         onError(err) {
             console.error(err);
         },

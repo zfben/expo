@@ -20,9 +20,9 @@ import type {
   MouseEvent,
 } from 'react';
 
-import { prefetchRSC, Root, Slot, useRefetch } from '../client.js';
 import { getComponentIds, getInputString, PARAM_KEY_SKIP, SHOULD_SKIP_ID } from './common.js';
 import type { RouteProps, ShouldSkip } from './common.js';
+import { prefetchRSC, Root, Slot, useRefetch } from '../client.js';
 
 declare global {
   interface ImportMeta {

@@ -1,16 +1,17 @@
+import { ExpoResponse } from 'expo-router/server';
 import { Readable, Writable } from 'node:stream';
 // import { createServer as createViteServer } from 'vite';
 // import viteReact from '@vitejs/plugin-react';
 
 // import type { Config } from '../../config.js';
 // import { resolveConfig } from '../config.js';
+import React from 'react';
+
 import { renderHtml } from './html-renderer';
 import { decodeInput, hasStatusCode } from './utils';
+import { Slot } from '../rsc/client';
 import { joinPath, fileURLToFilePath, decodeFilePathFromAbsolute } from '../rsc/path.js';
 import { endStream } from '../rsc/stream';
-import React from 'react';
-import { Slot } from '../rsc/client';
-import { ExpoResponse } from 'expo-router/server';
 
 // import {
 //   initializeWorker,
@@ -136,56 +137,56 @@ export function createHandler<Context, Req extends Request, Res extends Response
     // }
     const { config } = options;
     // if (ssr) {
-      // try {
-        const readable = await renderHtml({
-          config: config!,
-          serverRoot: options.projectRoot,
-          pathname: req.url.pathname,
-          searchParams: req.url.searchParams,
-          htmlHead: `${options.config.htmlHead}
+    // try {
+    const readable = await renderHtml({
+      config: config!,
+      serverRoot: options.projectRoot,
+      pathname: req.url.pathname,
+      searchParams: req.url.searchParams,
+      htmlHead: `${options.config.htmlHead}
 <script src="${options.config.basePath}${options.config.srcDir}/${options.config.mainJs}" async type="module"></script>`,
-          renderRscForHtml: async (input, searchParams) => {
-            console.log('renderRscForHtml>', input, searchParams);
-            const [readable, nextCtx] = await options.renderRscWithWorker({
-              input,
-              searchParamsString: searchParams?.toString() ?? "",
-              method: 'GET',
-              contentType: undefined,
-              config: options.config,
-              context,
-            });
-            context = nextCtx as Context;
-            return readable;
-          },
-          async getSsrConfigForHtml(pathname, options) {
-            console.log('getSsrConfigForHtml>', pathname, options);
-            return {
-              input: '',
-              body: React.createElement(Slot, { id: 'index' }),
-            };
-          },
-          //getSsrConfigWithWorker(config, pathname, options),
-          // loadClientModule: (key) => CLIENT_MODULE_MAP[key],
-          isDev: true,
-          rootDir: options.projectRoot,
-          loadServerFile,
+      renderRscForHtml: async (input, searchParams) => {
+        console.log('renderRscForHtml>', input, searchParams);
+        const [readable, nextCtx] = await options.renderRscWithWorker({
+          input,
+          searchParamsString: searchParams?.toString() ?? '',
+          method: 'GET',
+          contentType: undefined,
+          config: options.config,
+          context,
         });
-        const res = new ExpoResponse(readable, {
-          status: 200,
-          headers: {
-            'content-type': 'text/html; charset=utf-8',
-          },
-        });
-        if (readable) {
-          //   unstable_posthook?.(req, res, context as Context);
-          // res.setHeader('content-type', 'text/html; charset=utf-8');
-          readable.pipeThrough(await transformIndexHtml(req.url.pathname)).pipeTo(res.body);
-        }
-        return res;
-      // } catch (e) {
-      //   handleError(e);
-      //   return;
-      // }
+        context = nextCtx as Context;
+        return readable;
+      },
+      async getSsrConfigForHtml(pathname, options) {
+        console.log('getSsrConfigForHtml>', pathname, options);
+        return {
+          input: '',
+          body: React.createElement(Slot, { id: 'index' }),
+        };
+      },
+      //getSsrConfigWithWorker(config, pathname, options),
+      // loadClientModule: (key) => CLIENT_MODULE_MAP[key],
+      isDev: true,
+      rootDir: options.projectRoot,
+      loadServerFile,
+    });
+    const res = new ExpoResponse(readable, {
+      status: 200,
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+      },
+    });
+    if (readable) {
+      //   unstable_posthook?.(req, res, context as Context);
+      // res.setHeader('content-type', 'text/html; charset=utf-8');
+      readable.pipeThrough(await transformIndexHtml(req.url.pathname)).pipeTo(res.body);
+    }
+    return res;
+    // } catch (e) {
+    //   handleError(e);
+    //   return;
+    // }
     // }
     // if (req.url.pathname.startsWith(basePrefix)) {
     //   const { method, contentType } = req;

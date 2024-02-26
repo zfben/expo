@@ -4,10 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const _ctx_1 = require("expo-router/_ctx");
 const react_1 = __importDefault(require("react"));
 const NavigationContainer_1 = __importDefault(require("./fork/NavigationContainer"));
 const router_store_1 = require("./global-state/router-store");
-const _ctx_1 = require("expo-router/_ctx");
 function ContextNavigator({ context = _ctx_1.ctx, location: initialLocation, 
 //   wrapper: WrapperComponent = Fragment,
 children, }) {

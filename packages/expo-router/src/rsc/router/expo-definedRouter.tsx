@@ -2,14 +2,16 @@
 // import path from 'node:path';
 // import { existsSync } from 'node:fs';
 // import fsPromises from 'node:fs/promises';
-import React, { lazy, createElement } from 'react';
-// import { glob } from 'glob';
-import { defineRouter } from './defineRouter';
-import { View } from 'react-native';
 import { ctx } from 'expo-router/_ctx';
+import React, { lazy, createElement } from 'react';
+
+// import { glob } from 'glob';
+import { View } from 'react-native';
+
+import { defineRouter } from './defineRouter';
+import { Route, RouteNode } from '../../Route';
 import { getRoutes } from '../../getRoutes';
 import { getServerManifest } from '../../getServerManifest';
-import { Route, RouteNode } from '../../Route';
 
 // const routesDir = path.join(
 //   path.dirname(fileURLToPath(import.meta.url)),
@@ -80,7 +82,9 @@ function wakuRouteIdToExpoRoute(route: RouteNode, routeId: string) {
         if (currentRoute?.type === 'layout') {
           console.log('3.', part);
           // TODO: Obviously not right, doesn't account for nested index or groups.
-          return currentRoute.children?.find((child) => child.type === 'route' && child.route === 'index');
+          return currentRoute.children?.find(
+            (child) => child.type === 'route' && child.route === 'index'
+          );
         }
         return currentRoute;
       } else {
@@ -104,12 +108,10 @@ export default defineRouter(
     // NOTE: Hack to test other stuff
     if (id.includes('page')) {
       console.log('getComponent', id);
-      return props => createElement(ctx('./index.tsx').default, props);
+      return (props) => createElement(ctx('./index.tsx').default, props);
     } else {
-      return props => createElement(View, props);
+      return (props) => createElement(View, props);
     }
-
-
 
     // if (!route) {
     //   console.error('No route found for', id, ctx.keys());

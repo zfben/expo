@@ -143,7 +143,6 @@ const injectRscPayload = (readable: ReadableStream, urlForFakeFetch: string) => 
   return [copied, interleave] as const;
 };
 
-
 // NOTE: MUST MATCH THE IMPL IN ExpoMetroConfig.ts
 function stringToHash(str: string): number {
   let hash = 0;
@@ -237,17 +236,17 @@ export const renderHtml = async (
     file: string // filePath or fileURL
   ) => {
     // if (!isExporting) {
-      const filePath = file.startsWith('file://') ? fileURLToFilePath(file) : file;
-      const metroOpaqueId = stringToHash(filePath);
-      const relativeFilePath = path.relative(opts.serverRoot, filePath);
-      // TODO: May need to remove the original extension.
-      url.pathname = relativeFilePath + '.bundle';
-      // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
-      url.hash = String(metroOpaqueId);
+    const filePath = file.startsWith('file://') ? fileURLToFilePath(file) : file;
+    const metroOpaqueId = stringToHash(filePath);
+    const relativeFilePath = path.relative(opts.serverRoot, filePath);
+    // TODO: May need to remove the original extension.
+    url.pathname = relativeFilePath + '.bundle';
+    // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
+    url.hash = String(metroOpaqueId);
 
-      // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
-      const id = url.pathname + url.search + url.hash;
-      return { id, url: id };
+    // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
+    const id = url.pathname + url.search + url.hash;
+    return { id, url: id };
     // } else {
     //   // if (!file.startsWith('@id/')) {
     //   //   throw new Error('Unexpected client entry in PRD: ' + file);
@@ -268,7 +267,6 @@ export const renderHtml = async (
     //   return { id, url: url.pathname + url.search + url.hash };
     // }
   };
-
 
   const moduleMap = new Proxy(
     {} as Record<
@@ -333,20 +331,20 @@ export const renderHtml = async (
               // debug('Get manifest entry:', encodedId);
               // const [file, name] = encodedId.split('#') as [string, string];
               // return moduleMap[encodedId];
-      
+
               const [
                 // File is the on-disk location of the module, this is injected during the "use client" transformation (babel).
                 file,
                 // The name of the import (e.g. "default" or "")
                 name,
               ] = encodedId.split('#') as [string, string];
-      
+
               // We'll augment the file path with the incoming RSC request which will forward the metro props required to make a cache hit, e.g. platform=web&...
               // This is similar to how we handle lazy bundling.
               const entry = resolveClientEntry(file);
               console.log('Returning server module:', entry, 'for', encodedId);
               // moduleIdCallback?.({ id: entry.url, chunks: [entry.url], name, async: true });
-      
+
               return { id: entry.id, chunks: [entry.id], name, async: true };
 
               // return { id, chunks: [id], name };
@@ -373,7 +371,7 @@ export const renderHtml = async (
         htmlHead,
         createElement(
           ServerRoot as FunctionComponent<Omit<ComponentProps<typeof ServerRoot>, 'children'>>,
-          { elements },
+          { elements }
           // body as any
         )
       ),

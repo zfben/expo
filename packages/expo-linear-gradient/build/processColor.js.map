@@ -1,1 +1,1 @@
-{"version":3,"file":"processColor.js","sourceRoot":"","sources":["../src/processColor.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,YAAY,EAAE,MAAM,cAAc,CAAC;AAE5C,eAAe,YAAY,CAAC","sourcesContent":["import { processColor } from 'react-native';\n\nexport default processColor;"]}
+{"version":3,"file":"processColor.js","sourceRoot":"","sources":["../src/processColor.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,YAAY,EAAE,MAAM,cAAc,CAAC;AAE5C,eAAe,YAAY,CAAC","sourcesContent":["import { processColor } from 'react-native';\n\nexport default processColor;\n"]}

@@ -54,7 +54,6 @@ globalThis.__webpack_chunk_load__ = (id) => {
   const numericMetroId = parseInt(url.hash.slice(1));
   console.log('__webpack_chunk_load__', id, numericMetroId);
 
-
   // NOTE: `getModules` is exposed in a patch.
   if (numericMetroId in require.getModules()) {
     return new Promise((resolve, reject) => {

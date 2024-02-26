@@ -21,10 +21,12 @@ function babelPresetExpo(api, options = {}) {
     let platform = api.caller((caller) => caller?.platform);
     const engine = api.caller((caller) => caller?.engine) ?? 'default';
     const isDev = api.caller(common_1.getIsDev);
-    const isReactServer = api.caller(common_1.getIsReactServer);
     const isFastRefreshEnabled = api.caller(common_1.getIsFastRefreshEnabled);
     const baseUrl = api.caller(common_1.getBaseUrl);
+    const rscPath = api.caller(common_1.getRscPath);
+    // const isServer = api.caller(getIsServer);
     const supportsStaticESM = api.caller((caller) => caller?.supportsStaticESM);
+    const isReactServer = api.caller(common_1.getIsReactServer);
     // Unlike `isDev`, this will be `true` when the bundler is explicitly set to `production`,
     // i.e. `false` when testing, development, or used with a bundler that doesn't specify the correct inputs.
     const isProduction = api.caller(common_1.getIsProd);
@@ -89,6 +91,7 @@ function babelPresetExpo(api, options = {}) {
                 // These values should not be prefixed with `EXPO_PUBLIC_`, so we don't
                 // squat user-defined environment variables.
                 EXPO_BASE_URL: baseUrl,
+                EXPO_RSC_PATH: rscPath,
             },
         ]);
     }

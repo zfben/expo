@@ -12,14 +12,13 @@ exports.App = void 0;
 // a different file in a custom resolver for bundle splitting in Node.js.
 const getDevServer_1 = __importDefault(require("@expo/metro-runtime/build/getDevServer"));
 const react_1 = __importDefault(require("react"));
-// import { ExpoRoot } from './ExpoRoot';
+const react_native_safe_area_context_1 = require("react-native-safe-area-context");
+const exports_1 = require("./exports");
 const head_1 = require("./head");
 // MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
-const Try_1 = require("./views/Try");
-const exports_1 = require("./exports");
-// import { Router } from './rsc/router/client';
-const react_native_safe_area_context_1 = require("react-native-safe-area-context");
 const client_1 = require("./rsc/router/client");
+const Try_1 = require("./views/Try");
+// import { Router } from './rsc/router/client';
 // import ContextNavigator from './rsc-navigator';
 // import { ExpoRoot } from './ExpoRoot';
 const introUrl = (0, getDevServer_1.default)().fullBundleUrl;

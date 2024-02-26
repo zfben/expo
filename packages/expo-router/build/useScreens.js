@@ -7,9 +7,9 @@ exports.createGetIdForRoute = exports.getQualifiedRouteComponent = exports.useSo
 const react_1 = __importDefault(require("react"));
 const Route_1 = require("./Route");
 const primitives_1 = require("./primitives");
+const client_1 = require("./rsc/client");
 const EmptyRoute_1 = require("./views/EmptyRoute");
 const Try_1 = require("./views/Try");
-const client_1 = require("./rsc/client");
 const _ctx_1 = require("../_ctx");
 function getSortedChildren(children, order, initialRouteName) {
     if (!order?.length) {
@@ -140,7 +140,7 @@ function getQualifiedRouteComponent(value) {
     // const Component = fromImport(res).default as React.ComponentType<any>;
     ScreenComponent = react_1.default.forwardRef((props, ref) => {
         // const prefetch = usePrefetchLocation();
-        let rscServerId = typeof window === 'undefined' ? "TODO" : window.location.pathname;
+        let rscServerId = typeof window === 'undefined' ? 'TODO' : window.location.pathname;
         if (value.type === 'route') {
             rscServerId += '/page';
         }

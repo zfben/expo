@@ -12,28 +12,27 @@
 
 // import type {ColorValue, NativeColorValue} from './StyleSheet';
 
+import _normalizeColor from '@react-native/normalize-colors';
 import { Platform } from 'expo-modules-core';
 import type { ColorValue } from 'react-native';
-
-type NativeColorValue = any;
 // const Platform = require('../Utilities/Platform');
 // const normalizeColor = require('./normalizeColor');
 
 // import type {ProcessedColorValue} from './processColor';
 // import type {ColorValue} from './StyleSheet';
 
-import _normalizeColor from '@react-native/normalize-colors';
+type NativeColorValue = any;
 
 function normalizeColor(
-  color: (ColorValue | ProcessedColorValue) | null,
+  color: (ColorValue | ProcessedColorValue) | null
 ): ProcessedColorValue | null {
-//   if (typeof color === 'object' && color != null) {
-//     const {normalizeColorObject} = require('./PlatformColorValueTypes');
-//     const normalizedColor = normalizeColorObject(color);
-//     if (normalizedColor != null) {
-//       return normalizedColor;
-//     }
-//   }
+  //   if (typeof color === 'object' && color != null) {
+  //     const {normalizeColorObject} = require('./PlatformColorValueTypes');
+  //     const normalizedColor = normalizeColorObject(color);
+  //     if (normalizedColor != null) {
+  //       return normalizedColor;
+  //     }
+  //   }
 
   if (typeof color === 'string' || typeof color === 'number') {
     return _normalizeColor(color);
@@ -53,16 +52,16 @@ function processColor(color?: (number | ColorValue) | null): ProcessedColorValue
     return undefined;
   }
 
-//   if (typeof normalizedColor === 'object') {
-//     const processColorObject =
-//       require('./PlatformColorValueTypes').processColorObject;
+  //   if (typeof normalizedColor === 'object') {
+  //     const processColorObject =
+  //       require('./PlatformColorValueTypes').processColorObject;
 
-//     const processedColorObj = processColorObject(normalizedColor);
+  //     const processedColorObj = processColorObject(normalizedColor);
 
-//     if (processedColorObj != null) {
-//       return processedColorObj;
-//     }
-//   }
+  //     if (processedColorObj != null) {
+  //       return processedColorObj;
+  //     }
+  //   }
 
   if (typeof normalizedColor !== 'number') {
     return null;

@@ -4,15 +4,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createHandler = exports.CLIENT_MODULE_MAP = void 0;
+const server_1 = require("expo-router/server");
 // import { createServer as createViteServer } from 'vite';
 // import viteReact from '@vitejs/plugin-react';
 // import type { Config } from '../../config.js';
 // import { resolveConfig } from '../config.js';
-const html_renderer_1 = require("./html-renderer");
-const path_js_1 = require("../rsc/path.js");
 const react_1 = __importDefault(require("react"));
+const html_renderer_1 = require("./html-renderer");
 const client_1 = require("../rsc/client");
-const server_1 = require("expo-router/server");
+const path_js_1 = require("../rsc/path.js");
 // import {
 //   initializeWorker,
 //   registerReloadCallback,
@@ -114,7 +114,7 @@ function createHandler(options) {
                 console.log('renderRscForHtml>', input, searchParams);
                 const [readable, nextCtx] = await options.renderRscWithWorker({
                     input,
-                    searchParamsString: searchParams?.toString() ?? "",
+                    searchParamsString: searchParams?.toString() ?? '',
                     method: 'GET',
                     contentType: undefined,
                     config: options.config,

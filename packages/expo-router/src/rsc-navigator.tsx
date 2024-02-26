@@ -1,10 +1,10 @@
 'use client';
+import { ctx } from 'expo-router/_ctx';
 import React, { Fragment, FunctionComponent, ReactNode } from 'react';
 
 import UpstreamNavigationContainer from './fork/NavigationContainer';
 import { useInitializeExpoRouter } from './global-state/router-store';
 import { SplashScreen } from './views/Splash';
-import { ctx } from 'expo-router/_ctx';
 
 export default function ContextNavigator({
   context = ctx,

@@ -1,10 +1,10 @@
+import { Platform } from 'expo-modules-core';
 import * as React from 'react';
 import { ViewProps } from 'react-native';
-import { Platform } from 'expo-modules-core';
 
-import processColor from './processColor';
 import NativeLinearGradient from './NativeLinearGradient';
 import { NativeLinearGradientPoint } from './NativeLinearGradient.types';
+import processColor from './processColor';
 
 // @needsAudit
 /**

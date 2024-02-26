@@ -30,11 +30,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServerRoot = exports.Children = exports.Slot = exports.useRefetch = exports.Root = exports.prefetchRSC = exports.fetchRSC = void 0;
+const FS = __importStar(require("expo-file-system"));
 const react_1 = require("react");
 const client_1 = __importDefault(require("react-server-dom-webpack/client"));
 const utils_1 = require("./renderers/utils");
-const getDevServer_1 = require("../getDevServer");
 const os_1 = __importDefault(require("../../os"));
+const getDevServer_1 = require("../getDevServer");
 const { createFromFetch, encodeReply } = client_1.default;
 // NOTE: Ensured to start with `/`.
 const RSC_PATH = process.env.EXPO_RSC_PATH;
@@ -89,7 +90,7 @@ const fetchRSC = (input, searchParamsString, setElements, cache = fetchCache) =>
                 body: await encodeReply(args),
                 headers: {
                     'expo-platform': os_1.default,
-                }
+                },
             });
             const data = createFromFetch(checkStatus(response), options);
             const setElements = entry[2];
@@ -103,18 +104,18 @@ const fetchRSC = (input, searchParamsString, setElements, cache = fetchCache) =>
     const prefetched = (globalThis.__WAKU_PREFETCHED__ ||= {});
     const url = BASE_PATH + (0, utils_1.encodeInput)(input) + (searchParamsString ? '?' + searchParamsString : '');
     console.log('fetch', url);
-    const response = prefetched[url] || fetch(getAdjustedFilePath(url), {
-        headers: {
-            'expo-platform': os_1.default,
-        }
-    });
+    const response = prefetched[url] ||
+        fetch(getAdjustedFilePath(url), {
+            headers: {
+                'expo-platform': os_1.default,
+            },
+        });
     delete prefetched[url];
     const data = createFromFetch(checkStatus(response), options);
     cache[0] = entry = [input, searchParamsString, setElements, data];
     return data;
 };
 exports.fetchRSC = fetchRSC;
-const FS = __importStar(require("expo-file-system"));
 function getAdjustedFilePath(path) {
     if (os_1.default === 'web' || (0, getDevServer_1.getDevServer)().bundleLoadedFromServer) {
         return path;
@@ -132,7 +133,7 @@ const prefetchRSC = (input, searchParamsString) => {
         prefetched[url] = fetch(url, {
             headers: {
                 'expo-platform': os_1.default,
-            }
+            },
         });
     }
 };

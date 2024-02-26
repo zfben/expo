@@ -10,7 +10,6 @@ export declare function getIsDev(caller: any): any;
 export declare function getIsFastRefreshEnabled(caller: any): any;
 export declare function getIsProd(caller: any): boolean;
 export declare function getIsNodeModule(caller: any): boolean;
-export declare function getIsReactServer(caller: any): boolean;
 export declare function getBaseUrl(caller: any): string;
 export declare function getRscPath(caller: any): string;
 export declare function getIsServer(caller: any): any;

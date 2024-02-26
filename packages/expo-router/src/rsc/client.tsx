@@ -3,6 +3,7 @@
 /// <reference types="react/canary" />
 'use client';
 
+import * as FS from 'expo-file-system';
 import {
   createContext,
   createElement,
@@ -16,8 +17,8 @@ import type { ReactNode } from 'react';
 import RSDWClient from 'react-server-dom-webpack/client';
 
 import { encodeInput } from './renderers/utils';
-import { getDevServer } from '../getDevServer';
 import OS from '../../os';
+import { getDevServer } from '../getDevServer';
 
 const { createFromFetch, encodeReply } = RSDWClient;
 
@@ -110,7 +111,7 @@ export const fetchRSC = (
         body: await encodeReply(args),
         headers: {
           'expo-platform': OS,
-        }
+        },
       });
       const data = createFromFetch<Awaited<Elements>>(checkStatus(response), options);
       const setElements = entry![2];
@@ -124,18 +125,18 @@ export const fetchRSC = (
   const prefetched = ((globalThis as any).__WAKU_PREFETCHED__ ||= {});
   const url = BASE_PATH + encodeInput(input) + (searchParamsString ? '?' + searchParamsString : '');
   console.log('fetch', url);
-  const response = prefetched[url] || fetch(getAdjustedFilePath(url), {
-    headers: {
-      'expo-platform': OS,
-    }
-  });
+  const response =
+    prefetched[url] ||
+    fetch(getAdjustedFilePath(url), {
+      headers: {
+        'expo-platform': OS,
+      },
+    });
   delete prefetched[url];
   const data = createFromFetch<Awaited<Elements>>(checkStatus(response), options);
   cache[0] = entry = [input, searchParamsString, setElements, data];
   return data;
 };
-
-import * as FS from 'expo-file-system';
 
 function getAdjustedFilePath(path: string): string {
   if (OS === 'web' || getDevServer().bundleLoadedFromServer) {
@@ -156,7 +157,7 @@ export const prefetchRSC = (input: string, searchParamsString: string): void => 
     prefetched[url] = fetch(url, {
       headers: {
         'expo-platform': OS,
-      }
+      },
     });
   }
 };

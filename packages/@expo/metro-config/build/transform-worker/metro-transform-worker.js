@@ -397,8 +397,12 @@ async function transformJSON(file, { options, config, projectRoot }) {
     }
     const output = [
         {
-            data: { code, lineCount: (0, countLines_1.default)(code), map, functionMap: null,
-                // clientReferences: null 
+            data: {
+                code,
+                lineCount: (0, countLines_1.default)(code),
+                map,
+                functionMap: null,
+                // clientReferences: null
             },
             type: jsType,
         },
