@@ -12,6 +12,7 @@ import { respond } from '@expo/server/build/vendor/http';
 import { createReadableStreamFromReadable } from '@remix-run/node';
 import assert from 'assert';
 import chalk from 'chalk';
+import { decodeInput } from 'expo-router/build/rsc/renderers/utils';
 import { AssetData } from 'metro';
 import fetch from 'node-fetch';
 import path from 'path';
@@ -33,6 +34,7 @@ import { ExportAssetMap } from '../../../export/saveAssets';
 import { Log } from '../../../log';
 import getDevClientProperties from '../../../utils/analytics/getDevClientProperties';
 import { logEventAsync } from '../../../utils/analytics/rudderstackClient';
+import { stripAnsi } from '../../../utils/ansi';
 import { CommandError } from '../../../utils/errors';
 import { getFreePortAsync } from '../../../utils/port';
 import { BundlerDevServer, BundlerStartOptions, DevServerInstance } from '../BundlerDevServer';
@@ -50,7 +52,6 @@ import { FaviconMiddleware } from '../middleware/FaviconMiddleware';
 import { HistoryFallbackMiddleware } from '../middleware/HistoryFallbackMiddleware';
 import { InterstitialPageMiddleware } from '../middleware/InterstitialPageMiddleware';
 import { getMetroServerRoot, resolveMainModuleName } from '../middleware/ManifestMiddleware';
-import { stripAnsi } from '../../../utils/ansi';
 import { ReactDevToolsPageMiddleware } from '../middleware/ReactDevToolsPageMiddleware';
 import {
   DeepLinkHandler,
@@ -69,7 +70,6 @@ import {
 import { prependMiddleware } from '../middleware/mutations';
 import { ServerNext, ServerRequest, ServerResponse } from '../middleware/server.types';
 import { startTypescriptTypeGenerationAsync } from '../type-generation/startTypescriptTypeGeneration';
-import { decodeInput } from 'expo-router/build/rsc/renderers/utils';
 export type ExpoRouterRuntimeManifest = Awaited<
   ReturnType<typeof import('expo-router/build/static/renderStaticContent').getManifest>
 >;
@@ -575,7 +575,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     const getRscEntries = await this.ssrLoadModule<
       typeof import('expo-router/build/rsc/router/expo-definedRouter')
     >('expo-router/build/rsc/router/expo-definedRouter.js', {
-      rsc: true,
+      environment: 'react-server',
       platform,
     });
 
@@ -608,13 +608,14 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     // TODO: Extract CSS Modules / Assets from the bundler process
     const {
       filename: serverUrl,
-      fn: { renderToPipeableStream, 
-        // renderRouteWithContextKey, getRouteNodeForPathname 
+      fn: {
+        renderToPipeableStream,
+        // renderRouteWithContextKey, getRouteNodeForPathname
       },
     } = await this.ssrLoadModuleAndHmrEntry<
       typeof import('expo-router/build/static/renderToPipeableStream')
     >('expo-router/node/rsc.js', {
-      rsc: true,
+      environment: 'react-server',
       platform,
     });
 
@@ -654,9 +655,8 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         const url = new URL(relativeDevServerUrl, this.getDevServerUrlOrAssert());
         url.searchParams.set('runModule', 'true');
         url.searchParams.set('runModule', 'true');
-        const rsc = true;
-        url.searchParams.set('transform.rsc', String(rsc));
-        url.searchParams.set('resolver.rsc', String(rsc));
+        url.searchParams.set('transform.environment', 'react-server');
+        url.searchParams.set('resolver.environment', 'react-server');
 
         const urlString = url.toString();
         const contents = await metroFetchAsync(this.projectRoot, urlString);
@@ -847,7 +847,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
             //             getHtml: async (req) => {
             //               const devMiddleware = (await this.ssrLoadModule(
             //                 require.resolve('expo-router/build/static/handler-dev.js'), {
-            //                   rsc: true
+            //                   environment: 'react-server'
             //                 }
             //               )) as typeof import('expo-router/build/static/handler-dev');
 

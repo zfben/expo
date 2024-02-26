@@ -86,7 +86,7 @@ export function withMetroResolvers(
                   throw error;
                 }
                 debug(
-                  `Custom resolver threw: ${error.constructor.name}. (module: ${moduleName}, platform: ${platform}, rsc: ${ctx.customResolverOptions.rsc}, env: ${ctx.customResolverOptions.environment}, origin: ${ctx.originModulePath})`
+                  `Custom resolver threw: ${error.constructor.name}. (module: ${moduleName}, platform: ${platform}, env: ${ctx.customResolverOptions.environment}, origin: ${ctx.originModulePath})`
                 );
               }
             }
@@ -153,8 +153,7 @@ export function withMetroErrorReportingResolver(config: MetroConfig): MetroConfi
     moduleName: string,
     platform: string | null
   ) {
-    const inputPlatform = platform ?? 'null'
-
+    const inputPlatform = platform ?? 'null';
 
     const mapByOrigin = depGraph.get(optionsKeyForContext(context));
     const mapByPlatform = mapByOrigin?.get(inputPlatform);
@@ -314,8 +313,7 @@ export function withMetroErrorReportingResolver(config: MetroConfig): MetroConfi
       ...config.resolver,
       resolveRequest(context, moduleName, platform) {
         const storeResult = (res: NonNullable<ReturnType<ExpoCustomMetroResolver>>) => {
-          const inputPlatform = platform ?? 'null'
-
+          const inputPlatform = platform ?? 'null';
 
           const key = optionsKeyForContext(context);
           if (!depGraph.has(key)) depGraph.set(key, new Map());

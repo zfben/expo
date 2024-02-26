@@ -29,8 +29,6 @@ export type ExpoMetroOptions = {
   baseUrl?: string;
   isExporting: boolean;
   inlineSourceMap?: boolean;
-
-  rsc?: boolean;
   rscPath?: string;
   clientBoundaries?: string[];
 
@@ -145,7 +143,6 @@ export function getMetroDirectBundleOptions(
     lazy,
     engine,
     preserveEnvVars,
-    rsc,
     asyncRoutes,
     baseUrl,
     rscPath,
@@ -196,14 +193,12 @@ export function getMetroDirectBundleOptions(
       routerRoot,
       // ignoredModules,
       bytecode,
-      rsc,
       rscPath,
       clientBoundaries,
     },
     customResolverOptions: {
       __proto__: null,
       environment,
-      rsc,
       exporting: isExporting,
     },
     sourceMapUrl: fakeSourceMapUrl,
@@ -243,7 +238,6 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
     bytecode,
     engine,
     preserveEnvVars,
-    rsc,
     asyncRoutes,
     baseUrl,
     rscPath,
@@ -283,11 +277,6 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
   }
   if (bytecode) {
     queryParams.append('transform.bytecode', String(bytecode));
-  }
-
-  if (rsc) {
-    queryParams.append('transform.rsc', String(rsc));
-    queryParams.append('resolver.rsc', String(rsc));
   }
   if (asyncRoutes) {
     queryParams.append('transform.asyncRoutes', String(asyncRoutes));
