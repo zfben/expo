@@ -1,14 +1,24 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defineRouter = void 0;
 const react_1 = require("react");
 const common_js_1 = require("./common.js");
 const client_js_1 = require("../client.js");
 const path_js_1 = require("../path.js");
-const ShoudSkipComponent = ({ shouldSkip }) => (0, react_1.createElement)('meta', {
-    name: 'waku-should-skip',
-    content: JSON.stringify(shouldSkip),
-});
+const os_1 = __importDefault(require("expo-router/os"));
+const ShoudSkipComponent = ({ shouldSkip }) => {
+    // TODO: Modify the React Native renderer to support Document Metadata and other head elements
+    if (os_1.default === 'web') {
+        return (0, react_1.createElement)('meta', {
+            name: 'waku-should-skip',
+            content: JSON.stringify(shouldSkip),
+        });
+    }
+    return null;
+};
 function defineRouter(getPathConfig, getComponent) {
     const pathConfigPromise = getPathConfig().then((pathConfig) => Array.from(pathConfig).map((item) => {
         const is404 = item.path.length === 1 && item.path[0].type === 'literal' && item.path[0].name === '404';

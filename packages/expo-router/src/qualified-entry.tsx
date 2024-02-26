@@ -18,7 +18,7 @@ import { Head } from './head';
 import { Slot, Root } from './rsc/client';
 
 // MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
-import { Router } from './rsc/router/client';
+// import { Router } from './rsc/router/client';
 import { Try } from './views/Try';
 // import { Router } from './rsc/router/client';
 // import ContextNavigator from './rsc-navigator';
@@ -44,31 +44,31 @@ export function App() {
   //   <Text>HeyHeyHeyHeyHeyHey</Text>
   // )
 
-  return (
-    <React.Suspense fallback={null}>
-      <Head.Provider>
-        <SafeAreaProvider>
-          <Try catch={ErrorBoundary}>
-            <Router />
-          </Try>
-        </SafeAreaProvider>
-      </Head.Provider>
-    </React.Suspense>
-  );
-
   // return (
   //   <React.Suspense fallback={null}>
   //     <Head.Provider>
   //       <SafeAreaProvider>
   //         <Try catch={ErrorBoundary}>
-  //           <Root initialInput='layout' initialSearchParamsString={searchParams}>
-  //             <Slot id={'layout'} />
-  //           </Root>
+  //           <Router />
   //         </Try>
   //       </SafeAreaProvider>
   //     </Head.Provider>
   //   </React.Suspense>
   // );
+
+  return (
+    <React.Suspense fallback={null}>
+      <Head.Provider>
+        <SafeAreaProvider>
+          <Try catch={ErrorBoundary}>
+            <Root initialInput="layout" initialSearchParamsString={searchParams}>
+              <Slot id={'layout'} />
+            </Root>
+          </Try>
+        </SafeAreaProvider>
+      </Head.Provider>
+    </React.Suspense>
+  );
 
   // return (
   //   <React.Suspense fallback={null}>

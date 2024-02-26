@@ -60,7 +60,7 @@ function withWebPolyfills(config: ConfigT): ConfigT {
     if (
       ctx.platform === 'web' ||
       // RSC runs on the server even in native mode.
-      ctx.customResolverOptions?.rsc
+      ctx.customResolverOptions?.environment === 'react-server'
     ) {
       return [
         // NOTE: We might need this for all platforms
@@ -269,12 +269,12 @@ export function withExtendedResolver(
           // Disable internal externals when exporting for production.
           context.customResolverOptions.exporting ||
           // These externals are only for Node.js environments.
-          context.customResolverOptions?.environment !== 'node'
+          !isServerEnvironment(context.customResolverOptions?.environment)
         ) {
           return false;
         }
 
-        if (context.customResolverOptions?.rsc) {
+        if (context.customResolverOptions?.environment === 'react-server') {
           const isExternal =
             /^(source-map-support(\/.*)?|@babel\/runtime\/.+|debug|metro-runtime\/src\/modules\/HMRClient|metro|acorn-loose|acorn|chalk|ws|ansi-styles|supports-color|color-convert|has-flag|utf-8-validate|color-name|react-refresh\/runtime|@remix-run\/node\/.+)$/.test(
               moduleName
@@ -347,7 +347,7 @@ export function withExtendedResolver(
 
     // Node.js externals support
     (context: ResolutionContext, moduleName: string, platform: string | null) => {
-      // const isReactServer = context.customResolverOptions?.rsc;
+      // const isReactServer = context.customResolverOptions?.environment === 'react-server';
 
       // if (
       //   // React Server Components require Node.js support when bundling for native platforms.

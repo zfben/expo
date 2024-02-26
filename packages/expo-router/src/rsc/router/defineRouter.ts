@@ -14,11 +14,19 @@ import { getPathMapping, PathSpec } from '../path.js';
 import type { RenderEntries, GetBuildConfig, GetSsrConfig } from '../server.js';
 import { defineEntries } from '../server.js';
 
-const ShoudSkipComponent = ({ shouldSkip }: { shouldSkip: ShouldSkip }) =>
-  createElement('meta', {
-    name: 'waku-should-skip',
-    content: JSON.stringify(shouldSkip),
-  });
+import OS from 'expo-router/os';
+
+const ShoudSkipComponent = ({ shouldSkip }: { shouldSkip: ShouldSkip }) => {
+  // TODO: Modify the React Native renderer to support Document Metadata and other head elements
+  if (OS === 'web') {
+    return createElement('meta', {
+      name: 'waku-should-skip',
+      content: JSON.stringify(shouldSkip),
+    });
+  }
+
+  return null;
+};
 
 export function defineRouter(
   getPathConfig: () => Promise<Iterable<{ path: PathSpec; isStatic?: boolean }>>,
