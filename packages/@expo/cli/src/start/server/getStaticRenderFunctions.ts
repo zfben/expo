@@ -14,12 +14,12 @@ import { logMetroError, logMetroErrorAsync } from './metro/metroErrorInterface';
 import { getMetroServerRoot } from './middleware/ManifestMiddleware';
 import { createBundleUrlPath, ExpoMetroOptions } from './middleware/metroOptions';
 import { augmentLogs } from './serverLogLikeMetro';
+import { Log } from '../../log';
 import { stripAnsi } from '../../utils/ansi';
 import { delayAsync } from '../../utils/delay';
 import { CommandError, SilentError } from '../../utils/errors';
 import { memoize } from '../../utils/fn';
 import { profile } from '../../utils/profile';
-import { Log } from '../../log';
 
 /** The list of input keys will become optional, everything else will remain the same. */
 export type PickPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

@@ -380,13 +380,16 @@ export abstract class BundlerDevServer {
     }
     return location.url ?? null;
   }
-  
+
   public getDevServerUrlOrAssert(options: { hostType?: 'localhost' } = {}): string {
     const instance = this.getDevServerUrl(options);
     if (!instance) {
-      throw new CommandError('DEV_SERVER', `Cannot get the dev server URL before the server has started - bundler[${this.name}]`);
+      throw new CommandError(
+        'DEV_SERVER',
+        `Cannot get the dev server URL before the server has started - bundler[${this.name}]`
+      );
     }
-  
+
     return instance;
   }
 

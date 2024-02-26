@@ -24,10 +24,10 @@ import { ExpoRouterServerManifestV1 } from '../start/server/metro/fetchRouterMan
 import { logMetroErrorAsync } from '../start/server/metro/metroErrorInterface';
 import { getApiRoutesForDirectory } from '../start/server/metro/router';
 import { serializeHtmlWithAssets } from '../start/server/metro/serializeHtml';
-import { learnMore } from '../utils/link';
-import { getFreePortAsync } from '../utils/port';
 import { getMetroServerRoot } from '../start/server/middleware/ManifestMiddleware';
 import { getRscPathFromExpoConfig } from '../start/server/middleware/metroOptions';
+import { learnMore } from '../utils/link';
+import { getFreePortAsync } from '../utils/port';
 import { streamToStringAsync } from '../utils/stream';
 
 const debug = require('debug')('expo:export:generateStaticRoutes') as typeof console.log;
@@ -136,7 +136,7 @@ export async function unstable_getDevServerForClientBoundariesAsync(
   const devServer = devServerManager.getDefaultDevServer();
   assert(devServer instanceof MetroBundlerDevServer);
 
-  return devServer
+  return devServer;
 }
 
 /** Match `(page)` -> `page` */
@@ -222,7 +222,6 @@ export async function getClientBoundariesAsync(
   devServer: MetroBundlerDevServer,
   { files = new Map(), platform }: { files?: ExportAssetMap; platform: string }
 ) {
-
   const { serverManifest, manifest, renderAsync } = await devServer.getStaticRenderFunctionAsync();
 
   const clientBoundaries = await Promise.all(
@@ -257,7 +256,10 @@ export async function getClientBoundariesAsync(
       });
 
       files.set(
-        path.join(devServer.getExpoLineOptions().rscPath!.replace(/^\/+/, ''), route.page.replace(/\/index$/, '') + '/page.txt'),
+        path.join(
+          devServer.getExpoLineOptions().rscPath!.replace(/^\/+/, ''),
+          route.page.replace(/\/index$/, '') + '/page.txt'
+        ),
         {
           contents: rsc,
           targetDomain: 'client',

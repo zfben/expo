@@ -187,7 +187,7 @@ export abstract class ManifestMiddleware<
       protocol,
       rscPath: getRscPathFromExpoConfig(projectConfig.exp),
     });
-    debug(`Resolved bundle URL: ${bundleUrl}`)
+    debug(`Resolved bundle URL: ${bundleUrl}`);
 
     // Resolve all assets and set them on the manifest as URLs
     await this.mutateManifestWithAssetsAsync(projectConfig.exp, bundleUrl);

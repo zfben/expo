@@ -16,6 +16,11 @@ import { ConfigT } from 'metro-config';
 import path from 'path';
 
 import { isEnableHermesManaged, maybeThrowFromInconsistentEngineAsync } from './exportHermes';
+import {
+  getClientBoundariesAsync,
+  unstable_getDevServerForClientBoundariesAsync,
+} from './exportStaticAsync';
+import { ExportAssetMap } from './saveAssets';
 import { loadMetroConfigAsync } from '../start/server/metro/instantiateMetro';
 import { getEntryWithServerRoot } from '../start/server/middleware/ManifestMiddleware';
 import {
@@ -24,11 +29,6 @@ import {
   getMetroDirectBundleOptionsForExpoConfig,
 } from '../start/server/middleware/metroOptions';
 import { CommandError } from '../utils/errors';
-import {
-  getClientBoundariesAsync,
-  unstable_getDevServerForClientBoundariesAsync,
-} from './exportStaticAsync';
-import { ExportAssetMap } from './saveAssets';
 
 export type MetroDevServerOptions = LoadOptions;
 
@@ -159,7 +159,6 @@ async function bundleProductionMetroClientAsync(
     minify: !!bundles[0].minify,
     mode: bundles[0].dev ? 'development' : 'production',
     maxWorkers: metroOptions.maxWorkers,
-    
   });
 
   const buildAsync = async (bundle: BundleOptions): Promise<BundleOutput> => {
@@ -217,7 +216,10 @@ async function bundleProductionMetroClientAsync(
       bundleDetails,
     });
     try {
-      const artifacts = await forkMetroBuildAsync(secondInstanceLol.getMetroInstance()!, bundleOptions);
+      const artifacts = await forkMetroBuildAsync(
+        secondInstanceLol.getMetroInstance()!,
+        bundleOptions
+      );
       reporter.update({
         buildID,
         type: 'bundle_build_done',

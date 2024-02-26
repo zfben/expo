@@ -6,6 +6,7 @@
  */
 
 import type { ProjectConfig } from '@expo/config';
+import type { ExpoRequest, ExpoResponse } from '@expo/server';
 import resolve from 'resolve';
 import resolveFrom from 'resolve-from';
 import { promisify } from 'util';
@@ -15,7 +16,6 @@ import { fetchManifest } from './fetchRouterManifest';
 import { getErrorOverlayHtmlAsync, logMetroError } from './metroErrorInterface';
 import { warnInvalidWebOutput } from './router';
 import { CommandError } from '../../../utils/errors';
-import type { ExpoRequest, ExpoResponse } from '@expo/server';
 
 const debug = require('debug')('expo:start:server:metro') as typeof console.log;
 

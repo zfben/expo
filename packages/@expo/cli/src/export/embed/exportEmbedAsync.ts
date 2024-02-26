@@ -21,14 +21,14 @@ import { stripAnsi } from '../../utils/ansi';
 import { removeAsync } from '../../utils/dir';
 import { setNodeEnv } from '../../utils/nodeEnv';
 import { profile } from '../../utils/profile';
+import { exportAppAsync, exportAppForAssetsAsync } from '../exportApp';
 import { isEnableHermesManaged } from '../exportHermes';
-import { getAssets } from '../fork-bundleAsync';
-import { persistMetroAssetsAsync } from '../persistMetroAssets';
 import {
   getClientBoundariesAsync,
   unstable_getDevServerForClientBoundariesAsync,
 } from '../exportStaticAsync';
-import { exportAppAsync, exportAppForAssetsAsync } from '../exportApp';
+import { getAssets } from '../fork-bundleAsync';
+import { persistMetroAssetsAsync } from '../persistMetroAssets';
 import { persistMetroFilesAsync } from '../saveAssets';
 
 const debug = require('debug')('expo:export:embed');

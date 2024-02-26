@@ -2,6 +2,16 @@ import { getConfig } from '@expo/config';
 import chalk from 'chalk';
 import path from 'path';
 
+import { createMetadataJson } from './createMetadataJson';
+import { exportAssetsAsync } from './exportAssets';
+import { unstable_exportStaticAsync } from './exportStaticAsync';
+import { getVirtualFaviconAssetsAsync } from './favicon';
+import { createBundlesAsync } from './fork-bundleAsync';
+import { getPublicExpoManifestAsync } from './getPublicExpoManifest';
+import { copyPublicFolderAsync } from './publicFolder';
+import { Options } from './resolveOptions';
+import { ExportAssetMap, getFilesFromSerialAssets, persistMetroFilesAsync } from './saveAssets';
+import { createAssetMap, createSourceMapDebugHtml } from './writeContents';
 import * as Log from '../log';
 import { WebSupportProjectPrerequisite } from '../start/doctor/web/WebSupportProjectPrerequisite';
 import { getRouterDirectoryModuleIdWithManifest } from '../start/server/metro/router';
@@ -13,16 +23,6 @@ import {
 import { createTemplateHtmlFromExpoConfigAsync } from '../start/server/webTemplate';
 import { env } from '../utils/env';
 import { setNodeEnv } from '../utils/nodeEnv';
-import { createMetadataJson } from './createMetadataJson';
-import { exportAssetsAsync } from './exportAssets';
-import { unstable_exportStaticAsync } from './exportStaticAsync';
-import { getVirtualFaviconAssetsAsync } from './favicon';
-import { createBundlesAsync } from './fork-bundleAsync';
-import { getPublicExpoManifestAsync } from './getPublicExpoManifest';
-import { copyPublicFolderAsync } from './publicFolder';
-import { Options } from './resolveOptions';
-import { ExportAssetMap, getFilesFromSerialAssets, persistMetroFilesAsync } from './saveAssets';
-import { createAssetMap, createSourceMapDebugHtml } from './writeContents';
 
 export async function exportAppAsync(
   projectRoot: string,
@@ -87,7 +87,7 @@ export async function exportAppForAssetsAsync(
 
   const useRSC = true;
 
-  const useServerRendering = false // useRSC  || ['static', 'server'].includes(exp.web?.output ?? '');
+  const useServerRendering = false; // useRSC  || ['static', 'server'].includes(exp.web?.output ?? '');
   const baseUrl = getBaseUrlFromExpoConfig(exp);
   const rscPath = getRscPathFromExpoConfig(exp);
 
