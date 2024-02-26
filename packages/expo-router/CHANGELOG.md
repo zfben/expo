@@ -13,6 +13,7 @@
 
 ### 🐛 Bug fixes
 
+- Fix issue with skipping all imports. ([#27238](https://github.com/expo/expo/pull/27238) by [@EvanBacon](https://github.com/EvanBacon))
 - Fix issue with top-level catch-all not matching client-side routing behavior. ([#26861](https://github.com/expo/expo/pull/26861) by [@EvanBacon](https://github.com/EvanBacon))
 - Remove error hiding system. ([#26607](https://github.com/expo/expo/pull/26607) by [@EvanBacon](https://github.com/EvanBacon))
 - Make `@testing-library/jest-native` usage optional ([#26650](https://github.com/expo/expo/pull/26650) by [@marklawlor](https://github.com/marklawlor))
@@ -23,6 +24,7 @@
 - Routes under shared routes using the wrong layout ([#26507](https://github.com/expo/expo/pull/26507) by [@marklawlor](https://github.com/marklawlor))
 - Update typed route generation ([#26578](https://github.com/expo/expo/pull/26578) by [@marklawlor](https://github.com/marklawlor))
 - Fix `push` navigation not adding to history while inside a group ([#26678](https://github.com/expo/expo/pull/26678) by [@marklawlor](https://github.com/marklawlor))
+- Fix using parenthesis in urls ([#27120](https://github.com/expo/expo/pull/27120) by [@marklawlor](https://github.com/marklawlor))
 
 ### 💡 Others
 

@@ -25,6 +25,7 @@ import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.core.UseCaseGroup
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.video.FallbackStrategy
 import androidx.camera.video.FileOutputOptions
 import androidx.camera.video.QualitySelector
 import androidx.camera.video.Recorder
@@ -79,6 +80,7 @@ class ExpoCameraView(
   var camera: Camera? = null
   var activeRecording: Recording? = null
 
+  private var cameraProvider: ProcessCameraProvider? = null
   private val providerFuture = ProcessCameraProvider.getInstance(context)
   private var imageCaptureUseCase: ImageCapture? = null
   private var imageAnalysisUseCase: ImageAnalysis? = null
@@ -270,6 +272,7 @@ class ExpoCameraView(
           camera?.let {
             observeCameraState(it.cameraInfo)
           }
+          this.cameraProvider = cameraProvider
         } catch (e: Exception) {
           onMountError(
             CameraMountErrorEvent("Camera component could not be rendered - is there any other instance running?")
@@ -301,11 +304,10 @@ class ExpoCameraView(
       }
 
   private fun createVideoCapture(info: List<CameraInfo>): VideoCapture<Recorder> {
-    val supportedQualities = QualitySelector.getSupportedQualities(info[0])
-    val filteredQualities = arrayListOf(videoQuality.mapToQuality())
-      .filter { supportedQualities.contains(it) }
+    val preferredQuality = videoQuality.mapToQuality()
+    val fallbackStrategy = FallbackStrategy.lowerQualityOrHigherThan(preferredQuality)
 
-    val qualitySelector = QualitySelector.fromOrderedList(filteredQualities)
+    val qualitySelector = QualitySelector.from(preferredQuality, fallbackStrategy)
 
     val recorder = Recorder.Builder()
       .setExecutor(ContextCompat.getMainExecutor(context))
@@ -326,7 +328,6 @@ class ExpoCameraView(
         CameraState.Type.OPEN -> {
           onCameraReady(Unit)
         }
-
         else -> {}
       }
     }
@@ -343,6 +344,12 @@ class ExpoCameraView(
 
   private fun getDeviceOrientation() =
     (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
+
+  fun releaseCamera() {
+    appContext.mainQueue.launch {
+      cameraProvider?.unbindAll()
+    }
+  }
 
   private fun transformBarcodeScannerResultToViewCoordinates(barcode: BarCodeScannerResult) {
     val cornerPoints = barcode.cornerPoints

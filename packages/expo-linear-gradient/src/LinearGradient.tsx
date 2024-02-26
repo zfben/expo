@@ -2,7 +2,7 @@ import * as React from 'react';
 import { ViewProps } from 'react-native';
 import { Platform } from 'expo-modules-core';
 
-import processColor from './processColor'
+import processColor from './processColor';
 import NativeLinearGradient from './NativeLinearGradient';
 import { NativeLinearGradientPoint } from './NativeLinearGradient.types';
 
@@ -60,30 +60,42 @@ export type LinearGradientProps = ViewProps & {
    * @default { x: 0.5, y: 1.0 }
    */
   end?: LinearGradientPoint | null;
+
+  /**
+   * Enables or disables paint dithering. Dithering can reduce the gradient color banding issue.
+   * Setting `false` may improve gradient rendering performance.
+   * @default true
+   * @platform android
+   */
+  dither?: boolean;
 };
 
 /**
  * Renders a native view that transitions between multiple colors in a linear direction.
  */
-export function LinearGradient({ colors, locations, start, end, ...props }: LinearGradientProps) {
-  let resolvedLocations = locations;
-  if (locations && colors.length !== locations.length) {
-    console.warn('LinearGradient colors and locations props should be arrays of the same length');
-    resolvedLocations = locations.slice(0, colors.length);
-  }
+export class LinearGradient extends React.Component<LinearGradientProps> {
+  render() {
+    const { colors, locations, start, end, dither, ...props } = this.props;
+    let resolvedLocations = locations;
+    if (locations && colors.length !== locations.length) {
+      console.warn('LinearGradient colors and locations props should be arrays of the same length');
+      resolvedLocations = locations.slice(0, colors.length);
+    }
 
-  return (
-    <NativeLinearGradient
-      {...props}
-      colors={Platform.select({
-        web: colors as any,
-        default: colors.map(processColor),
-      })}
-      locations={resolvedLocations}
-      startPoint={_normalizePoint(start)}
-      endPoint={_normalizePoint(end)}
-    />
-  );
+    return (
+      <NativeLinearGradient
+        {...props}
+        colors={Platform.select({
+          web: colors as any,
+          default: colors.map(processColor),
+        })}
+        dither={Platform.select({ android: dither })}
+        locations={resolvedLocations}
+        startPoint={_normalizePoint(start)}
+        endPoint={_normalizePoint(end)}
+      />
+    );
+  }
 }
 
 function _normalizePoint(

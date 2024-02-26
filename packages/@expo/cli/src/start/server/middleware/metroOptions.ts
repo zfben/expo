@@ -8,25 +8,14 @@ import { getRouterDirectoryModuleIdWithManifest } from '../metro/router';
 
 const debug = require('debug')('expo:metro:options') as typeof console.log;
 
-export function shouldEnableAsyncImports(projectRoot: string): boolean {
-  return false;
-  if (env.EXPO_NO_METRO_LAZY) {
-    return false;
-  }
-
-  // `@expo/metro-runtime` includes support for the fetch + eval runtime code required
-  // to support async imports. If it's not installed, we can't support async imports.
-  // If it is installed, the user MUST import it somewhere in their project.
-  // Expo Router automatically pulls this in, so we can check for it.
-  return resolveFrom.silent(projectRoot, '@expo/metro-runtime') != null;
-}
+export type MetroEnvironment = 'node' | 'react-server' | 'client';
 
 export type ExpoMetroOptions = {
   platform: string;
   mainModuleName: string;
   mode: string;
   minify?: boolean;
-  environment?: string;
+  environment?: MetroEnvironment;
   serializerOutput?: 'static';
   serializerIncludeMaps?: boolean;
   lazy?: boolean;
@@ -57,6 +46,23 @@ export type SerializerOptions = {
 export type ExpoMetroBundleOptions = MetroBundleOptions & {
   serializerOptions?: SerializerOptions;
 };
+
+export function isServerEnvironment(environment?: any): boolean {
+  return environment === 'node' || environment === 'react-server';
+}
+
+export function shouldEnableAsyncImports(projectRoot: string): boolean {
+  return false;
+  if (env.EXPO_NO_METRO_LAZY) {
+    return false;
+  }
+
+  // `@expo/metro-runtime` includes support for the fetch + eval runtime code required
+  // to support async imports. If it's not installed, we can't support async imports.
+  // If it is installed, the user MUST import it somewhere in their project.
+  // Expo Router automatically pulls this in, so we can check for it.
+  return resolveFrom.silent(projectRoot, '@expo/metro-runtime') != null;
+}
 
 function withDefaults({
   mode = 'development',

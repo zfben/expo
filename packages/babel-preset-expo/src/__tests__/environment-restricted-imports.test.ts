@@ -1,3 +1,7 @@
+/**
+ * Copyright © 2024 650 Industries.
+ */
+
 import * as babel from '@babel/core';
 
 import preset from '..';

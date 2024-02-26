@@ -4,6 +4,8 @@ export declare function getBundler(caller: any): any;
 export declare function getPlatform(caller: any): any;
 export declare function getServerRoot(caller: any): any;
 export declare function getPossibleProjectRoot(caller: any): any;
+/** If bundling for a react-server target. */
+export declare function getIsReactServer(caller: any): boolean;
 export declare function getIsDev(caller: any): any;
 export declare function getIsFastRefreshEnabled(caller: any): any;
 export declare function getIsProd(caller: any): boolean;
