@@ -44,6 +44,7 @@ import {
   metroFetchAsync,
   evalMetroNoHandling,
   requireFileContentsWithMetro,
+  MetroNodeError,
 } from '../getStaticRenderFunctions';
 import { ContextModuleSourceMapsMiddleware } from '../middleware/ContextModuleSourceMapsMiddleware';
 import { CreateFileMiddleware } from '../middleware/CreateFileMiddleware';
@@ -825,10 +826,31 @@ export class MetroBundlerDevServer extends BundlerDevServer {
           respond(res, rscResponse);
         } catch (error: any) {
           await logMetroError(this.projectRoot, { error });
+
+          // If you get a codeFrame error during SSR like when using a Class component in React Server Components, then this
+          // will throw with:
+          // {
+          //   rawObject: {
+          //     type: 'TransformError',
+          //     lineNumber: 0,
+          //     errors: [ [Object] ],
+          //     name: 'SyntaxError',
+          //     message: '...',
+          //   }
+          // }
+          if (error instanceof MetroNodeError) {
+            // Forward the Metro server to the client.
+            // TODO: Cut out the middleman (metro dev server).
+            const status = 500;
+            res.writeHead(status, {
+              'Content-Type': 'application/json; charset=UTF-8',
+            });
+            return res.end(JSON.stringify(error.rawObject));
+          }
+
           res.statusCode = 500;
           res.statusMessage = `Metro Bundler encountered an error (check the terminal for more info).`;
-
-          const sanitizedServerMessage = stripAnsi(error.message);
+          const sanitizedServerMessage = stripAnsi(error.message) ?? error.message;
           res.write(`Metro Bundler encountered an error: ` + sanitizedServerMessage);
           res.end();
         }

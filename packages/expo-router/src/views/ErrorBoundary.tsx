@@ -1,7 +1,7 @@
 import type { LogBoxLog } from '@expo/metro-runtime/symbolicate';
 import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 import React from 'react';
-import { StyleSheet, Text, View, Platform, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TextStyle, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Pressable } from './Pressable';
@@ -52,8 +52,33 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 let StackTrace: React.FC<{ logData: LogBoxLog | null }>;
+let ErrorMessageText: React.FC<{ text: string; style: TextStyle }>;
 
 if (process.env.NODE_ENV === 'development') {
+  const { Ansi } =
+    require('@expo/metro-runtime/build/error-overlay/UI/AnsiHighlight') as typeof import('@expo/metro-runtime/build/error-overlay/UI/AnsiHighlight');
+
+  ErrorMessageText = function ({ text, style }) {
+    return (
+      <Ansi
+        style={[
+          {
+            fontSize: 12,
+            includeFontPadding: false,
+            lineHeight: 20,
+            fontFamily: Platform.select({
+              default: 'Courier',
+              ios: 'Courier New',
+              android: 'monospace',
+            }),
+          },
+          style,
+        ]}
+        text={text}
+      />
+    );
+  };
+
   const { LogContext } = require('@expo/metro-runtime/build/error-overlay/Data/LogContext');
   const {
     LogBoxInspectorStackFrames,
@@ -77,6 +102,10 @@ if (process.env.NODE_ENV === 'development') {
     );
   };
 } else {
+  ErrorMessageText = function ({ text, style }) {
+    return <Text role="heading" aria-level={2} children={text} style={style} />;
+  };
+
   StackTrace = function () {
     return <View style={{ flex: 1 }} />;
   };
@@ -111,9 +140,7 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
           <Text role="heading" aria-level={1} style={styles.title}>
             Something went wrong
           </Text>
-          <Text role="heading" aria-level={2} style={styles.errorMessage}>
-            Error: {error.message}
-          </Text>
+          <ErrorMessageText style={styles.errorMessage} text={`Error: ${error.message}`} />
         </View>
 
         <StackTrace logData={logBoxLog} />

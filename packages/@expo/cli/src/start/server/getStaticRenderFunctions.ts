@@ -24,7 +24,7 @@ import { profile } from '../../utils/profile';
 /** The list of input keys will become optional, everything else will remain the same. */
 export type PickPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
-class MetroNodeError extends Error {
+export class MetroNodeError extends Error {
   constructor(
     message: string,
     public rawObject: any

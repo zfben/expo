@@ -56,6 +56,16 @@ console.log('[RSC]: Base path:', BASE_PATH, { BASE_URL: process.env.EXPO_BASE_UR
 const checkStatus = async (responsePromise) => {
     const response = await responsePromise;
     if (!response.ok) {
+        // NOTE(EvanBacon): Transform the Metro development error into a JS error that can be used by LogBox.
+        // This was tested against using a Class component in a server component.
+        if (__DEV__ && response.status === 500) {
+            const errorJson = await response.json();
+            const err = new Error(errorJson.message);
+            for (const key in errorJson) {
+                err[key] = errorJson[key];
+            }
+            throw err;
+        }
         const err = new Error(response.statusText);
         err.statusCode = response.status;
         throw err;
