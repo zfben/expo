@@ -55,7 +55,7 @@ function App() {
         <react_native_safe_area_context_1.SafeAreaProvider>
           <Try_1.Try catch={exports_1.ErrorBoundary}>
             <client_1.Root initialInput="layout" initialSearchParamsString={searchParams}>
-              <client_1.Slot id={'layout'}/>
+              <client_1.Slot id={'layout/page'}/>
             </client_1.Root>
           </Try_1.Try>
         </react_native_safe_area_context_1.SafeAreaProvider>

@@ -62,7 +62,7 @@ export function App() {
         <SafeAreaProvider>
           <Try catch={ErrorBoundary}>
             <Root initialInput="layout" initialSearchParamsString={searchParams}>
-              <Slot id={'layout'} />
+              <Slot id={'layout/page'} />
             </Root>
           </Try>
         </SafeAreaProvider>

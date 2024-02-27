@@ -26,6 +26,7 @@ module.exports = {
     baseUrl: process.env.EXPO_E2E_BASE_PATH || undefined,
     tsconfigPaths: process.env.EXPO_USE_PATH_ALIASES,
     typedRoutes: true,
+    serverComponents: true,
   },
   web: {
     output: 'single',

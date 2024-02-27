@@ -19,6 +19,7 @@ import {
   // EXTERNAL_RSC_MANIFEST,
   METRO_EXTERNALS_FOLDER,
   METRO_SHIMS_FOLDER,
+  REACT_CANARY_FOLDER,
   getNodeExternalModuleId,
   isNodeExternal,
   setupNodeExternals,
@@ -130,15 +131,20 @@ export function withExtendedResolver(
     isTsconfigPathsEnabled,
     isFastResolverEnabled,
     isExporting,
+    isReactCanaryEnabled,
   }: {
     tsconfig: TsConfigPaths | null;
     isTsconfigPathsEnabled?: boolean;
     isFastResolverEnabled?: boolean;
     isExporting?: boolean;
+    isReactCanaryEnabled: boolean;
   }
 ) {
   if (isFastResolverEnabled) {
     Log.warn(`Experimental bundling features are enabled.`);
+  }
+  if (isReactCanaryEnabled) {
+    Log.warn(`Experimental React Server Components support is enabled.`);
   }
 
   // Get the `transformer.assetRegistryPath`
@@ -226,6 +232,8 @@ export function withExtendedResolver(
   }
 
   let nodejsSourceExtensions: string[] | null = null;
+
+  const canaryFolder = path.join(config.projectRoot, REACT_CANARY_FOLDER);
 
   const shimsFolder = path.join(config.projectRoot, METRO_SHIMS_FOLDER);
 
@@ -478,6 +486,24 @@ export function withExtendedResolver(
         result.filePath = assetRegistryPath;
       }
 
+      if (isReactCanaryEnabled) {
+        // When server components are enabled, redirect React Native's renderer to the canary build
+        // this will enable the use hook and other requisite features from React 19.
+        if (platform !== 'web' && result.filePath.includes('node_modules')) {
+          const normalName = normalizeSlashes(result.filePath)
+            // Drop everything up until the `node_modules` folder.
+            .replace(/.*node_modules\//, '');
+
+          // Files are added via the `@expo/cli/static/canary` folder.
+          const shimPath = path.join(canaryFolder, normalName);
+          if (fs.existsSync(shimPath)) {
+            debug(`Redirecting React Native module "${result.filePath}" to canary build`);
+            // @ts-expect-error: `readonly` for some reason.
+            result.filePath = shimPath;
+          }
+        }
+      }
+
       if (platform === 'web' && result.filePath.includes('node_modules')) {
         // Replace with static shims
 
@@ -583,6 +609,7 @@ export async function withMetroMultiPlatformAsync(
     webOutput,
     isFastResolverEnabled,
     isExporting,
+    isReactCanaryEnabled,
   }: {
     config: ConfigT;
     exp: ExpoConfig;
@@ -591,6 +618,7 @@ export async function withMetroMultiPlatformAsync(
     webOutput?: 'single' | 'static' | 'server';
     isFastResolverEnabled?: boolean;
     isExporting?: boolean;
+    isReactCanaryEnabled: boolean;
   }
 ) {
   if (!config.projectRoot) {
@@ -627,7 +655,10 @@ export async function withMetroMultiPlatformAsync(
     tsconfig = await loadTsConfigPathsAsync(projectRoot);
   }
 
-  await setupShimFiles(projectRoot);
+  await setupShimFiles(projectRoot, {
+    shims: true,
+    canary: isReactCanaryEnabled,
+  });
   await setupNodeExternals(projectRoot);
 
   let expoConfigPlatforms = Object.entries(platformBundlers)
@@ -650,6 +681,7 @@ export async function withMetroMultiPlatformAsync(
     isExporting,
     isTsconfigPathsEnabled,
     isFastResolverEnabled,
+    isReactCanaryEnabled,
   });
 }
 
