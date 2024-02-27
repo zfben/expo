@@ -2,6 +2,7 @@
 
 import type { ReactElement } from 'react';
 import { View, Text, Button } from 'react-native';
+// TODO: Some issue with metro serializing the deps in the wrong order when this comes before `react-native` lol
 import { useState, useTransition } from 'react';
 
 export const Counter = ({ greet }: { greet: (name: string) => Promise<ReactElement> }) => {
