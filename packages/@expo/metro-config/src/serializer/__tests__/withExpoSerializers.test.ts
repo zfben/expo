@@ -1173,32 +1173,32 @@ describe('serializes', () => {
   });
 });
 
-const { renderToPipeableStream } = require('react-server-dom-webpack/server.node');
+// const { renderToPipeableStream } = require('react-server-dom-webpack/server.node');
 
-async function renderFlight(component: React.ReactNode, moduleMap: any) {
-  const rsc = renderToPipeableStream(component, moduleMap);
+// async function renderFlight(component: React.ReactNode, moduleMap: any) {
+//   const rsc = renderToPipeableStream(component, moduleMap);
 
-  const rscStream = new ReadableStream({
-    start(controller) {
-      rsc.pipe(
-        new Writable({
-          write(chunk, encoding, callback) {
-            controller.enqueue(chunk);
-            callback();
-          },
-          destroy(error, callback) {
-            if (error) {
-              controller.error(error);
-            } else {
-              controller.close();
-            }
-            callback(error);
-          },
-        })
-      );
-    },
-  });
+//   const rscStream = new ReadableStream({
+//     start(controller) {
+//       rsc.pipe(
+//         new Writable({
+//           write(chunk, encoding, callback) {
+//             controller.enqueue(chunk);
+//             callback();
+//           },
+//           destroy(error, callback) {
+//             if (error) {
+//               controller.error(error);
+//             } else {
+//               controller.close();
+//             }
+//             callback(error);
+//           },
+//         })
+//       );
+//     },
+//   });
 
-  const res = await rscStream.getReader().read();
-  return res.value.toString().trim();
-}
+//   const res = await rscStream.getReader().read();
+//   return res.value.toString().trim();
+// }

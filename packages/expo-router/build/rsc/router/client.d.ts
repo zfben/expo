@@ -19,7 +19,7 @@ export type LinkProps = {
 } & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'>;
 export declare function Link({ to, children, pending, notPending, unstable_prefetchOnEnter, ...props }: LinkProps): ReactElement;
 export declare function Router({ children }: {
-    children: any;
+    children?: ReactElement;
 }): import("react").FunctionComponentElement<Omit<{
     initialInput?: string | undefined;
     initialSearchParamsString?: string | undefined;

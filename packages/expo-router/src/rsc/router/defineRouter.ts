@@ -1,3 +1,4 @@
+import OS from 'expo-router/os';
 import { createElement, Fragment } from 'react';
 import type { FunctionComponent, ReactNode } from 'react';
 
@@ -13,8 +14,6 @@ import { Children, Slot } from '../client.js';
 import { getPathMapping, PathSpec } from '../path.js';
 import type { RenderEntries, GetBuildConfig, GetSsrConfig } from '../server.js';
 import { defineEntries } from '../server.js';
-
-import OS from 'expo-router/os';
 
 const ShoudSkipComponent = ({ shouldSkip }: { shouldSkip: ShouldSkip }) => {
   // TODO: Modify the React Native renderer to support Document Metadata and other head elements

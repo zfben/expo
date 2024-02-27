@@ -226,9 +226,13 @@ export function createBundleUrlPathFromExpoConfig(
 }
 
 export function createBundleUrlPath(options: ExpoMetroOptions): string {
+  const queryParams = createBundleUrlSearchParams(options);
+  return `/${encodeURI(options.mainModuleName)}.bundle?${queryParams.toString()}`;
+}
+
+export function createBundleUrlSearchParams(options: ExpoMetroOptions): URLSearchParams {
   const {
     platform,
-    mainModuleName,
     mode,
     minify,
     environment,
@@ -245,7 +249,6 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
     inlineSourceMap,
     isExporting,
     clientBoundaries,
-    // ignoredModules,
   } = withDefaults(options);
 
   const dev = String(mode !== 'production');
@@ -316,5 +319,5 @@ export function createBundleUrlPath(options: ExpoMetroOptions): string {
     queryParams.append('serializer.map', String(serializerIncludeMaps));
   }
 
-  return `/${encodeURI(mainModuleName)}.bundle?${queryParams.toString()}`;
+  return queryParams;
 }

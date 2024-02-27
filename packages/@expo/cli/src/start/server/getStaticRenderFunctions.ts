@@ -62,7 +62,7 @@ const getRenderModuleId = (
   const moduleId = resolveFrom.silent(projectRoot, entry);
   if (!moduleId) {
     throw new Error(
-      `A version of expo-router with Node.js support is not installed in the project.`
+      `A version of expo-router with Node.js support is not installed in the project. Expected module: ${entry}`
     );
   }
 

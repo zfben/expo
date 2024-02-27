@@ -301,7 +301,7 @@ function InnerRouter(props) {
   );
 }
 
-export function Router({ children }) {
+export function Router({ children }: { children?: ReactElement }) {
   const loc = parseLocation();
   const initialInput = getInputString(loc.path);
   const initialSearchParamsString = loc.searchParams.toString();

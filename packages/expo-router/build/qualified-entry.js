@@ -16,8 +16,6 @@ const react_native_safe_area_context_1 = require("react-native-safe-area-context
 const exports_1 = require("./exports");
 const head_1 = require("./head");
 const client_1 = require("./rsc/client");
-// MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
-// import { Router } from './rsc/router/client';
 const Try_1 = require("./views/Try");
 // import { Router } from './rsc/router/client';
 // import ContextNavigator from './rsc-navigator';

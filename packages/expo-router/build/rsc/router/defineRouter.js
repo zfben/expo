@@ -4,11 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defineRouter = void 0;
+const os_1 = __importDefault(require("expo-router/os"));
 const react_1 = require("react");
 const common_js_1 = require("./common.js");
 const client_js_1 = require("../client.js");
 const path_js_1 = require("../path.js");
-const os_1 = __importDefault(require("expo-router/os"));
 const ShoudSkipComponent = ({ shouldSkip }) => {
     // TODO: Modify the React Native renderer to support Document Metadata and other head elements
     if (os_1.default === 'web') {

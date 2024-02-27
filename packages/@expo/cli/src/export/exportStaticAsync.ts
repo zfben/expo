@@ -220,7 +220,11 @@ function makeRuntimeEntryPointsAbsolute(manifest: ExpoRouterRuntimeManifest, app
 export async function getClientBoundariesAsync(
   projectRoot: string,
   devServer: MetroBundlerDevServer,
-  { files = new Map(), platform }: { files?: ExportAssetMap; platform: string }
+  {
+    files = new Map(),
+    platform,
+    engine,
+  }: { files?: ExportAssetMap; platform: string; engine?: 'hermes' }
 ) {
   const { serverManifest, manifest, renderAsync } = await devServer.getStaticRenderFunctionAsync();
 
@@ -231,8 +235,9 @@ export async function getClientBoundariesAsync(
       const pipe = await devServer.renderRscToReadableStream({
         route: route.file,
         method: 'GET',
+        engine,
         platform,
-        url: new URL('/', devServer.getDevServerUrl()!),
+        searchParams: new URLSearchParams(),
       });
 
       const rsc = await streamToStringAsync(pipe);
@@ -303,6 +308,8 @@ async function exportFromServerAsync(
     await getClientBoundariesAsync(projectRoot, devServer, {
       platform,
       files,
+      // TODO
+      engine: 'hermes',
     });
 
   const resources = await devServer.getStaticResourcesAsync({

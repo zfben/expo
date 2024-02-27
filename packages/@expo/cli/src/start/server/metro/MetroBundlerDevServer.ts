@@ -67,6 +67,8 @@ import {
   getRscPathFromExpoConfig,
   getBaseUrlFromExpoConfig,
   shouldEnableAsyncImports,
+  createBundleUrlPathFromExpoConfig,
+  createBundleUrlSearchParams,
 } from '../middleware/metroOptions';
 import { prependMiddleware } from '../middleware/mutations';
 import { ServerNext, ServerRequest, ServerResponse } from '../middleware/server.types';
@@ -583,19 +585,139 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     return getRscEntries;
   }
 
+  private getResolveClientEntry(context: { platform: string; engine?: 'hermes' }) {
+    // TODO: Memoize this
+    const serverRoot = getMetroServerRoot(this.projectRoot);
+
+    // NOTE: MUST MATCH THE IMPL IN ExpoMetroConfig.ts
+    function stringToHash(str: string): number {
+      let hash = 0;
+      if (str.length === 0) return hash;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash |= 0; // Convert to 32bit integer
+      }
+      return Math.abs(hash);
+    }
+
+    const fileURLToFilePath = (fileURL: string) => {
+      if (!fileURL.startsWith('file://')) {
+        throw new Error('Not a file URL');
+      }
+      return decodeURI(fileURL.slice('file://'.length));
+    };
+
+    const {
+      mode,
+      minify,
+      rscPath,
+      isExporting,
+      baseUrl,
+      routerRoot,
+      asyncRoutes,
+      preserveEnvVars,
+      lazy,
+    } = this.instanceMetroOptions;
+
+    assert(
+      isExporting != null &&
+        baseUrl != null &&
+        mode != null &&
+        routerRoot != null &&
+        minify != null &&
+        asyncRoutes != null,
+      'The server must be started.'
+    );
+
+    return (
+      file: string // filePath or fileURL
+    ) => {
+      const searchParams = createBundleUrlSearchParams({
+        mainModuleName: '',
+        platform: context.platform,
+        mode,
+        minify,
+        // environment: 'client',
+        // serializerOutput,
+        // serializerIncludeMaps,
+        lazy,
+        preserveEnvVars,
+        asyncRoutes,
+        baseUrl,
+        rscPath,
+        routerRoot,
+        isExporting,
+
+        // TODO:
+        engine: context.engine,
+        bytecode: false,
+        clientBoundaries: [],
+        inlineSourceMap: false,
+      });
+
+      const clientReferenceUrl = new URL(this.getDevServerUrlOrAssert());
+
+      clientReferenceUrl.search = searchParams.toString();
+
+      if (!isExporting) {
+        searchParams.set('modulesOnly', 'true');
+        searchParams.set('runModule', 'false');
+
+        // TODO: Maybe add a new param to execute and return the module exports.
+
+        const filePath = file.startsWith('file://') ? fileURLToFilePath(file) : file;
+        const metroOpaqueId = stringToHash(filePath);
+        const relativeFilePath = path.relative(serverRoot, filePath);
+        // TODO: May need to remove the original extension.
+        clientReferenceUrl.pathname = relativeFilePath + '.bundle';
+        // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
+        clientReferenceUrl.hash = String(metroOpaqueId);
+
+        // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
+        const id =
+          clientReferenceUrl.pathname + clientReferenceUrl.search + clientReferenceUrl.hash;
+        return { id, url: id };
+      } else {
+        // if (!file.startsWith('@id/')) {
+        //   throw new Error('Unexpected client entry in PRD: ' + file);
+        // }
+        // url.pathname = file.slice('@id/'.length);
+
+        // TODO: This should be different for prod
+        const filePath = file.startsWith('file://') ? fileURLToFilePath(file) : file;
+        const metroOpaqueId = stringToHash(filePath);
+        const relativeFilePath = path.relative(serverRoot, filePath);
+        // TODO: May need to remove the original extension.
+        clientReferenceUrl.pathname = relativeFilePath;
+        // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
+        clientReferenceUrl.hash = String(metroOpaqueId);
+
+        // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
+        const id = '/' + clientReferenceUrl.hash;
+        return {
+          id,
+          url: clientReferenceUrl.pathname + clientReferenceUrl.search + clientReferenceUrl.hash,
+        };
+      }
+    };
+  }
+
   async renderRscToReadableStream({
     route,
-    url,
+    searchParams,
     method,
     platform,
     req,
+    engine,
   }: {
     route: string;
-    url: URL;
+    searchParams: URLSearchParams;
     // eslint-disable-next-line @typescript-eslint/ban-types
-    method: 'POST' | 'GET' | (string & {});
+    method: 'POST' | 'GET';
     platform: string;
     req?: ServerRequest;
+    engine?: 'hermes';
   }) {
     const { baseUrl, mode, routerRoot, isExporting } = this.instanceMetroOptions;
     assert(
@@ -608,16 +730,16 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
     // TODO: Extract CSS Modules / Assets from the bundler process
     const {
-      filename: serverUrl,
+      // filename: serverUrl,
       fn: {
-        renderToPipeableStream,
+        renderRsc,
         // renderRouteWithContextKey, getRouteNodeForPathname
       },
     } = await this.ssrLoadModuleAndHmrEntry<
-      //   typeof import('expo-router/build/static/renderToPipeableStream')
+      //   typeof import('expo-router/build/static/rsc-renderer')
       // >('expo-router/node/rsc.js', {
-      typeof import('expo-router/src/static/renderToPipeableStream')
-    >('expo-router/src/static/renderToPipeableStream.tsx', {
+      typeof import('expo-router/src/static/rsc-renderer')
+    >('expo-router/src/static/rsc-renderer.ts', {
       environment: 'react-server',
       platform,
     });
@@ -636,26 +758,33 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     const normalizedRouteKey = (
       require('expo-router/build/matchers') as typeof import('expo-router/build/matchers')
     ).getNameFromFilePath(route);
-    // TODO: Memoize this
-    const serverRoot = getMetroServerRoot(this.projectRoot);
 
-    const pipe = await renderToPipeableStream({
-      mode,
+    // TODO: Add config
+    const config = {};
+
+    const pipe = await renderRsc({
+      // isDev: mode === 'development',
+
+      body: createReadableStreamFromReadable(req!)!,
+      // body: method === 'POST' ? createReadableStreamFromReadable(req!) : null,
       entries: await this.getExpoRouterRscEntriesGetterAsync({ platform }),
-      searchParams: url.searchParams,
+      searchParams,
       context: {},
       // elements: {
       //   [route]: elements,
       // },
       isExporting: !!isExporting,
-      serverUrl: new URL(serverUrl),
-      serverRoot,
-      url,
+      resolveClientEntry: this.getResolveClientEntry({ platform, engine }),
+      config,
+      // serverRoot,
+      // url,
       method,
       input: route,
-      body: method === 'POST' ? createReadableStreamFromReadable(req!) : null,
+
       customImport: async (relativeDevServerUrl: string): Promise<any> => {
         const url = new URL(relativeDevServerUrl, this.getDevServerUrlOrAssert());
+
+        url.searchParams.set('modulesOnly', 'true');
 
         // TODO: Apply all params here.
         url.searchParams.set('runModule', 'true');
@@ -672,13 +801,14 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         // console.log(contents);
         return evalMetro(this.projectRoot, contents.src, contents.filename);
       },
-      onReload: (...args: any[]) => {
-        // Send reload command to client from Fast Refresh code.
-        debug('[CLI]: Reload RSC:', args);
+      // serverUrl: new URL(serverUrl),
+      // onReload: (...args: any[]) => {
+      //   // Send reload command to client from Fast Refresh code.
+      //   debug('[CLI]: Reload RSC:', args);
 
-        // TODO: Target only certain platforms
-        this.broadcastMessage('reload');
-      },
+      //   // TODO: Target only certain platforms
+      //   this.broadcastMessage('reload');
+      // },
       moduleIdCallback: (moduleInfo: {
         id: string;
         chunks: string[];
@@ -740,7 +870,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
     // Required for symbolication:
     process.env.EXPO_DEV_SERVER_ORIGIN = `http://localhost:${options.port}`;
-    const serverRoot = getMetroServerRoot(this.projectRoot);
+    // const serverRoot = getMetroServerRoot(this.projectRoot);
 
     const { metro, server, middleware, messageSocket } = await instantiateMetroAsync(
       this,
@@ -807,8 +937,25 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         const url = new URL(req.url!, this.getDevServerUrlOrAssert());
         const route = decodeInput(url.pathname.replace(rscPathPrefix, '')) || '/';
 
+        const engine = url.searchParams.get('transform.engine');
+        if (engine && !['hermes'].includes(engine)) {
+          res.statusCode = 500;
+          res.statusMessage = `Query parameter "transform.engine" is an unsupported value: ${engine}`;
+          return res.end();
+        }
         const platform = url.searchParams.get('platform') ?? req.headers['expo-platform'];
+        if (typeof platform !== 'string' || !platform) {
+          res.statusCode = 500;
+          res.statusMessage = 'Missing expo-platform header or platform query parameter';
+          return res.end();
+        }
         console.log('sendResponse>', platform, url, req.headers);
+        const method = req.method;
+        if (!method || !['POST', 'GET'].includes(method)) {
+          res.statusCode = 405;
+          res.statusMessage = 'Method Not Allowed';
+          return res.end();
+        }
 
         try {
           if (!platform) {
@@ -817,10 +964,11 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
           const pipe = await this.renderRscToReadableStream({
             route,
-            method: req.method!,
+            searchParams: url.searchParams,
             platform,
-            url,
             req,
+            method: method as 'POST' | 'GET',
+            engine: engine as 'hermes' | undefined,
           });
 
           const rscResponse = new ExpoResponse(pipe);

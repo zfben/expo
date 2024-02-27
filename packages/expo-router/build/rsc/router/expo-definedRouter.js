@@ -35,7 +35,7 @@ const getMappingAndItems = async (id) => {
     return { mapping, items };
 };
 const getPathConfig = async () => {
-    const files = _ctx_1.ctx.keys();
+    const files = _ctx_1.ctx.keys().map((file) => file.replace(/^\.\//, ''));
     return files.map((file) => {
         const names = file.split('/').filter(Boolean).slice(0, -1);
         const pathSpec = names.map((name) => {
@@ -87,7 +87,11 @@ function wakuRouteIdToExpoRoute(route, routeId) {
 }
 exports.default = (0, defineRouter_1.defineRouter)(
 // getPathConfig
-() => getPathConfig(), 
+async () => {
+    const pathConfig = await getPathConfig();
+    console.log('[CLI|ROUTER]: getPathConfig', require('util').inspect(pathConfig, { depth: 20, colors: true }));
+    return pathConfig;
+}, 
 // getComponent (id is "**/layout" or "**/page")
 async (id, unstable_setShouldSkip) => {
     unstable_setShouldSkip({}); // always skip if possible

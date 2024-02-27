@@ -8,7 +8,7 @@
 import { readableStreamToString } from '@remix-run/node/dist/stream';
 import chalk from 'chalk';
 import path from 'path';
-import React from 'react';
+// import React from 'react';
 import type { ReactNode } from 'react';
 import { renderToReadableStream, decodeReply } from 'react-server-dom-webpack/server.edge';
 
@@ -16,7 +16,7 @@ import { ctx } from '../../_ctx';
 import OS from '../../os';
 import { getRoutes } from '../getRoutes';
 import { getServerManifest } from '../getServerManifest';
-import { SHOULD_SKIP_ID, ShouldSkip } from '../rsc/router/common';
+// import { SHOULD_SKIP_ID, ShouldSkip } from '../rsc/router/common';
 import { EntriesDev, EntriesPrd } from '../rsc/server';
 
 // Importing this from the root will cause a second copy of source-map-support to be loaded which will break stack traces.
@@ -77,47 +77,42 @@ export async function getRouteNodeForPathname(pathname: string) {
   return matchedNode;
 }
 
-export async function renderToPipeableStream(
-  {
-    mode,
-    entries,
-    // elements,
-    searchParams,
-    isExporting,
-    url,
-    serverUrl,
-    serverRoot,
-    method,
-    input,
-    body,
-    contentType,
-    customImport,
-    onReload,
-    moduleIdCallback,
-    context,
-  }: {
-    context: unknown;
-    entries: EntriesDev;
-    searchParams: URLSearchParams;
-    // elements: Record<string, ReactNode>;
-    isExporting: boolean;
-    mode: string;
-    serverRoot: string;
-    url: URL;
-    serverUrl: URL;
-    method: string;
+type ResolvedConfig = any;
+
+export async function renderRsc(
+  opts: {
+    // TODO:
+    config: ResolvedConfig;
+
+    // Done
     input: string;
+    searchParams: URLSearchParams;
+    method: 'GET' | 'POST';
+    context: unknown;
     body?: ReadableStream | undefined;
     contentType?: string | undefined;
-    customImport: (file: string) => Promise<any>;
-    onReload: () => void;
     moduleIdCallback?: (module: {
       id: string;
       chunks: string[];
       name: string;
       async: boolean;
     }) => void;
-  }
+
+    // Others
+    // url: URL;
+    // serverRoot: string;
+    // serverUrl: URL;
+    // onReload: () => void;
+    resolveClientEntry: (id: string) => { id: string; url: string };
+  } & (
+    | { isExporting: true; entries: EntriesPrd }
+    | {
+        isExporting: false;
+        entries: EntriesDev;
+        customImport: (fileURL: string) => Promise<unknown>;
+      }
+  )
+
   // moduleMap: WebpackManifest
 ): Promise<ReadableStream> {
   // if (!isExporting) {
@@ -147,61 +142,96 @@ export async function renderToPipeableStream(
   // }
 
   const {
+    entries,
+    // elements,
+    searchParams,
+    // isExporting,
+    // url,
+    // serverRoot,
+    method,
+    input,
+    body,
+    contentType,
+
+    // serverUrl,
+    // onReload,
+    moduleIdCallback,
+    context,
+  } = opts;
+
+  const {
     default: { renderEntries },
     loadModule,
   } = entries as (EntriesDev & { loadModule: undefined }) | EntriesPrd;
 
-  if (!isExporting) {
-    url.searchParams.set('modulesOnly', 'true');
-    url.searchParams.set('runModule', 'false');
+  // if (!isExporting) {
+  //   url.searchParams.set('modulesOnly', 'true');
+  //   url.searchParams.set('runModule', 'false');
 
-    // TODO: Maybe add a new param to execute and return the module exports.
-  }
+  //   // TODO: Maybe add a new param to execute and return the module exports.
+  // }
 
-  const resolveClientEntry = (
-    file: string // filePath or fileURL
+  const resolveClientEntry = opts.resolveClientEntry;
+  // const resolveClientEntry = isExporting ? opts.resolveClientEntry : resolveClientEntryForPrd;
+
+  // const resolveClientEntry = (
+  //   file: string // filePath or fileURL
+  // ) => {
+  //   if (!isExporting) {
+  //     const filePath = file.startsWith('file://') ? fileURLToFilePath(file) : file;
+  //     const metroOpaqueId = stringToHash(filePath);
+  //     const relativeFilePath = path.relative(serverRoot, filePath);
+  //     // TODO: May need to remove the original extension.
+  //     url.pathname = relativeFilePath + '.bundle';
+  //     // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
+  //     url.hash = String(metroOpaqueId);
+
+  //     // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
+  //     const id = url.pathname + url.search + url.hash;
+  //     return { id, url: id };
+  //   } else {
+  //     // if (!file.startsWith('@id/')) {
+  //     //   throw new Error('Unexpected client entry in PRD: ' + file);
+  //     // }
+  //     // url.pathname = file.slice('@id/'.length);
+
+  //     // TODO: This should be different for prod
+  //     const filePath = file.startsWith('file://') ? fileURLToFilePath(file) : file;
+  //     const metroOpaqueId = stringToHash(filePath);
+  //     const relativeFilePath = path.relative(serverRoot, filePath);
+  //     // TODO: May need to remove the original extension.
+  //     url.pathname = relativeFilePath;
+  //     // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
+  //     url.hash = String(metroOpaqueId);
+
+  //     // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
+  //     const id = '/' + url.hash;
+  //     return { id, url: url.pathname + url.search + url.hash };
+  //   }
+  // };
+
+  const render = async (
+    renderContext: RenderContext,
+    input: string,
+    searchParams: URLSearchParams
   ) => {
-    if (!isExporting) {
-      const filePath = file.startsWith('file://') ? fileURLToFilePath(file) : file;
-      const metroOpaqueId = stringToHash(filePath);
-      const relativeFilePath = path.relative(serverRoot, filePath);
-      // TODO: May need to remove the original extension.
-      url.pathname = relativeFilePath + '.bundle';
-      // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
-      url.hash = String(metroOpaqueId);
-
-      // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
-      const id = url.pathname + url.search + url.hash;
-      return { id, url: id };
-    } else {
-      // if (!file.startsWith('@id/')) {
-      //   throw new Error('Unexpected client entry in PRD: ' + file);
-      // }
-      // url.pathname = file.slice('@id/'.length);
-
-      // TODO: This should be different for prod
-      const filePath = file.startsWith('file://') ? fileURLToFilePath(file) : file;
-      const metroOpaqueId = stringToHash(filePath);
-      const relativeFilePath = path.relative(serverRoot, filePath);
-      // TODO: May need to remove the original extension.
-      url.pathname = relativeFilePath;
-      // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
-      url.hash = String(metroOpaqueId);
-
-      // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
-      const id = '/' + url.hash;
-      return { id, url: url.pathname + url.search + url.hash };
+    const elements = await renderEntries.call(renderContext, input, searchParams);
+    if (elements === null) {
+      const err = new Error('No function component found');
+      (err as any).statusCode = 404; // HACK our convention for NotFound
+      throw err;
     }
+    if (Object.keys(elements).some((key) => key.startsWith('_'))) {
+      throw new Error('"_" prefix is reserved');
+    }
+    return elements;
   };
 
   const bundlerConfig = new Proxy(
     {},
     {
       get(_target, encodedId: string) {
-        console.log('Get manifest entry:', encodedId);
-        // const [file, name] = encodedId.split('#') as [string, string];
-        // return moduleMap[encodedId];
-
+        // console.log('Get manifest entry:', encodedId);
         const [
           // File is the on-disk location of the module, this is injected during the "use client" transformation (babel).
           file,
@@ -211,11 +241,10 @@ export async function renderToPipeableStream(
 
         // We'll augment the file path with the incoming RSC request which will forward the metro props required to make a cache hit, e.g. platform=web&...
         // This is similar to how we handle lazy bundling.
-        const entry = resolveClientEntry(file);
-        console.log('Returning server module:', entry, 'for', encodedId);
-        moduleIdCallback?.({ id: entry.url, chunks: [entry.url], name, async: true });
-
-        return { id: entry.id, chunks: [entry.id], name, async: true };
+        const id = resolveClientEntry(file);
+        console.log('Returning server module:', id, 'for', encodedId);
+        moduleIdCallback?.({ id: id.url, chunks: [id.url], name, async: true });
+        return { id: id.id, chunks: [id.id], name, async: true };
       },
     }
   );
@@ -244,20 +273,21 @@ export async function renderToPipeableStream(
     }
     const [fileId, name] = rsfId.split('#') as [string, string];
     let mod: any;
-    if (!isExporting) {
+    if (opts.isExporting === false) {
       // console.log('Loading module:', fileId, name);
-      mod = await customImport(resolveClientEntry(fileId).url);
+      mod = await opts.customImport(resolveClientEntry(fileId).url);
       // console.log('Loaded module:', mod);
     } else {
-      // if (!fileId.startsWith('@id/')) {
-      //   throw new Error('Unexpected server entry in PRD');
-      // }
-      // mod = await loadModule!(fileId.slice('@id/'.length));
+      throw new Error('TODO: Make this work with Metro');
+      if (!fileId.startsWith('@id/')) {
+        throw new Error('Unexpected server entry in PRD');
+      }
+      mod = await loadModule!(fileId.slice('@id/'.length));
     }
     const fn = mod[name] || mod;
     // console.log('Target function:', fn);
 
-    const elements: Promise<Record<string, ReactNode>> = Promise.resolve({});
+    let elements: Promise<Record<string, ReactNode>> = Promise.resolve({});
     let rendered = false;
 
     // TODO: Define context
@@ -267,98 +297,19 @@ export async function renderToPipeableStream(
         throw new Error('already rendered');
       }
       const renderContext: RenderContext = { rerender, context };
-      throw new Error('TODO: Rerender');
-      // elements = Promise.all([elements, render(renderContext, input, searchParams)]).then(
-      //   ([oldElements, newElements]) => ({
-      //     ...oldElements,
-      //     ...newElements,
-      //   })
-      // );
+      elements = Promise.all([elements, render(renderContext, input, searchParams)]).then(
+        ([oldElements, newElements]) => ({
+          ...oldElements,
+          ...newElements,
+        })
+      );
     };
     const renderContext: RenderContext = { rerender, context };
     const data = await fn.apply(renderContext, args);
     const resolvedElements = await elements;
     rendered = true;
-    return renderToReadableStream({ ...resolvedElements, _value: data }, bundlerConfig, {
-      onPostpone(reason) {},
-    });
+    return renderToReadableStream({ ...resolvedElements, _value: data }, bundlerConfig);
   }
-
-  //   moduleMap
-
-  // TODO: Populate this with Expo Router results.
-  // const renderEntries = async (input: string) => {
-  //   const routes = getRoutes(ctx, {
-  //     importMode: 'lazy',
-  //   });
-  //   console.log('serverManifest.htmlRoutes', routes);
-  //   const serverManifest = await getServerManifest(routes);
-
-  //   console.log('serverManifest.htmlRoutes', serverManifest.htmlRoutes);
-  //   const matchedNode = serverManifest.htmlRoutes.find((file) =>
-  //     new RegExp(file.namedRegex).test(input)
-  //   );
-  //   if (!matchedNode) {
-  //     throw new Error(
-  //       'No matching route found for: ' + input + '. Expected: ' + ctx.keys().join(', ')
-  //     );
-  //   }
-
-  //   const contextKey = matchedNode.file;
-
-  //   if (!ctx.keys().includes(contextKey)) {
-  //     throw new Error(
-  //       'Failed to find route: ' + contextKey + '. Expected one of: ' + ctx.keys().join(', ')
-  //     );
-  //   }
-
-  //   const { default: Component } = await ctx(contextKey);
-
-  //   if (!Component) {
-  //     throw new Error('No default export found for: ' + contextKey);
-  //   }
-
-  //   console.log('Render entry>', contextKey);
-  //   // TODO: Sanitize input and use it to select a component to render.
-  //   return React.createElement(Component, props);
-  // };
-
-  // const render = async (
-  //   renderContext: RenderContext,
-  //   input: string,
-  //   searchParams: URLSearchParams
-  // ) => {
-  //   const elements = await renderEntries.call(renderContext, input, searchParams);
-  //   if (elements === null) {
-  //     const err = new Error('No function component found');
-  //     (err as any).statusCode = 404; // HACK our convention for NotFound
-  //     throw err;
-  //   }
-  //   if (Object.keys(elements).some((key) => key.startsWith('_'))) {
-  //     throw new Error('"_" prefix is reserved');
-  //   }
-  //   return elements;
-  // };
-
-  const render = async (
-    renderContext: RenderContext,
-    input: string,
-    searchParams: URLSearchParams
-  ) => {
-    const elements = await renderEntries.call(renderContext, input, searchParams);
-    if (elements === null) {
-      const err = new Error('No function component found');
-      (err as any).statusCode = 404; // HACK our convention for NotFound
-      throw err;
-    }
-    if (Object.keys(elements).some((key) => key.startsWith('_'))) {
-      throw new Error('"_" prefix is reserved');
-    }
-    return elements;
-  };
-
-  // const elements = await render({}, input, url.searchParams);
-  // console.log('Elements:', elements, input);
 
   // method === 'GET'
   const renderContext: RenderContext = {

@@ -171,6 +171,7 @@ async function bundleProductionMetroClientAsync(
     const { clientBoundaries } = await getClientBoundariesAsync(projectRoot, secondInstanceLol, {
       files,
       platform: bundle.platform,
+      engine: isHermes ? 'hermes' : undefined,
     });
     console.log('Collected client boundaries:', clientBoundaries);
 
