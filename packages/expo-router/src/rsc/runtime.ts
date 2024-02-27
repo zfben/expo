@@ -31,14 +31,12 @@ function buildProdAsyncRequire(): AsyncRequire | null {
       return cache.get(path)!;
     }
 
-    // debugger;
     const promise = boundaries[path]().catch((error) => {
       cache.delete(path);
       throw error;
     });
 
     cache.set(path, promise);
-
     return promise;
   };
 }
@@ -52,7 +50,6 @@ globalThis.__webpack_chunk_load__ = (id) => {
   const url = new URL(id, id.startsWith('/') ? 'http://e' : undefined);
 
   const numericMetroId = parseInt(url.hash.slice(1));
-  console.log('__webpack_chunk_load__', id, numericMetroId);
 
   // NOTE: `getModules` is exposed in a patch.
   if (numericMetroId in require.getModules()) {
@@ -62,9 +59,7 @@ globalThis.__webpack_chunk_load__ = (id) => {
       if (!m) {
         reject(new Error(`Module "${id}" not found`));
       } else {
-        // NOTE: DO NOT LOG MODULES AS THIS BREAKS REACT NATIVE
-        // console.log(`Remote client module "${id}" >`, m);
-        // debugger;
+        // NOTE: DO NOT LOG MODULES AS THIS BREAKS `react-native/index.js`
         resolve(m);
       }
     });
@@ -98,7 +93,7 @@ globalThis.__webpack_chunk_load__ = (id) => {
       return m;
     })
     .catch((e) => {
-      console.error('error loading RSC module:', id, e);
+      console.error('Error loading RSC module:', id, e);
       throw e;
     });
 };
