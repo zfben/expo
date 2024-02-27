@@ -1,7 +1,8 @@
 'use client';
 
+import type { ReactElement } from 'react';
 import { View, Text, Button } from 'react-native';
-import { ReactElement, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 
 export const Counter = ({ greet }: { greet: (name: string) => Promise<ReactElement> }) => {
   const [count, setCount] = useState(0);
