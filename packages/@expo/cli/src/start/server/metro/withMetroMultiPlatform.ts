@@ -53,16 +53,8 @@ function withWebPolyfills(config: ConfigT): ConfigT {
     ? config.serializer.getPolyfills.bind(config.serializer)
     : () => [];
 
-  const getPolyfills = (ctx: {
-    platform: string | null;
-    // We add this in a patch because the upstream won't accept it.
-    customResolverOptions?: Record<string, any>;
-  }): readonly string[] => {
-    if (
-      ctx.platform === 'web' ||
-      // RSC runs on the server even in native mode.
-      ctx.customResolverOptions?.environment === 'react-server'
-    ) {
+  const getPolyfills = (ctx: { platform: string | null }): readonly string[] => {
+    if (ctx.platform === 'web') {
       return [
         // NOTE: We might need this for all platforms
         path.join(config.projectRoot, EXTERNAL_REQUIRE_POLYFILL),
