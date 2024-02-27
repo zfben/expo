@@ -44,31 +44,31 @@ export function App() {
   //   <Text>HeyHeyHeyHeyHeyHey</Text>
   // )
 
-  // return (
-  //   <React.Suspense fallback={null}>
-  //     <Head.Provider>
-  //       <SafeAreaProvider>
-  //         <Try catch={ErrorBoundary}>
-  //           <Router />
-  //         </Try>
-  //       </SafeAreaProvider>
-  //     </Head.Provider>
-  //   </React.Suspense>
-  // );
-
   return (
     <React.Suspense fallback={null}>
       <Head.Provider>
         <SafeAreaProvider>
           <Try catch={ErrorBoundary}>
-            <Root initialInput="layout" initialSearchParamsString={searchParams}>
-              <Slot id={'layout/page'} />
-            </Root>
+            <Router />
           </Try>
         </SafeAreaProvider>
       </Head.Provider>
     </React.Suspense>
   );
+
+  // return (
+  //   <React.Suspense fallback={null}>
+  //     <Head.Provider>
+  //       <SafeAreaProvider>
+  //         <Try catch={ErrorBoundary}>
+  //           <Root initialInput="layout" initialSearchParamsString={searchParams}>
+  //             <Slot id={'layout/page'} />
+  //           </Root>
+  //         </Try>
+  //       </SafeAreaProvider>
+  //     </Head.Provider>
+  //   </React.Suspense>
+  // );
 
   // return (
   //   <React.Suspense fallback={null}>

@@ -38,5 +38,18 @@ export declare function renderRsc(opts: {
     entries: EntriesDev;
     customImport: (fileURL: string) => Promise<unknown>;
 })): Promise<ReadableStream>;
+export declare function getBuildConfig(opts: {
+    config: ResolvedConfig;
+    entries: EntriesPrd;
+}): Promise<Iterable<{
+    pathname: string;
+    entries?: Iterable<{
+        input: string;
+        skipPrefetch?: boolean | undefined;
+        isStatic?: boolean | undefined;
+    }> | undefined;
+    customCode?: string | undefined;
+    context?: unknown;
+}>>;
 export {};
 //# sourceMappingURL=rsc-renderer.d.ts.map

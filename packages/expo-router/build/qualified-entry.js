@@ -15,7 +15,8 @@ const react_1 = __importDefault(require("react"));
 const react_native_safe_area_context_1 = require("react-native-safe-area-context");
 const exports_1 = require("./exports");
 const head_1 = require("./head");
-const client_1 = require("./rsc/client");
+// MUST be the one from metro-runtime as it contains the URL query parameters for the bundle to configure Metro.
+const client_1 = require("./rsc/router/client");
 const Try_1 = require("./views/Try");
 // import { Router } from './rsc/router/client';
 // import ContextNavigator from './rsc-navigator';
@@ -37,28 +38,28 @@ function App() {
     // return (
     //   <Text>HeyHeyHeyHeyHeyHey</Text>
     // )
+    return (<react_1.default.Suspense fallback={null}>
+      <head_1.Head.Provider>
+        <react_native_safe_area_context_1.SafeAreaProvider>
+          <Try_1.Try catch={exports_1.ErrorBoundary}>
+            <client_1.Router />
+          </Try_1.Try>
+        </react_native_safe_area_context_1.SafeAreaProvider>
+      </head_1.Head.Provider>
+    </react_1.default.Suspense>);
     // return (
     //   <React.Suspense fallback={null}>
     //     <Head.Provider>
     //       <SafeAreaProvider>
     //         <Try catch={ErrorBoundary}>
-    //           <Router />
+    //           <Root initialInput="layout" initialSearchParamsString={searchParams}>
+    //             <Slot id={'layout/page'} />
+    //           </Root>
     //         </Try>
     //       </SafeAreaProvider>
     //     </Head.Provider>
     //   </React.Suspense>
     // );
-    return (<react_1.default.Suspense fallback={null}>
-      <head_1.Head.Provider>
-        <react_native_safe_area_context_1.SafeAreaProvider>
-          <Try_1.Try catch={exports_1.ErrorBoundary}>
-            <client_1.Root initialInput="layout" initialSearchParamsString={searchParams}>
-              <client_1.Slot id={'layout/page'}/>
-            </client_1.Root>
-          </Try_1.Try>
-        </react_native_safe_area_context_1.SafeAreaProvider>
-      </head_1.Head.Provider>
-    </react_1.default.Suspense>);
     // return (
     //   <React.Suspense fallback={null}>
     //     <Head.Provider>

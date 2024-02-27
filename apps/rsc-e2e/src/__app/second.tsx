@@ -5,7 +5,7 @@ const App = () => {
   return (
     <View>
       <Text>Second</Text>
-      {/* <a href="/">Back</a> */}
+      <a href="/">Back</a>
     </View>
   );
 };

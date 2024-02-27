@@ -7,8 +7,6 @@
 
 import { readableStreamToString } from '@remix-run/node/dist/stream';
 import chalk from 'chalk';
-import path from 'path';
-// import React from 'react';
 import type { ReactNode } from 'react';
 import { renderToReadableStream, decodeReply } from 'react-server-dom-webpack/server.edge';
 
@@ -26,18 +24,6 @@ const debug = require('debug')('expo:rsc');
 export interface RenderContext<T = unknown> {
   rerender: (input: string, searchParams?: URLSearchParams) => void;
   context: T;
-}
-
-// NOTE: MUST MATCH THE IMPL IN ExpoMetroConfig.ts
-function stringToHash(str: string): number {
-  let hash = 0;
-  if (str.length === 0) return hash;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return Math.abs(hash);
 }
 
 export const fileURLToFilePath = (fileURL: string) => {
@@ -99,7 +85,6 @@ export async function renderRsc(
     }) => void;
 
     // Others
-    // url: URL;
     // serverRoot: string;
     // serverUrl: URL;
     // onReload: () => void;
@@ -164,51 +149,7 @@ export async function renderRsc(
     loadModule,
   } = entries as (EntriesDev & { loadModule: undefined }) | EntriesPrd;
 
-  // if (!isExporting) {
-  //   url.searchParams.set('modulesOnly', 'true');
-  //   url.searchParams.set('runModule', 'false');
-
-  //   // TODO: Maybe add a new param to execute and return the module exports.
-  // }
-
   const resolveClientEntry = opts.resolveClientEntry;
-  // const resolveClientEntry = isExporting ? opts.resolveClientEntry : resolveClientEntryForPrd;
-
-  // const resolveClientEntry = (
-  //   file: string // filePath or fileURL
-  // ) => {
-  //   if (!isExporting) {
-  //     const filePath = file.startsWith('file://') ? fileURLToFilePath(file) : file;
-  //     const metroOpaqueId = stringToHash(filePath);
-  //     const relativeFilePath = path.relative(serverRoot, filePath);
-  //     // TODO: May need to remove the original extension.
-  //     url.pathname = relativeFilePath + '.bundle';
-  //     // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
-  //     url.hash = String(metroOpaqueId);
-
-  //     // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
-  //     const id = url.pathname + url.search + url.hash;
-  //     return { id, url: id };
-  //   } else {
-  //     // if (!file.startsWith('@id/')) {
-  //     //   throw new Error('Unexpected client entry in PRD: ' + file);
-  //     // }
-  //     // url.pathname = file.slice('@id/'.length);
-
-  //     // TODO: This should be different for prod
-  //     const filePath = file.startsWith('file://') ? fileURLToFilePath(file) : file;
-  //     const metroOpaqueId = stringToHash(filePath);
-  //     const relativeFilePath = path.relative(serverRoot, filePath);
-  //     // TODO: May need to remove the original extension.
-  //     url.pathname = relativeFilePath;
-  //     // Pass the Metro runtime ID back in the hash so we can emulate Webpack requiring.
-  //     url.hash = String(metroOpaqueId);
-
-  //     // Return relative URLs to help Android fetch from wherever it was loaded from since it doesn't support localhost.
-  //     const id = '/' + url.hash;
-  //     return { id, url: url.pathname + url.search + url.hash };
-  //   }
-  // };
 
   const render = async (
     renderContext: RenderContext,
@@ -400,3 +341,50 @@ const decodeInput = (encodedInput: string) => {
   (err as any).statusCode = 400;
   throw err;
 };
+
+// TODO: Implement this in production exports.
+export async function getBuildConfig(opts: { config: ResolvedConfig; entries: EntriesPrd }) {
+  const { config, entries } = opts;
+
+  const {
+    default: { getBuildConfig },
+  } = entries;
+  if (!getBuildConfig) {
+    console.warn(
+      "getBuildConfig is undefined. It's recommended for optimization and sometimes required."
+    );
+    return [];
+  }
+
+  const unstable_collectClientModules = async (input: string): Promise<string[]> => {
+    const idSet = new Set<string>();
+    const readable = await renderRsc({
+      config,
+      input,
+      searchParams: new URLSearchParams(),
+      method: 'GET',
+      context: null,
+      moduleIdCallback: ({ id }) => idSet.add(id),
+      isExporting: true,
+      resolveClientEntry: (id) => {
+        throw new Error('TODO: Implement resolveClientEntry');
+      },
+      entries,
+    });
+    await new Promise<void>((resolve, reject) => {
+      const writable = new WritableStream({
+        close() {
+          resolve();
+        },
+        abort(reason) {
+          reject(reason);
+        },
+      });
+      readable.pipeTo(writable);
+    });
+    return Array.from(idSet);
+  };
+
+  const output = await getBuildConfig(unstable_collectClientModules);
+  return output;
+}

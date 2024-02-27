@@ -74,10 +74,13 @@ function wakuRouteIdToExpoRoute(route: RouteNode, routeId: string) {
 
     console.log('1.', part);
     if (i === parts.length - 1) {
+      console.log('Last =>', part, currentRoute);
       if (part === 'layout' && currentRoute?.type === 'layout') {
-        return null;
+        return currentRoute;
         // return route;
-      } else if (part === 'page') {
+      }
+
+      if (part === 'page') {
         console.log('2.', part);
         if (currentRoute?.type === 'layout') {
           console.log('3.', part);
@@ -111,10 +114,21 @@ export default defineRouter(
   async (id, unstable_setShouldSkip) => {
     unstable_setShouldSkip({}); // always skip if possible
 
-    // const route = wakuRouteIdToExpoRoute(routes, id);
+    const route = wakuRouteIdToExpoRoute(routes, id);
     // NOTE: Hack to test other stuff
+    console.log('getComponent', id, route);
+    if (route) {
+      const { loadRoute, children, ...rest } = route;
+
+      // const { mapping, items } = result;
+      const RouteNode = lazy(async () => {
+        const value = await loadRoute();
+        return value;
+      });
+
+      return RouteNode;
+    }
     if (id.includes('page')) {
-      console.log('getComponent', id);
       return (props) => createElement(ctx('./index.tsx').default, props);
     } else {
       return (props) => createElement(View, props);
@@ -129,14 +143,6 @@ export default defineRouter(
     // // if (result === null) {
     // //   return null;
     // // }
-
-    // const { loadRoute, children, ...rest } = route;
-
-    // // const { mapping, items } = result;
-    // const RouteNode = lazy(async () => {
-    //   const value = await loadRoute();
-    //   return value;
-    // });
 
     // console.log('Loading route:', RouteNode);
 
