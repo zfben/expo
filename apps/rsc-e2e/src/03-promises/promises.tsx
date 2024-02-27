@@ -18,7 +18,7 @@ export const Counter = ({ delayedMessage }: { delayedMessage: Promise<string> })
       <Text>Count: {count}</Text>
       <Text onPress={() => setCount((c) => c + 1)}>Increment</Text>
       <Text>This is a client component.</Text>
-      <Suspense fallback="Pending...">
+      <Suspense fallback={<Text>"Pending..."</Text>}>
         <Message count={count} delayedMessage={delayedMessage} />
       </Suspense>
     </View>

@@ -653,10 +653,14 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       body: method === 'POST' ? createReadableStreamFromReadable(req!) : null,
       customImport: async (relativeDevServerUrl: string): Promise<any> => {
         const url = new URL(relativeDevServerUrl, this.getDevServerUrlOrAssert());
+
         url.searchParams.set('runModule', 'true');
         url.searchParams.set('runModule', 'true');
+
         url.searchParams.set('transform.environment', 'react-server');
         url.searchParams.set('resolver.environment', 'react-server');
+
+        url.searchParams.set('platform', platform);
 
         const urlString = url.toString();
         const contents = await metroFetchAsync(this.projectRoot, urlString);

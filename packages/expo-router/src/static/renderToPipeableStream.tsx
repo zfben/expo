@@ -120,31 +120,31 @@ export async function renderToPipeableStream(
   }
   // moduleMap: WebpackManifest
 ): Promise<ReadableStream> {
-  if (!isExporting) {
-    if (process.env.NODE_ENV === 'development') {
-      const HMRClient = require('@expo/metro-runtime/build/HMRClientRSC')
-        .default as typeof import('@expo/metro-runtime/build/HMRClientRSC').default;
-      const { createNodeFastRefresh } =
-        require('@expo/metro-runtime/build/nodeFastRefresh') as typeof import('@expo/metro-runtime/build/nodeFastRefresh');
+  // if (!isExporting) {
+  //   if (process.env.NODE_ENV === 'development') {
+  //     const HMRClient = require('@expo/metro-runtime/build/HMRClientRSC')
+  //       .default as typeof import('@expo/metro-runtime/build/HMRClientRSC').default;
+  //     const { createNodeFastRefresh } =
+  //       require('@expo/metro-runtime/build/nodeFastRefresh') as typeof import('@expo/metro-runtime/build/nodeFastRefresh');
 
-      // Make the URL for this file accessible so we can register it as an HMR client entry for RSC HMR.
-      globalThis.__DEV_SERVER_URL__ = serverUrl;
-      // Make the WebSocket constructor available to RSC HMR.
-      global.WebSocket = require('ws').WebSocket;
-      createNodeFastRefresh({
-        onReload,
-      });
+  //     // Make the URL for this file accessible so we can register it as an HMR client entry for RSC HMR.
+  //     globalThis.__DEV_SERVER_URL__ = serverUrl;
+  //     // Make the WebSocket constructor available to RSC HMR.
+  //     global.WebSocket = require('ws').WebSocket;
+  //     createNodeFastRefresh({
+  //       onReload,
+  //     });
 
-      HMRClient.setup({
-        isEnabled: true,
-        onError(error) {
-          // Do nothing and reload.
-          // TODO: If we handle this better it could result in faster error feedback.
-          onReload();
-        },
-      });
-    }
-  }
+  //     HMRClient.setup({
+  //       isEnabled: true,
+  //       onError(error) {
+  //         // Do nothing and reload.
+  //         // TODO: If we handle this better it could result in faster error feedback.
+  //         onReload();
+  //       },
+  //     });
+  //   }
+  // }
 
   const {
     default: { renderEntries },
@@ -221,7 +221,9 @@ export async function renderToPipeableStream(
   );
 
   if (method === 'POST') {
-    const rsfId = decodeURIComponent(decodeInput(input));
+    // TODO(Bacon): Fix Server action ID generation
+    const rsfId = decodeURIComponent(input);
+    // const rsfId = decodeURIComponent(decodeInput(input));
     let args: unknown[] = [];
     let bodyStr = '';
     if (body) {
@@ -436,6 +438,7 @@ const parseFormData = (body: string, contentType: string) => {
 };
 
 const decodeInput = (encodedInput: string) => {
+  console.log('> decodeInput:', encodedInput);
   if (encodedInput === 'index.txt') {
     return '';
   }

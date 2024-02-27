@@ -63,28 +63,29 @@ async function renderToPipeableStream({ mode, entries,
 searchParams, isExporting, url, serverUrl, serverRoot, method, input, body, contentType, customImport, onReload, moduleIdCallback, context, }
 // moduleMap: WebpackManifest
 ) {
-    if (!isExporting) {
-        if (process.env.NODE_ENV === 'development') {
-            const HMRClient = require('@expo/metro-runtime/build/HMRClientRSC')
-                .default;
-            const { createNodeFastRefresh } = require('@expo/metro-runtime/build/nodeFastRefresh');
-            // Make the URL for this file accessible so we can register it as an HMR client entry for RSC HMR.
-            globalThis.__DEV_SERVER_URL__ = serverUrl;
-            // Make the WebSocket constructor available to RSC HMR.
-            global.WebSocket = require('ws').WebSocket;
-            createNodeFastRefresh({
-                onReload,
-            });
-            HMRClient.setup({
-                isEnabled: true,
-                onError(error) {
-                    // Do nothing and reload.
-                    // TODO: If we handle this better it could result in faster error feedback.
-                    onReload();
-                },
-            });
-        }
-    }
+    // if (!isExporting) {
+    //   if (process.env.NODE_ENV === 'development') {
+    //     const HMRClient = require('@expo/metro-runtime/build/HMRClientRSC')
+    //       .default as typeof import('@expo/metro-runtime/build/HMRClientRSC').default;
+    //     const { createNodeFastRefresh } =
+    //       require('@expo/metro-runtime/build/nodeFastRefresh') as typeof import('@expo/metro-runtime/build/nodeFastRefresh');
+    //     // Make the URL for this file accessible so we can register it as an HMR client entry for RSC HMR.
+    //     globalThis.__DEV_SERVER_URL__ = serverUrl;
+    //     // Make the WebSocket constructor available to RSC HMR.
+    //     global.WebSocket = require('ws').WebSocket;
+    //     createNodeFastRefresh({
+    //       onReload,
+    //     });
+    //     HMRClient.setup({
+    //       isEnabled: true,
+    //       onError(error) {
+    //         // Do nothing and reload.
+    //         // TODO: If we handle this better it could result in faster error feedback.
+    //         onReload();
+    //       },
+    //     });
+    //   }
+    // }
     const { default: { renderEntries }, loadModule, } = entries;
     if (!isExporting) {
         url.searchParams.set('modulesOnly', 'true');
@@ -142,7 +143,9 @@ searchParams, isExporting, url, serverUrl, serverRoot, method, input, body, cont
         },
     });
     if (method === 'POST') {
-        const rsfId = decodeURIComponent(decodeInput(input));
+        // TODO(Bacon): Fix Server action ID generation
+        const rsfId = decodeURIComponent(input);
+        // const rsfId = decodeURIComponent(decodeInput(input));
         let args = [];
         let bodyStr = '';
         if (body) {
@@ -334,6 +337,7 @@ const parseFormData = (body, contentType) => {
     return formData;
 };
 const decodeInput = (encodedInput) => {
+    console.log('> decodeInput:', encodedInput);
     if (encodedInput === 'index.txt') {
         return '';
     }
