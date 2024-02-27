@@ -614,8 +614,10 @@ export class MetroBundlerDevServer extends BundlerDevServer {
         // renderRouteWithContextKey, getRouteNodeForPathname
       },
     } = await this.ssrLoadModuleAndHmrEntry<
-      typeof import('expo-router/build/static/renderToPipeableStream')
-    >('expo-router/node/rsc.js', {
+      //   typeof import('expo-router/build/static/renderToPipeableStream')
+      // >('expo-router/node/rsc.js', {
+      typeof import('expo-router/src/static/renderToPipeableStream')
+    >('expo-router/src/static/renderToPipeableStream.tsx', {
       environment: 'react-server',
       platform,
     });
