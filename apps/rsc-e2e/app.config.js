@@ -34,6 +34,17 @@ module.exports = {
   },
   plugins: [
     [
+      'expo-build-properties',
+      {
+        ios: {
+          newArchEnabled: true,
+        },
+        android: {
+          newArchEnabled: true,
+        },
+      },
+    ],
+    [
       'expo-router',
       {
         // asyncRoutes: process.env.E2E_ROUTER_ASYNC,
