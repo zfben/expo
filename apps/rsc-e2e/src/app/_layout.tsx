@@ -4,24 +4,32 @@ import { Link } from 'expo-router/build/rsc/router/client';
 import { Text, View } from 'react-native';
 import SafeAreaView from '@/components/safe-area';
 
-const Pending = ({ isPending }: { isPending: boolean }) => (
-  <Text
-    style={{
-      marginLeft: 5,
-      // transition: 'opacity 75ms 100ms',
-      opacity: isPending ? 1 : 0,
-    }}>
-    Pending...
-  </Text>
-);
+const Pending = ({ isPending }: { isPending: boolean }) => {
+  if (!isPending) return null;
+  return (
+    <Text
+      style={{
+        marginLeft: 5,
+        color: 'white',
+        // transition: 'opacity 75ms 100ms',
+        opacity: isPending ? 1 : 0,
+      }}>
+      Pending...
+    </Text>
+  );
+};
 
 const HomeLayout = ({ children }: { children: ReactNode }) => (
-  <SafeAreaView>
+  <SafeAreaView
+    testID="safe-area-root"
+    style={{ backgroundColor: '#191A20', flex: 1, gap: 8, padding: 12 }}>
     {/* <title>Concurrent Router</title> */}
-    <View>
+    <View
+      testID="navigation"
+      style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
       <View>
         <Link
-          style={{ color: 'blue', textDecorationLine: 'underline' }}
+          style={{ textAlign: 'center', color: '#EE81C3', textDecorationLine: 'underline' }}
           to="/"
           pending={<Pending isPending />}
           notPending={<Pending isPending={false} />}>
@@ -30,7 +38,7 @@ const HomeLayout = ({ children }: { children: ReactNode }) => (
       </View>
       <View>
         <Link
-          style={{ color: 'blue', textDecorationLine: 'underline' }}
+          style={{ textAlign: 'center', color: '#EE81C3', textDecorationLine: 'underline' }}
           to="/bar"
           pending={<Pending isPending />}
           notPending={<Pending isPending={false} />}>
@@ -38,7 +46,9 @@ const HomeLayout = ({ children }: { children: ReactNode }) => (
         </Link>
       </View>
     </View>
-    {children}
+    <View style={{ flex: 1, padding: 12 }} testID="layout-child-wrapper">
+      {children}
+    </View>
   </SafeAreaView>
 );
 

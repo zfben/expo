@@ -244,7 +244,8 @@ function InnerRouter(props) {
       const loc = parseLocation();
       setLoc(loc);
       if (scrollTo) {
-        console.warn('scrollTo is not implemented on native yet');
+        // TODO: Add this somehow...
+        // console.warn('scrollTo is not implemented on native yet');
         // window.scrollTo(scrollTo);
       }
       const componentIds = getComponentIds(loc.path);
