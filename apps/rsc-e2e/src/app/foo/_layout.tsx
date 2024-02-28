@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { Link } from 'expo-router/build/rsc/router/client';
-import { Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import SafeAreaView from '@/components/safe-area';
 
 const Pending = ({ isPending }: { isPending: boolean }) => {
@@ -19,37 +19,54 @@ const Pending = ({ isPending }: { isPending: boolean }) => {
   );
 };
 
-const HomeLayout = ({ children }: { children: ReactNode }) => (
-  <SafeAreaView
-    testID="safe-area-root"
-    style={{ backgroundColor: '#191A20', flex: 1, gap: 8, padding: 12 }}>
-    {/* <title>Concurrent Router</title> */}
+const HomeLayout = ({
+  children,
+  ...props
+}: {
+  children: ReactNode;
+  path: string;
+  searchParams: URLSearchParams;
+}) => {
+  console.log('[props]>', props);
+  return (
     <View
-      testID="navigation"
-      style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
-      <View>
-        <Link
-          style={{ textAlign: 'center', color: '#EE81C3', textDecorationLine: 'underline' }}
-          to="/foo"
-          pending={<Pending isPending />}
-          notPending={<Pending isPending={false} />}>
-          Foo
-        </Link>
+      testID="safe-area-root"
+      style={{
+        gap: 8,
+        margin: 8,
+        padding: 8,
+        borderColor: '#454758',
+        borderWidth: 1,
+        flex: 1,
+      }}>
+      {/* <title>Concurrent Router</title> */}
+      <View
+        testID="navigation"
+        style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
+        <View>
+          <Link
+            style={{ textAlign: 'center', color: '#EE81C3', textDecorationLine: 'underline' }}
+            to="/foo"
+            pending={<ActivityIndicator animating />}
+            notPending={<ActivityIndicator animating={false} />}>
+            Foo
+          </Link>
+        </View>
+        <View>
+          <Link
+            style={{ textAlign: 'center', color: '#EE81C3', textDecorationLine: 'underline' }}
+            to="/foo/nova"
+            pending={<ActivityIndicator animating />}
+            notPending={<ActivityIndicator animating={false} />}>
+            Foo/Nova
+          </Link>
+        </View>
       </View>
-      <View>
-        <Link
-          style={{ textAlign: 'center', color: '#EE81C3', textDecorationLine: 'underline' }}
-          to="/foo/nova"
-          pending={<Pending isPending />}
-          notPending={<Pending isPending={false} />}>
-          Foo/Nova
-        </Link>
+      <View style={{ flex: 1, padding: 12 }} testID="layout-child-wrapper">
+        {children}
       </View>
     </View>
-    <View style={{ flex: 1, padding: 12 }} testID="layout-child-wrapper">
-      {children}
-    </View>
-  </SafeAreaView>
-);
+  );
+};
 
 export default HomeLayout;

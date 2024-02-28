@@ -761,75 +761,149 @@ export class MetroBundlerDevServer extends BundlerDevServer {
     // TODO: Add config
     const config = {};
 
-    const pipe = await renderRsc({
-      // isDev: mode === 'development',
+    if (isExporting) {
+      throw new Error('TODO: Add exporting back');
 
-      body: createReadableStreamFromReadable(req!)!,
-      // body: method === 'POST' ? createReadableStreamFromReadable(req!) : null,
-      entries: await this.getExpoRouterRscEntriesGetterAsync({ platform }),
-      searchParams,
-      context: {},
-      // elements: {
-      //   [route]: elements,
-      // },
-      isExporting: !!isExporting,
-      resolveClientEntry: this.getResolveClientEntry({ platform, engine }),
-      config,
-      // serverRoot,
-      // url,
-      method,
-      input: route,
+      // const pipe = await renderRsc({
+      //   // isDev: mode === 'development',
 
-      customImport: async (relativeDevServerUrl: string): Promise<any> => {
-        const url = new URL(relativeDevServerUrl, this.getDevServerUrlOrAssert());
+      //   body: createReadableStreamFromReadable(req!)!,
+      //   // body: method === 'POST' ? createReadableStreamFromReadable(req!) : null,
+      //   entries: await this.getExpoRouterRscEntriesGetterAsync({ platform }),
+      //   searchParams,
+      //   context: {},
+      //   // elements: {
+      //   //   [route]: elements,
+      //   // },
+      //   isExporting: !!isExporting,
+      //   resolveClientEntry: this.getResolveClientEntry({ platform, engine }),
+      //   config,
+      //   // serverRoot,
+      //   // url,
+      //   method,
+      //   input: route,
 
-        // TODO: Apply all params here.
-        url.searchParams.set('modulesOnly', 'true');
-        url.searchParams.set('runModule', 'true');
+      //   customImport: async (relativeDevServerUrl: string): Promise<any> => {
+      //     const url = new URL(relativeDevServerUrl, this.getDevServerUrlOrAssert());
 
-        url.searchParams.set('transform.environment', 'react-server');
-        url.searchParams.set('resolver.environment', 'react-server');
+      //     // TODO: Apply all params here.
+      //     url.searchParams.set('modulesOnly', 'true');
+      //     url.searchParams.set('runModule', 'true');
 
-        url.searchParams.set('platform', platform);
+      //     url.searchParams.set('transform.environment', 'react-server');
+      //     url.searchParams.set('resolver.environment', 'react-server');
 
-        const urlString = url.toString();
-        const contents = await metroFetchAsync(this.projectRoot, urlString);
-        // console.log('Server action:');
-        // console.log(contents);
-        return evalMetro(this.projectRoot, contents.src, contents.filename);
-      },
-      // serverUrl: new URL(serverUrl),
-      // onReload: (...args: any[]) => {
-      //   // Send reload command to client from Fast Refresh code.
-      //   debug('[CLI]: Reload RSC:', args);
+      //     url.searchParams.set('platform', platform);
 
-      //   // TODO: Target only certain platforms
-      //   this.broadcastMessage('reload');
-      // },
-      moduleIdCallback: (moduleInfo: {
-        id: string;
-        chunks: string[];
-        name: string;
-        async: boolean;
-      }) => {
-        console.log('moduleIdCallback:', moduleInfo.id, moduleInfo.name, moduleInfo.async);
-        let platformSet = this.clientModuleMap.get(platform);
-        if (!platformSet) {
-          platformSet = new Map();
-          this.clientModuleMap.set(platform, platformSet);
-        }
-        // Collect the client boundaries while rendering the server components.
-        // Indexed by routes.
-        let idSet = platformSet.get(normalizedRouteKey);
-        if (!idSet) {
-          idSet = new Set();
-          platformSet.set(normalizedRouteKey, idSet);
-        }
-        idSet.add(moduleInfo.id);
-      },
-    });
+      //     const urlString = url.toString();
+      //     const contents = await metroFetchAsync(this.projectRoot, urlString);
+      //     // console.log('Server action:');
+      //     // console.log(contents);
+      //     return evalMetro(this.projectRoot, contents.src, contents.filename);
+      //   },
+      //   // serverUrl: new URL(serverUrl),
+      //   // onReload: (...args: any[]) => {
+      //   //   // Send reload command to client from Fast Refresh code.
+      //   //   debug('[CLI]: Reload RSC:', args);
 
-    return pipe;
+      //   //   // TODO: Target only certain platforms
+      //   //   this.broadcastMessage('reload');
+      //   // },
+      //   moduleIdCallback: (moduleInfo: {
+      //     id: string;
+      //     chunks: string[];
+      //     name: string;
+      //     async: boolean;
+      //   }) => {
+      //     console.log('moduleIdCallback:', moduleInfo.id, moduleInfo.name, moduleInfo.async);
+      //     let platformSet = this.clientModuleMap.get(platform);
+      //     if (!platformSet) {
+      //       platformSet = new Map();
+      //       this.clientModuleMap.set(platform, platformSet);
+      //     }
+      //     // Collect the client boundaries while rendering the server components.
+      //     // Indexed by routes.
+      //     let idSet = platformSet.get(normalizedRouteKey);
+      //     if (!idSet) {
+      //       idSet = new Set();
+      //       platformSet.set(normalizedRouteKey, idSet);
+      //     }
+      //     idSet.add(moduleInfo.id);
+      //   },
+      // });
+
+      // return pipe;
+    } else {
+      const pipe = await renderRsc({
+        // isDev: mode === 'development',
+
+        body: createReadableStreamFromReadable(req!)!,
+        // body: method === 'POST' ? createReadableStreamFromReadable(req!) : null,
+        entries: await this.getExpoRouterRscEntriesGetterAsync({ platform }),
+        searchParams,
+        context: {},
+        // elements: {
+        //   [route]: elements,
+        // },
+        isExporting: !!isExporting,
+        resolveClientEntry: this.getResolveClientEntry({ platform, engine }),
+        config,
+        // serverRoot,
+        // url,
+        method,
+        input: route,
+
+        customImport: async (relativeDevServerUrl: string): Promise<any> => {
+          const url = new URL(relativeDevServerUrl, this.getDevServerUrlOrAssert());
+
+          // TODO: Apply all params here.
+          url.searchParams.set('modulesOnly', 'true');
+          url.searchParams.set('runModule', 'true');
+
+          url.searchParams.set('transform.environment', 'react-server');
+          url.searchParams.set('resolver.environment', 'react-server');
+
+          url.searchParams.set('platform', platform);
+
+          const urlString = url.toString();
+          const contents = await metroFetchAsync(this.projectRoot, urlString);
+          // console.log('Server action:');
+          // console.log(contents);
+          return evalMetro(this.projectRoot, contents.src, contents.filename);
+        },
+        // serverUrl: new URL(serverUrl),
+        // onReload: (...args: any[]) => {
+        //   // Send reload command to client from Fast Refresh code.
+        //   debug('[CLI]: Reload RSC:', args);
+
+        //   // TODO: Target only certain platforms
+        //   this.broadcastMessage('reload');
+        // },
+        moduleIdCallback: (moduleInfo: {
+          id: string;
+          chunks: string[];
+          name: string;
+          async: boolean;
+        }) => {
+          console.log('moduleIdCallback:', moduleInfo.id, moduleInfo.name, moduleInfo.async);
+          let platformSet = this.clientModuleMap.get(platform);
+          if (!platformSet) {
+            platformSet = new Map();
+            this.clientModuleMap.set(platform, platformSet);
+          }
+          // Collect the client boundaries while rendering the server components.
+          // Indexed by routes.
+          let idSet = platformSet.get(normalizedRouteKey);
+          if (!idSet) {
+            idSet = new Set();
+            platformSet.set(normalizedRouteKey, idSet);
+          }
+          idSet.add(moduleInfo.id);
+        },
+      });
+
+      return pipe;
+    }
   }
 
   protected async startImplementationAsync(
@@ -932,7 +1006,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
 
       const sendResponse = async (req: ServerRequest, res: ServerResponse) => {
         const url = new URL(req.url!, this.getDevServerUrlOrAssert());
-        const route = decodeInput(url.pathname.replace(rscPathPrefix, '')) || '/';
+        const route = decodeInput(url.pathname.replace(rscPathPrefix, ''));
 
         const engine = url.searchParams.get('transform.engine');
         if (engine && !['hermes'].includes(engine)) {
