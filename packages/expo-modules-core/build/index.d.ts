@@ -17,4 +17,5 @@ export * from './TypedArrays.types';
 export declare const SyntheticPlatformEmitter: import("react-native").DeviceEventEmitterStatic;
 export * from './PermissionsInterface';
 export * from './PermissionsHook';
+export * from './Refs';
 //# sourceMappingURL=index.d.ts.map
