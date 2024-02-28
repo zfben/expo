@@ -95,8 +95,9 @@ const fetchRSC = (input, searchParamsString, setElements, cache = fetchCache) =>
     }
     const options = {
         async callServer(actionId, args) {
-            const response = fetch(BASE_PATH + (0, utils_1.encodeInput)(encodeURIComponent(actionId)), {
+            const response = fetch(getAdjustedFilePath(BASE_PATH + (0, utils_1.encodeInput)(encodeURIComponent(actionId))), {
                 method: 'POST',
+                reactNative: { textStreaming: true },
                 body: await encodeReply(args),
                 headers: {
                     'expo-platform': os_1.default,
@@ -116,6 +117,7 @@ const fetchRSC = (input, searchParamsString, setElements, cache = fetchCache) =>
     console.log('fetch', url);
     const response = prefetched[url] ||
         fetch(getAdjustedFilePath(url), {
+            reactNative: { textStreaming: true },
             headers: {
                 'expo-platform': os_1.default,
             },
@@ -127,7 +129,13 @@ const fetchRSC = (input, searchParamsString, setElements, cache = fetchCache) =>
 };
 exports.fetchRSC = fetchRSC;
 function getAdjustedFilePath(path) {
-    if (os_1.default === 'web' || (0, getDevServer_1.getDevServer)().bundleLoadedFromServer) {
+    if (os_1.default === 'web') {
+        return path;
+    }
+    if ((0, getDevServer_1.getDevServer)().bundleLoadedFromServer) {
+        if (path.startsWith('/')) {
+            return new URL(path, (0, getDevServer_1.getDevServer)().url).toString();
+        }
         return path;
     }
     if (os_1.default === 'android') {
@@ -138,9 +146,10 @@ function getAdjustedFilePath(path) {
 }
 const prefetchRSC = (input, searchParamsString) => {
     const prefetched = (globalThis.__WAKU_PREFETCHED__ ||= {});
-    const url = BASE_PATH + (0, utils_1.encodeInput)(input) + (searchParamsString ? '?' + searchParamsString : '');
+    const url = getAdjustedFilePath(BASE_PATH + (0, utils_1.encodeInput)(input) + (searchParamsString ? '?' + searchParamsString : ''));
     if (!(url in prefetched)) {
         prefetched[url] = fetch(url, {
+            reactNative: { textStreaming: true },
             headers: {
                 'expo-platform': os_1.default,
             },

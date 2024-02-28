@@ -29,7 +29,7 @@ function warnProductionOriginNotConfigured(requestUrl: string) {
 // reflect the exact location of the JS file that was executed.
 function getBaseUrl() {
   if (getDevServer().bundleLoadedFromServer) {
-  // if (process.env.NODE_ENV !== 'production') {
+    // if (process.env.NODE_ENV !== 'production') {
     // e.g. http://localhost:19006
     return getDevServer().url?.replace(/\/$/, '');
   }
@@ -45,7 +45,9 @@ function getBaseUrl() {
   return productionBaseUrl?.replace(/\/$/, '');
 }
 
-function wrapFetchWithWindowLocation(fetch: Function & { __EXPO_BASE_URL_POLYFILLED?: boolean }) {
+export function wrapFetchWithWindowLocation(
+  fetch: Function & { __EXPO_BASE_URL_POLYFILLED?: boolean }
+) {
   if (fetch.__EXPO_BASE_URL_POLYFILLED) {
     return fetch;
   }
@@ -55,6 +57,8 @@ function wrapFetchWithWindowLocation(fetch: Function & { __EXPO_BASE_URL_POLYFIL
       if (process.env.NODE_ENV !== 'production') {
         warnProductionOriginNotConfigured(props[0]);
       }
+
+      console.log('PUSHER>', props[0])
 
       props[0] = new URL(props[0], window.location?.origin).toString();
     } else if (props[0] && typeof props[0] === 'object') {
@@ -83,8 +87,11 @@ if (manifest?.extra?.router?.origin !== false) {
       install();
     }
   }
+  const { fetch } = require('react-native-fetch-api');
+
   // Polyfill native fetch to support relative URLs
   Object.defineProperty(global, 'fetch', {
-    value: wrapFetchWithWindowLocation(fetch),
+    value: fetch,
+    // value: wrapFetchWithWindowLocation(fetch),
   });
 }

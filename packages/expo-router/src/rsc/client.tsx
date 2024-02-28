@@ -117,8 +117,9 @@ export const fetchRSC = (
   }
   const options = {
     async callServer(actionId: string, args: unknown[]) {
-      const response = fetch(BASE_PATH + encodeInput(encodeURIComponent(actionId)), {
+      const response = fetch(getAdjustedFilePath(BASE_PATH + encodeInput(encodeURIComponent(actionId))), {
         method: 'POST',
+        reactNative: { textStreaming: true },
         body: await encodeReply(args),
         headers: {
           'expo-platform': OS,
@@ -139,6 +140,7 @@ export const fetchRSC = (
   const response =
     prefetched[url] ||
     fetch(getAdjustedFilePath(url), {
+      reactNative: { textStreaming: true },
       headers: {
         'expo-platform': OS,
       },
@@ -150,7 +152,13 @@ export const fetchRSC = (
 };
 
 function getAdjustedFilePath(path: string): string {
-  if (OS === 'web' || getDevServer().bundleLoadedFromServer) {
+  if (OS === 'web') {
+    return path;
+  }
+  if (getDevServer().bundleLoadedFromServer) {
+    if (path.startsWith('/')) {
+      return new URL(path, getDevServer().url).toString();
+    }
     return path;
   }
   if (OS === 'android') {
@@ -163,9 +171,10 @@ function getAdjustedFilePath(path: string): string {
 
 export const prefetchRSC = (input: string, searchParamsString: string): void => {
   const prefetched = ((globalThis as any).__WAKU_PREFETCHED__ ||= {});
-  const url = BASE_PATH + encodeInput(input) + (searchParamsString ? '?' + searchParamsString : '');
+  const url = getAdjustedFilePath(BASE_PATH + encodeInput(input) + (searchParamsString ? '?' + searchParamsString : ''));
   if (!(url in prefetched)) {
     prefetched[url] = fetch(url, {
+      reactNative: { textStreaming: true },
       headers: {
         'expo-platform': OS,
       },

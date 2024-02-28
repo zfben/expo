@@ -64,7 +64,7 @@ const App = () => {
       </Container> */}
         <A08_NodeBuiltins />
         {/* <A09_CSSModules /> */}
-        <A10_ServerActions />
+        {/* <A10_ServerActions /> */}
         {/* <A11_ExpoViewsTest /> */}
         {/* <A14_RNW /> */}
       </ScrollView>
@@ -73,31 +73,3 @@ const App = () => {
 };
 
 export default App;
-
-// import Child from './client-child';
-
-// export default function App() {
-//   // return (
-//   //   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-//   //     <Text style={{ fontSize: 24 }}>Hey</Text>
-//   //   </View>
-//   // );
-//   return (
-//     <>
-//       <View style={{ paddingVertical: 54, flex: 1, }}>
-//       {/* <div>
-//       <h1>Hello world</h1> */}
-//       {/* <View style={{ flex: 1, width: 256, height: 256, backgroundColor: 'darkblue' }} /> */}
-//       {/* <Text>Hey</Text> */}
-//       {/* <LinearGradient colors={['red', 'yellow']} /> */}
-//       {/* <Child>
-//         <h2>Child</h2>
-//       </Child> */}
-//       {/* </div> */}
-//       <A08_NodeBuiltins />
-//       <Text>env: {process.env.NODE_ENV}</Text>
-//       <Text>rsc path: {process.env.EXPO_RSC_PATH}</Text>
-//       </View>
-//     </>
-//   );
-// }

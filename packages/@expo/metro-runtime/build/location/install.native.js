@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.wrapFetchWithWindowLocation = void 0;
 // This MUST be first to ensure that `fetch` is defined in the React Native environment.
 require("react-native/Libraries/Core/InitializeCore");
 const expo_constants_1 = __importDefault(require("expo-constants"));
@@ -47,6 +48,7 @@ function wrapFetchWithWindowLocation(fetch) {
             if (process.env.NODE_ENV !== 'production') {
                 warnProductionOriginNotConfigured(props[0]);
             }
+            console.log('PUSHER>', props[0]);
             props[0] = new URL(props[0], window.location?.origin).toString();
         }
         else if (props[0] && typeof props[0] === 'object') {
@@ -62,6 +64,7 @@ function wrapFetchWithWindowLocation(fetch) {
     _fetch.__EXPO_BASE_URL_POLYFILLED = true;
     return _fetch;
 }
+exports.wrapFetchWithWindowLocation = wrapFetchWithWindowLocation;
 if (manifest?.extra?.router?.origin !== false) {
     // Polyfill window.location in native runtimes.
     if (typeof window !== 'undefined' && !window.location) {
@@ -71,9 +74,11 @@ if (manifest?.extra?.router?.origin !== false) {
             (0, Location_1.install)();
         }
     }
+    const { fetch } = require('react-native-fetch-api');
     // Polyfill native fetch to support relative URLs
     Object.defineProperty(global, 'fetch', {
-        value: wrapFetchWithWindowLocation(fetch),
+        value: fetch,
+        // value: wrapFetchWithWindowLocation(fetch),
     });
 }
 //# sourceMappingURL=install.native.js.map

@@ -657,13 +657,12 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       });
 
       const clientReferenceUrl = new URL(this.getDevServerUrlOrAssert());
+      searchParams.set('modulesOnly', 'true');
+      searchParams.set('runModule', 'false');
 
       clientReferenceUrl.search = searchParams.toString();
 
       if (!isExporting) {
-        searchParams.set('modulesOnly', 'true');
-        searchParams.set('runModule', 'false');
-
         // TODO: Maybe add a new param to execute and return the module exports.
 
         const filePath = file.startsWith('file://') ? fileURLToFilePath(file) : file;
@@ -784,10 +783,8 @@ export class MetroBundlerDevServer extends BundlerDevServer {
       customImport: async (relativeDevServerUrl: string): Promise<any> => {
         const url = new URL(relativeDevServerUrl, this.getDevServerUrlOrAssert());
 
-        url.searchParams.set('modulesOnly', 'true');
-
         // TODO: Apply all params here.
-        url.searchParams.set('runModule', 'true');
+        url.searchParams.set('modulesOnly', 'true');
         url.searchParams.set('runModule', 'true');
 
         url.searchParams.set('transform.environment', 'react-server');
