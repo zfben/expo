@@ -34,13 +34,11 @@ const fallback = (<react_native_1.Text style={{
 // Must be exported or Fast Refresh won't update the context
 function App() {
     return (<WindowLocationContext_1.LocationContext>
-      <react_1.default.Suspense fallback={fallback}>
-        <react_native_safe_area_context_1.SafeAreaProvider>
-          <Try_1.Try catch={exports_1.ErrorBoundary}>
-            <client_1.Router />
-          </Try_1.Try>
-        </react_native_safe_area_context_1.SafeAreaProvider>
-      </react_1.default.Suspense>
+      <react_native_safe_area_context_1.SafeAreaProvider>
+        <Try_1.Try catch={exports_1.ErrorBoundary}>
+          <client_1.Router />
+        </Try_1.Try>
+      </react_native_safe_area_context_1.SafeAreaProvider>
     </WindowLocationContext_1.LocationContext>);
 }
 exports.App = App;

@@ -38,13 +38,11 @@ const fallback = (
 export function App() {
   return (
     <LocationContext>
-      <React.Suspense fallback={fallback}>
-        <SafeAreaProvider>
-          <Try catch={ErrorBoundary}>
-            <Router />
-          </Try>
-        </SafeAreaProvider>
-      </React.Suspense>
+      <SafeAreaProvider>
+        <Try catch={ErrorBoundary}>
+          <Router />
+        </Try>
+      </SafeAreaProvider>
     </LocationContext>
   );
 }
