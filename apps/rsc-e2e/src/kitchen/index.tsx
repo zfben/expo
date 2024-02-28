@@ -1,14 +1,3 @@
-// const App = () => {
-//   return (
-//     <div>
-//       <h1>First</h1>
-//       <a href="/second">second</a>
-//     </div>
-//   );
-// };
-
-// export default App;
-
 import React, { Suspense } from 'react';
 import OS from 'expo-router/os';
 // import { Text, View } from 'react-native';
