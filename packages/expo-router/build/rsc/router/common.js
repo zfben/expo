@@ -23,7 +23,7 @@ function parseInputString(input) {
     return '/' + input;
 }
 exports.parseInputString = parseInputString;
-exports.PARAM_KEY_SKIP = 'waku_router_skip';
+exports.PARAM_KEY_SKIP = 'expo_router_skip';
 // It starts with "/" to avoid conflicing with normal component ids.
 exports.SHOULD_SKIP_ID = '/SHOULD_SKIP';
 //# sourceMappingURL=common.js.map

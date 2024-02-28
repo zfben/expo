@@ -25,7 +25,7 @@ export function parseInputString(input: string): string {
   return '/' + input;
 }
 
-export const PARAM_KEY_SKIP = 'waku_router_skip';
+export const PARAM_KEY_SKIP = 'expo_router_skip';
 
 // It starts with "/" to avoid conflicing with normal component ids.
 export const SHOULD_SKIP_ID = '/SHOULD_SKIP';

@@ -92,7 +92,7 @@ function Link({ to, children, pending, notPending, unstable_prefetchOnEnter, ...
 }
 exports.Link = Link;
 const getSkipList = (componentIds, props, cached) => {
-    const ele = document.querySelector('meta[name="waku-should-skip"]');
+    const ele = document.querySelector('meta[name="expo-should-skip"]');
     if (!ele) {
         return [];
     }

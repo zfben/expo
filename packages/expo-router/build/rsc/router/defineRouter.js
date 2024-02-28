@@ -13,7 +13,7 @@ const ShoudSkipComponent = ({ shouldSkip }) => {
     // TODO: Modify the React Native renderer to support Document Metadata and other head elements
     if (os_1.default === 'web') {
         return (0, react_1.createElement)('meta', {
-            name: 'waku-should-skip',
+            name: 'expo-should-skip',
             content: JSON.stringify(shouldSkip),
         });
     }

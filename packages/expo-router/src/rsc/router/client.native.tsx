@@ -169,7 +169,7 @@ const getSkipList = (
   // TODO: Implement skip list somehow
   return [];
 
-  const ele: any = document.querySelector('meta[name="waku-should-skip"]');
+  const ele: any = document.querySelector('meta[name="expo-should-skip"]');
   if (!ele) {
     return [];
   }
