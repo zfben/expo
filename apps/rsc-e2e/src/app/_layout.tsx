@@ -3,21 +3,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'expo-router/build/rsc/router/client';
 import { ActivityIndicator, Text, View } from 'react-native';
 import SafeAreaView from '@/components/safe-area';
-
-const Pending = ({ isPending }: { isPending: boolean }) => {
-  if (!isPending) return null;
-  return (
-    <Text
-      style={{
-        marginLeft: 5,
-        color: 'white',
-        // transition: 'opacity 75ms 100ms',
-        opacity: isPending ? 1 : 0,
-      }}>
-      Pending...
-    </Text>
-  );
-};
+import { Footer } from '@/components/footer';
 
 const COLORS = {
   selected: '#EE81C3',
@@ -39,8 +25,12 @@ const HomeLayout = ({
 
   return (
     <SafeAreaView
+      edges={{
+        bottom: 'off',
+        top: 'additive',
+      }}
       testID="safe-area-root"
-      style={{ backgroundColor: '#191A20', flex: 1, gap: 8, padding: 12 }}>
+      style={{ backgroundColor: '#191A20', flex: 1, gap: 8 }}>
       {/* <title>Concurrent Router</title> */}
       <View
         testID="navigation"
@@ -84,6 +74,14 @@ const HomeLayout = ({
       <View style={{ flex: 1, padding: 12 }} testID="layout-child-wrapper">
         {children}
       </View>
+      <Footer
+        path={props.path}
+        items={[
+          { icon: 'home', href: '/' },
+          { icon: 'apple-keyboard-option', href: '/bar' },
+          { icon: 'share-outline', href: '/foo' },
+        ]}
+      />
     </SafeAreaView>
   );
 };
