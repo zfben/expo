@@ -6,8 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // import fsPromises from 'node:fs/promises';
 const _ctx_1 = require("expo-router/_ctx");
 const react_1 = require("react");
-// import { glob } from 'glob';
-const react_native_1 = require("react-native");
 const defineRouter_1 = require("./defineRouter");
 const getRoutes_1 = require("../../getRoutes");
 // const routesDir = path.join(
@@ -108,12 +106,13 @@ async (id, unstable_setShouldSkip) => {
         });
         return RouteNode;
     }
-    if (id.includes('page')) {
-        return (props) => (0, react_1.createElement)((0, _ctx_1.ctx)('./index.tsx').default, props);
-    }
-    else {
-        return (props) => (0, react_1.createElement)(react_native_1.View, props);
-    }
+    console.log('Missing router entry for:', id);
+    return null;
+    // if (id.includes('page')) {
+    //   return (props) => createElement(ctx('./index.tsx').default, props);
+    // } else {
+    //   return (props) => createElement(View, props);
+    // }
     // if (!route) {
     //   console.error('No route found for', id, ctx.keys());
     //   return null;

@@ -128,11 +128,15 @@ export default defineRouter(
 
       return RouteNode;
     }
-    if (id.includes('page')) {
-      return (props) => createElement(ctx('./index.tsx').default, props);
-    } else {
-      return (props) => createElement(View, props);
-    }
+
+    console.log('Missing router entry for:', id);
+
+    return null;
+    // if (id.includes('page')) {
+    //   return (props) => createElement(ctx('./index.tsx').default, props);
+    // } else {
+    //   return (props) => createElement(View, props);
+    // }
 
     // if (!route) {
     //   console.error('No route found for', id, ctx.keys());
