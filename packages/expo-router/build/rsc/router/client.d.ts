@@ -20,8 +20,11 @@ export type LinkProps = {
 export declare function Link({ to, children, pending, notPending, unstable_prefetchOnEnter, ...props }: LinkProps): ReactElement;
 export declare function Router({ children }: {
     children?: ReactElement;
-}): import("react").FunctionComponentElement<{
-    children: ReactElement<any, string | import("react").JSXElementConstructor<any>>;
-}>;
+}): import("react").FunctionComponentElement<Omit<{
+    initialInput?: string | undefined;
+    initialSearchParamsString?: string | undefined;
+    cache?: [([input: string, searchParamsString: string, setElements: (fn: (prev: Promise<Record<string, ReactNode>>) => Promise<Record<string, ReactNode>>) => void, elements: Promise<Record<string, ReactNode>>] | undefined)?] | undefined;
+    children: ReactNode;
+}, "children">>;
 export {};
 //# sourceMappingURL=client.d.ts.map

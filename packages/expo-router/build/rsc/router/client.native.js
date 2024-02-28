@@ -100,7 +100,7 @@ function Link({ to, children, pending, notPending, unstable_prefetchOnEnter, ...
 }
 exports.Link = Link;
 const getSkipList = (componentIds, props, cached) => {
-    // TODO: Implement skip list somehow.
+    // TODO: Implement skip list somehow
     return [];
     const ele = document.querySelector('meta[name="waku-should-skip"]');
     if (!ele) {
@@ -161,14 +161,13 @@ function InnerRouter(props) {
             url.hash = hash;
         }
         if (method) {
-            console.log('setHistory', method, url);
             // window.history[method](window.history.state, '', url);
             setHistory(method, url);
         }
         const loc = parseLocation();
         setLoc(loc);
         if (scrollTo) {
-            // console.warn('scrollTo is not implemented on native yet');
+            console.warn('scrollTo is not implemented on native yet');
             // window.scrollTo(scrollTo);
         }
         const componentIds = (0, common_js_1.getComponentIds)(loc.path);

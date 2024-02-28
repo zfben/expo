@@ -165,7 +165,7 @@ const getSkipList = (
   props: RouteProps,
   cached: Record<string, RouteProps>
 ): string[] => {
-  // TODO: Implement skip list somehow.
+  // TODO: Implement skip list somehow
   return [];
 
   const ele: any = document.querySelector('meta[name="waku-should-skip"]');
@@ -238,14 +238,13 @@ function InnerRouter(props) {
         url.hash = hash;
       }
       if (method) {
-        console.log('setHistory', method, url);
         // window.history[method](window.history.state, '', url);
         setHistory(method, url);
       }
       const loc = parseLocation();
       setLoc(loc);
       if (scrollTo) {
-        // console.warn('scrollTo is not implemented on native yet');
+        console.warn('scrollTo is not implemented on native yet');
         // window.scrollTo(scrollTo);
       }
       const componentIds = getComponentIds(loc.path);
