@@ -162,7 +162,9 @@ function InnerRouter(props) {
         }
         if (method) {
             // window.history[method](window.history.state, '', url);
-            setHistory(method, url);
+            (0, react_1.startTransition)(() => {
+                setHistory(method, url);
+            });
         }
         const loc = parseLocation();
         setLoc(loc);
@@ -222,17 +224,11 @@ function InnerRouter(props) {
     children));
 }
 function Router({ children }) {
-    return (0, react_1.createElement)(WindowLocationContext_js_1.LocationContext, {
-        children: (0, react_1.createElement)(ContextualRouter, { children }),
-    });
-}
-exports.Router = Router;
-function ContextualRouter({ children }) {
-    (0, WindowLocationContext_js_1.useVirtualLocation)();
     console.log('[virtual]>', globalThis.expoVirtualLocation);
     const loc = parseLocation();
     const initialInput = (0, common_js_1.getInputString)(loc.path);
     const initialSearchParamsString = loc.searchParams.toString();
     return (0, react_1.createElement)(client_js_1.Root, { initialInput, initialSearchParamsString }, (0, react_1.createElement)(InnerRouter, { children }));
 }
+exports.Router = Router;
 //# sourceMappingURL=client.native.js.map

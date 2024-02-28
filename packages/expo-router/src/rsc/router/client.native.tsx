@@ -10,6 +10,7 @@ import {
   useState,
   useTransition,
   Fragment,
+  startTransition,
 } from 'react';
 import type {
   ComponentProps,
@@ -25,7 +26,7 @@ import { Text } from 'react-native';
 import { getComponentIds, getInputString, PARAM_KEY_SKIP, SHOULD_SKIP_ID } from './common.js';
 import type { RouteProps, ShouldSkip } from './common.js';
 import { prefetchRSC, Root, Slot, useRefetch } from '../client.js';
-import { LocationContext, useVirtualLocation } from './WindowLocationContext.js';
+import { useVirtualLocation } from './WindowLocationContext.js';
 
 declare global {
   interface ImportMeta {
@@ -239,7 +240,9 @@ function InnerRouter(props) {
       }
       if (method) {
         // window.history[method](window.history.state, '', url);
-        setHistory(method, url);
+        startTransition(() => {
+          setHistory(method, url);
+        });
       }
       const loc = parseLocation();
       setLoc(loc);
@@ -322,13 +325,6 @@ function InnerRouter(props) {
 }
 
 export function Router({ children }: { children?: ReactElement }) {
-  return createElement(LocationContext, {
-    children: createElement(ContextualRouter, { children }),
-  });
-}
-
-function ContextualRouter({ children }: { children?: ReactElement }) {
-  useVirtualLocation();
   console.log('[virtual]>', globalThis.expoVirtualLocation);
   const loc = parseLocation();
   const initialInput = getInputString(loc.path);

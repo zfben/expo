@@ -1,7 +1,8 @@
 import { registerRootComponent } from 'expo';
 import OS from 'expo-router/os';
 import * as SplashScreen from 'expo-splash-screen';
-import React from 'react';
+import * as React from 'react';
+
 // import { View } from 'react-native';
 
 function isBaseObject(obj: any) {

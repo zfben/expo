@@ -65,15 +65,17 @@ function coerceUrl(url) {
         return new URL(url, 'http://localhost:8081');
     }
 }
+const setUrl = (url) => {
+    console.log('Set URL:', url);
+    const v = coerceUrl(url);
+    globalThis.expoVirtualLocation = v;
+    // setInitial(v);
+};
+// setUrl('/');
 function LocationContext({ children }) {
-    const [loaded, setLoaded] = React.useState(null);
+    const [loaded, setLoaded] = React.useState(false);
     // const [initialUrl, setInitial] = React.useState<URL | null>(null);
-    const setUrl = (url) => {
-        console.log('Set URL:', url);
-        const v = coerceUrl(url);
-        globalThis.expoVirtualLocation = v;
-        // setInitial(v);
-    };
+    const [isPending, startTransition] = React.useTransition();
     React.useEffect(() => {
         (async () => {
             const v = await (0, linking_1.getInitialURL)();

@@ -19,24 +19,29 @@ const exports_1 = require("./exports");
 const client_1 = require("./rsc/router/client");
 const Try_1 = require("./views/Try");
 const react_native_1 = require("react-native");
+const WindowLocationContext_1 = require("./rsc/router/WindowLocationContext");
+// TODO: There's something wrong with this on native. It shouldn't be needed.
+const fallback = (<react_native_1.Text style={{
+        marginHorizontal: 8,
+        marginTop: 56,
+        padding: 12,
+        fontSize: 16,
+        borderColor: 'blue',
+        borderWidth: 2,
+    }}>
+    [Root Suspense Boundary]
+  </react_native_1.Text>);
 // Must be exported or Fast Refresh won't update the context
 function App() {
-    return (<react_1.default.Suspense fallback={<react_native_1.Text style={{
-                marginHorizontal: 8,
-                marginTop: 56,
-                padding: 12,
-                fontSize: 16,
-                borderColor: 'blue',
-                borderWidth: 2,
-            }}>
-          [Root Suspense Boundary]
-        </react_native_1.Text>}>
-      <react_native_safe_area_context_1.SafeAreaProvider>
-        <Try_1.Try catch={exports_1.ErrorBoundary}>
-          <client_1.Router />
-        </Try_1.Try>
-      </react_native_safe_area_context_1.SafeAreaProvider>
-    </react_1.default.Suspense>);
+    return (<WindowLocationContext_1.LocationContext>
+      <react_1.default.Suspense fallback={fallback}>
+        <react_native_safe_area_context_1.SafeAreaProvider>
+          <Try_1.Try catch={exports_1.ErrorBoundary}>
+            <client_1.Router />
+          </Try_1.Try>
+        </react_native_safe_area_context_1.SafeAreaProvider>
+      </react_1.default.Suspense>
+    </WindowLocationContext_1.LocationContext>);
 }
 exports.App = App;
 //# sourceMappingURL=qualified-entry.js.map
