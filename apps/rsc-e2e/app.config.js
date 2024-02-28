@@ -38,6 +38,7 @@ module.exports = {
       {
         // asyncRoutes: process.env.E2E_ROUTER_ASYNC,
         // root: path.join('__e2e__', process.env.E2E_ROUTER_SRC ?? 'static-rendering', 'app'),
+        root: path.join('src', process.env.RSC_ROOT ?? 'app'),
         origin: 'http://localhost:8081',
       },
     ],

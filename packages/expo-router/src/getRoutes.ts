@@ -7,6 +7,7 @@ import {
   removeSupportedExtensions,
 } from './matchers';
 import { RequireContext } from './types';
+import { Fragment } from 'react';
 
 export type Options = {
   ignore?: RegExp[];
@@ -241,8 +242,10 @@ function getDirectoryTree(contextModule: RequireContext, options: Options) {
       {
         type: 'layout',
         loadRoute: () => ({
-          default: (require('./views/Navigator') as typeof import('./views/Navigator'))
-            .DefaultNavigator,
+          // NOTE: Using a passthrough for root layout in concurrent router.
+          default: Fragment,
+          // default: (require('./views/Navigator') as typeof import('./views/Navigator'))
+          //   .DefaultNavigator,
         }),
         // Generate a fake file name for the directory
         contextKey: 'expo-router/build/views/Navigator.js',

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateDynamic = exports.getIgnoreList = exports.getExactRoutes = exports.getRoutes = void 0;
 const matchers_1 = require("./matchers");
+const react_1 = require("react");
 /**
  * Given a Metro context module, return an array of nested routes.
  *
@@ -186,8 +187,10 @@ function getDirectoryTree(contextModule, options) {
             {
                 type: 'layout',
                 loadRoute: () => ({
-                    default: require('./views/Navigator')
-                        .DefaultNavigator,
+                    // NOTE: Using a passthrough for root layout in concurrent router.
+                    default: react_1.Fragment,
+                    // default: (require('./views/Navigator') as typeof import('./views/Navigator'))
+                    //   .DefaultNavigator,
                 }),
                 // Generate a fake file name for the directory
                 contextKey: 'expo-router/build/views/Navigator.js',
