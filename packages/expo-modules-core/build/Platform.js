@@ -1,5 +1,5 @@
-import { isDOMAvailable, canUseEventListeners, canUseViewport, isAsyncDebugging, } from './environment/browser';
 import OS from 'expo-router/os';
+import { isDOMAvailable, canUseEventListeners, canUseViewport, isAsyncDebugging, } from './environment/browser';
 function select(specifics) {
     if (specifics.hasOwnProperty(OS)) {
         return specifics[OS];
@@ -10,16 +10,15 @@ function select(specifics) {
     else if (specifics.hasOwnProperty('default')) {
         return specifics.default;
     }
-    else {
-        throw new Error(`Platform: '${OS}' is not supported.`);
-    }
+    return undefined;
+    // do nothing...
 }
 const Platform = {
     /**
      * Denotes the currently running platform.
      * Can be one of ios, android, web.
      */
-    OS: OS,
+    OS,
     /**
      * Returns the value with the matching platform.
      * Object keys can be any of ios, android, native, web, default.

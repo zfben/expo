@@ -33,12 +33,12 @@ declare global {
   }
 }
 
-const parseLocation = (fragment: URL = globalThis.expoVirtualLocation): RouteProps => {
+const parseLocation = (): RouteProps => {
   if ((globalThis as any).__WAKU_ROUTER_404__) {
     return { path: '/404', searchParams: new URLSearchParams() };
   }
 
-  const { pathname, search } = fragment;
+  const { pathname, search } = globalThis.expoVirtualLocation;
   //   const { pathname, search } = window.location;
   const searchParams = new URLSearchParams(search);
   if (searchParams.has(PARAM_KEY_SKIP)) {
@@ -328,9 +328,9 @@ export function Router({ children }: { children?: ReactElement }) {
 }
 
 function ContextualRouter({ children }: { children?: ReactElement }) {
-  const virtualLocation = useVirtualLocation();
-  console.log('[virtual]>', virtualLocation.urlFragment);
-  const loc = parseLocation(virtualLocation.urlFragment);
+  useVirtualLocation();
+  console.log('[virtual]>', globalThis.expoVirtualLocation);
+  const loc = parseLocation();
   const initialInput = getInputString(loc.path);
   const initialSearchParamsString = loc.searchParams.toString();
 

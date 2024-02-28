@@ -7,11 +7,11 @@ const react_native_1 = require("react-native");
 const common_js_1 = require("./common.js");
 const client_js_1 = require("../client.js");
 const WindowLocationContext_js_1 = require("./WindowLocationContext.js");
-const parseLocation = (fragment = globalThis.expoVirtualLocation) => {
+const parseLocation = () => {
     if (globalThis.__WAKU_ROUTER_404__) {
         return { path: '/404', searchParams: new URLSearchParams() };
     }
-    const { pathname, search } = fragment;
+    const { pathname, search } = globalThis.expoVirtualLocation;
     //   const { pathname, search } = window.location;
     const searchParams = new URLSearchParams(search);
     if (searchParams.has(common_js_1.PARAM_KEY_SKIP)) {
@@ -228,9 +228,9 @@ function Router({ children }) {
 }
 exports.Router = Router;
 function ContextualRouter({ children }) {
-    const virtualLocation = (0, WindowLocationContext_js_1.useVirtualLocation)();
-    console.log('[virtual]>', virtualLocation.urlFragment);
-    const loc = parseLocation(virtualLocation.urlFragment);
+    (0, WindowLocationContext_js_1.useVirtualLocation)();
+    console.log('[virtual]>', globalThis.expoVirtualLocation);
+    const loc = parseLocation();
     const initialInput = (0, common_js_1.getInputString)(loc.path);
     const initialSearchParamsString = loc.searchParams.toString();
     return (0, react_1.createElement)(client_js_1.Root, { initialInput, initialSearchParamsString }, (0, react_1.createElement)(InnerRouter, { children }));

@@ -946,7 +946,7 @@ export class MetroBundlerDevServer extends BundlerDevServer {
           res.statusMessage = 'Missing expo-platform header or platform query parameter';
           return res.end();
         }
-        console.log('sendResponse>', platform, url, req.headers);
+        // console.log('sendResponse>', platform, url, req.headers);
         const method = req.method;
         if (!method || !['POST', 'GET'].includes(method)) {
           res.statusCode = 405;
