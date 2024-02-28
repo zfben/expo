@@ -30,28 +30,19 @@ const HomeLayout = ({ children }: { children: ReactNode }) => (
       <View>
         <Link
           style={{ textAlign: 'center', color: '#EE81C3', textDecorationLine: 'underline' }}
-          to="/"
-          pending={<Pending isPending />}
-          notPending={<Pending isPending={false} />}>
-          Home
-        </Link>
-      </View>
-      <View>
-        <Link
-          style={{ textAlign: 'center', color: '#EE81C3', textDecorationLine: 'underline' }}
-          to="/bar"
-          pending={<Pending isPending />}
-          notPending={<Pending isPending={false} />}>
-          Bar
-        </Link>
-      </View>
-      <View>
-        <Link
-          style={{ textAlign: 'center', color: '#EE81C3', textDecorationLine: 'underline' }}
           to="/foo"
           pending={<Pending isPending />}
           notPending={<Pending isPending={false} />}>
           Foo
+        </Link>
+      </View>
+      <View>
+        <Link
+          style={{ textAlign: 'center', color: '#EE81C3', textDecorationLine: 'underline' }}
+          to="/foo/nova"
+          pending={<Pending isPending />}
+          notPending={<Pending isPending={false} />}>
+          Foo/Nova
         </Link>
       </View>
     </View>
