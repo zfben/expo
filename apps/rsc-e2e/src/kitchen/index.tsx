@@ -47,8 +47,8 @@ const App = () => {
           <Text>A whole new world.</Text>
         </View>
         {/* <Demo /> */}
-        {/* <A02_Suspense />
-      <A03_Promises /> */}
+        <A02_Suspense />
+      <A03_Promises />
         <A04_ServerPlatformExtensions />
         <A06_RSCChildren />
         {/* <A05_ClientPlatformExtensions /> */}
@@ -64,7 +64,7 @@ const App = () => {
       </Container> */}
         <A08_NodeBuiltins />
         {/* <A09_CSSModules /> */}
-        {/* <A10_ServerActions /> */}
+        <A10_ServerActions />
         {/* <A11_ExpoViewsTest /> */}
         {/* <A14_RNW /> */}
       </ScrollView>

@@ -15,7 +15,7 @@ const App = () => {
       }}>
       <Text>2) Suspense (Server Component)</Text>
 
-      <Suspense fallback="Pending...">
+      <Suspense fallback={<Text>Pending...</Text>}>
         {/* @ts-expect-error: Async Component not supported on types */}
         <ServerMessage />
       </Suspense>
