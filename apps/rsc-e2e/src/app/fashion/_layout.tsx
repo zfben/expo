@@ -27,7 +27,6 @@ const HomeLayout = ({
   path: string;
   searchParams: URLSearchParams;
 }) => {
-  console.log('[props]>', props);
   return (
     <View
       testID="safe-area-root"
@@ -46,19 +45,19 @@ const HomeLayout = ({
         <View>
           <Link
             style={{ textAlign: 'center', color: '#EE81C3', textDecorationLine: 'underline' }}
-            to="/foo"
+            to="/fashion"
             pending={<ActivityIndicator animating />}
             notPending={<ActivityIndicator animating={false} />}>
-            Foo
+            /fashion
           </Link>
         </View>
         <View>
           <Link
             style={{ textAlign: 'center', color: '#EE81C3', textDecorationLine: 'underline' }}
-            to="/foo/nova"
+            to="/fashion/nova"
             pending={<ActivityIndicator animating />}
             notPending={<ActivityIndicator animating={false} />}>
-            Foo/Nova
+            /fashion/nova
           </Link>
         </View>
       </View>
