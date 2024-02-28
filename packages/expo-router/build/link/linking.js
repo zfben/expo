@@ -62,14 +62,17 @@ function getInitialURL() {
                 const parsed = Linking.parse(url);
                 // If the URL is defined (default in Expo Go dev apps) and the URL has no path:
                 // `exp://192.168.87.39:19000/` then use the default `exp://192.168.87.39:19000/--/`
+                console.log('INITIAL>>', isExpoGo, url);
                 if (parsed.path === null ||
                     ['', '/'].includes((0, extractPathFromURL_1.adjustPathname)({
                         hostname: parsed.hostname,
                         pathname: parsed.path,
                     }))) {
+                    console.log('DEFAULT>>', url);
                     return getRootURL();
                 }
             }
+            console.log('FALLBACK>>', url);
             // The path will be nullish in bare apps when the app is launched from the home screen.
             // TODO(EvanBacon): define some policy around notifications.
             return url ?? getRootURL();
@@ -95,6 +98,7 @@ function addEventListener(listener) {
         // This extra work is only done in the Expo Go app.
         callback = ({ url }) => {
             const parsed = Linking.parse(url);
+            console.log('UPDATE>>', isExpoGo, url);
             // If the URL is defined (default in Expo Go dev apps) and the URL has no path:
             // `exp://192.168.87.39:19000/` then use the default `exp://192.168.87.39:19000/--/`
             if (parsed.path === null ||

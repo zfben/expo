@@ -1,7 +1,9 @@
+import { Text, View } from 'react-native';
+
 const Bar = () => (
-  <div>
-    <h1>Bar</h1>
-  </div>
+  <View>
+    <Text>Bar</Text>
+  </View>
 );
 
 export default Bar;

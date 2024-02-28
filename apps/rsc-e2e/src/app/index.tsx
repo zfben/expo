@@ -1,7 +1,9 @@
+import { Text, View } from 'react-native';
+
 const Home = () => (
-  <div>
-    <h1>Home</h1>
-  </div>
+  <View>
+    <Text>Home</Text>
+  </View>
 );
 
 export default Home;

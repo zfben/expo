@@ -106,7 +106,7 @@ async function renderRsc(opts
             // We'll augment the file path with the incoming RSC request which will forward the metro props required to make a cache hit, e.g. platform=web&...
             // This is similar to how we handle lazy bundling.
             const id = resolveClientEntry(file);
-            console.log('Returning server module:', id, 'for', encodedId);
+            // console.log('Returning server module:', id, 'for', encodedId);
             moduleIdCallback?.({ id: id.url, chunks: [id.url], name, async: true });
             return { id: id.id, chunks: [id.id], name, async: true };
         },

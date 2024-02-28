@@ -47,24 +47,7 @@ else {
     };
 }
 let StackTrace;
-let ErrorMessageText;
 if (process.env.NODE_ENV === 'development') {
-    const { Ansi } = require('@expo/metro-runtime/build/error-overlay/UI/AnsiHighlight');
-    ErrorMessageText = function ({ text, style }) {
-        return (<Ansi style={[
-                {
-                    fontSize: 12,
-                    includeFontPadding: false,
-                    lineHeight: 20,
-                    fontFamily: react_native_1.Platform.select({
-                        default: 'Courier',
-                        ios: 'Courier New',
-                        android: 'monospace',
-                    }),
-                },
-                style,
-            ]} text={text}/>);
-    };
     const { LogContext } = require('@expo/metro-runtime/build/error-overlay/Data/LogContext');
     const { LogBoxInspectorStackFrames, } = require('@expo/metro-runtime/build/error-overlay/overlay/LogBoxInspectorStackFrames');
     StackTrace = function ({ logData }) {
@@ -83,9 +66,6 @@ if (process.env.NODE_ENV === 'development') {
     };
 }
 else {
-    ErrorMessageText = function ({ text, style }) {
-        return <react_native_1.Text role="heading" aria-level={2} children={text} style={style}/>;
-    };
     StackTrace = function () {
         return <react_native_1.View style={{ flex: 1 }}/>;
     };
@@ -114,7 +94,9 @@ function ErrorBoundary({ error, retry }) {
           <react_native_1.Text role="heading" aria-level={1} style={styles.title}>
             Something went wrong
           </react_native_1.Text>
-          <ErrorMessageText style={styles.errorMessage} text={`Error: ${error.message}`}/>
+          <react_native_1.Text role="heading" aria-level={2} style={styles.errorMessage}>
+            Error: {error.message}
+          </react_native_1.Text>
         </react_native_1.View>
 
         <StackTrace logData={logBoxLog}/>
