@@ -12,6 +12,7 @@ import { defineRouter } from './defineRouter';
 import { Route, RouteNode } from '../../Route';
 import { getRoutes } from '../../getRoutes';
 import { getServerManifest } from '../../getServerManifest';
+import { stripInvisibleSegmentsFromPath } from '../../matchers';
 
 // const routesDir = path.join(
 //   path.dirname(fileURLToPath(import.meta.url)),
@@ -94,7 +95,13 @@ function wakuRouteIdToExpoRoute(route: RouteNode, routeId: string) {
         return null;
       }
     }
-    currentRoute = currentRoute?.children?.find((child) => child.route === part);
+    currentRoute = currentRoute?.children?.find((child) => {
+      if (child.route === part || stripInvisibleSegmentsFromPath(child.route) === part) {
+        return true;
+      }
+
+      return false;
+    });
   }
 
   return currentRoute;

@@ -8,6 +8,7 @@ const _ctx_1 = require("expo-router/_ctx");
 const react_1 = require("react");
 const defineRouter_1 = require("./defineRouter");
 const getRoutes_1 = require("../../getRoutes");
+const matchers_1 = require("../../matchers");
 // const routesDir = path.join(
 //   path.dirname(fileURLToPath(import.meta.url)),
 //   'routes',
@@ -80,7 +81,12 @@ function wakuRouteIdToExpoRoute(route, routeId) {
                 return null;
             }
         }
-        currentRoute = currentRoute?.children?.find((child) => child.route === part);
+        currentRoute = currentRoute?.children?.find((child) => {
+            if (child.route === part || (0, matchers_1.stripInvisibleSegmentsFromPath)(child.route) === part) {
+                return true;
+            }
+            return false;
+        });
     }
     return currentRoute;
 }
