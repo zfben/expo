@@ -86,6 +86,103 @@ final class EventEmitterSpec: ExpoSpec {
         expect(args[1]) == 2
         expect(args[2]) == 24
       }
+
+      it("calls startObserving on addListener") {
+        waitUntil { done in
+          let eventName = "testEvent"
+          let (emitter, listener) = setupEventObserver(runtime: runtime, functionName: "startObserving") { arguments in
+            expect(try arguments.first?.asString()) == eventName
+            done()
+          }
+
+          try! emitter
+            .getProperty("addListener")
+            .asFunction()
+            .call(withArguments: [eventName, listener], thisObject: emitter, asConstructor: false)
+        }
+      }
+
+      it("calls stopObserving on removeListener") {
+        waitUntil { done in
+          let eventName = "testEvent"
+          let (emitter, listener) = setupEventObserver(runtime: runtime, functionName: "stopObserving") { arguments in
+            expect(try arguments.first?.asString()) == eventName
+            done()
+          }
+
+          try! emitter
+            .getProperty("addListener")
+            .asFunction()
+            .call(withArguments: [eventName, listener], thisObject: emitter, asConstructor: false)
+
+          try! emitter
+            .getProperty("removeListener")
+            .asFunction()
+            .call(withArguments: [eventName, listener], thisObject: emitter, asConstructor: false)
+        }
+      }
+
+      it("calls startObserving on addListener only once") {
+        var calls: Int = 0
+        let eventName = "testEvent"
+        let (emitter, listener) = setupEventObserver(runtime: runtime, functionName: "startObserving") { arguments in
+          calls = calls + 1
+        }
+
+        try! emitter
+          .getProperty("addListener")
+          .asFunction()
+          .call(withArguments: [eventName, listener], thisObject: emitter, asConstructor: false)
+
+        try! emitter
+          .getProperty("addListener")
+          .asFunction()
+          .call(withArguments: [eventName, listener], thisObject: emitter, asConstructor: false)
+
+        expect(calls) == 1
+      }
+
+      it("calls stopObserving on removeListener only once") {
+        var calls: Int = 0
+        let eventName = "testEvent"
+        let (emitter, listener) = setupEventObserver(runtime: runtime, functionName: "stopObserving") { arguments in
+          calls = calls + 1
+        }
+
+        try! emitter
+          .getProperty("addListener")
+          .asFunction()
+          .call(withArguments: [eventName, listener], thisObject: emitter, asConstructor: false)
+
+        try! emitter
+          .getProperty("removeListener")
+          .asFunction()
+          .call(withArguments: [eventName, listener], thisObject: emitter, asConstructor: false)
+
+        try! emitter
+          .getProperty("removeListener")
+          .asFunction()
+          .call(withArguments: [eventName, listener], thisObject: emitter, asConstructor: false)
+
+        expect(calls) == 1
+      }
     }
   }
+}
+
+func setupEventObserver(
+  runtime: ExpoRuntime,
+  functionName: String,
+  callback: @escaping (_ arguments: [JavaScriptValue]) throws -> Void
+) -> (emitter: JavaScriptObject, listener: JavaScriptObject) {
+  let emitter = try! runtime.eval("new expo.EventEmitter()").asObject()
+  let listener = runtime.createSyncFunction("listener") { _, _ in }
+  let observingFunction = runtime.createSyncFunction(functionName) { [callback] this, arguments in
+    try callback(arguments)
+    return Optional<Any>.none as Any
+  }
+
+  emitter.setProperty(functionName, value: observingFunction)
+
+  return (emitter, listener)
 }
